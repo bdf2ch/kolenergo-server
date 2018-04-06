@@ -1,0 +1,10 @@
+{
+  "type": "postgres",
+  "host": "10.50.0.173",
+  "port": 5432,
+  "username": "docuser",
+  "password": "docasu",
+  "database": "phone",
+  "entities": ["src/**/**.entity{.ts,.js}"],
+  "synchronize": true
+}
