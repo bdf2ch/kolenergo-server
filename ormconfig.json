@@ -1,10 +1,10 @@
 {
   "type": "postgres",
-  "host": "10.50.0.173",
+  "host": "localhost",
   "port": 5432,
-  "username": "docuser",
-  "password": "docasu",
-  "database": "phone",
+  "username": "incode_expense",
+  "password": "ce/-[35v,J<`BN~5",
+  "database": "kolenergo",
   "entities": ["src/**/**.entity{.ts,.js}"],
   "synchronize": true
 }

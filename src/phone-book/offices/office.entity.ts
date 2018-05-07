@@ -1,7 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity()
+@Entity('phonebook_office', {
+    skipSync: false,
+})
 export class Office {
+
     @PrimaryGeneratedColumn({
         comment: 'Идентификатор офиса',
     })
@@ -21,4 +24,15 @@ export class Office {
         comment: 'Населенный пункт',
     })
     city: string;
+
+    @CreateDateColumn({
+        comment: 'Дата создания',
+    })
+    createdAt: any;
+
+    @UpdateDateColumn({
+        comment: 'Дата изменения',
+    })
+    updatedAt: any;
+
 }
