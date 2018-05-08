@@ -1,6 +1,4 @@
 import { Controller, Get, Post, Param } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { OfficesService } from './offices.service';
 import { IOffice } from './office.interface';
 import { Office } from './office.entity';

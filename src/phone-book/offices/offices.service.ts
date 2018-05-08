@@ -1,15 +1,13 @@
 import { Component } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { IOffice } from './office.interface';
 import { Office } from './office.entity';
 
 @Component()
 export class OfficesService {
-    constructor(@InjectRepository(Office) private readonly officesRepository: Repository<Office>) {}
+    constructor() {}
 
     async findAll(): Promise<Office[]> {
-        return await this.officesRepository.find();
+        return null;
     }
 
     /*
