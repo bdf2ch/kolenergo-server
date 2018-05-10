@@ -6,22 +6,16 @@ import { AsyncExpressMiddleware } from '@nestjs/common/interfaces';
 export class LogInMiddleware implements NestMiddleware {
     async resolve(): AsyncExpressMiddleware {
         return async (req, res, next) => {
-            const authenticateCallback = (error, user) => {
-                if (!user || error) {
-                    //res.send({ message: 'Password or Email Address is invalid' });
-                    //return;
+            await passport.authenticate('local', (error, user) => {
+                if (error) {
+                    return next(error);
                 }
-
                 req.logIn(user, (err) => {
                     if (err) {
-                        //res.send(err);
-                        //return;
+                        return next(err);
                     }
-                    //res.send(user);
                 });
-            };
-
-            await passport.authenticate('local', authenticateCallback)(req, res, next);
+            })(req, res, next);
             next();
         };
     }

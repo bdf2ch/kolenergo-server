@@ -13,14 +13,14 @@ async function bootstrap() {
           origin: true,
           credentials: true,
       }),
-      bodyParser.json(),
       cookieParser(),
+      bodyParser.json(),
       session({
-          secret: '$42Do2&4hir4&4hir4ret',
+          secret: 'c0ck5uck3r',
           saveUninitialized: true,
           resave: true,
           cookie: {
-              maxAge: 10 * 365 * 24 * 3600000,
+              maxAge: 3600 * 24 * 30 * 356,
           },
       }),
       passport.initialize(),

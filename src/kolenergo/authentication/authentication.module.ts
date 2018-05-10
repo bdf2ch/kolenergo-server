@@ -4,7 +4,7 @@ import { AuthenticationService } from './authentication.service';
 import { AuthenticationController } from './authentication.controller';
 import { LogInMiddleware } from './middleware/login.middleware';
 import { LogOutMiddleware } from './middleware/logout.middleware';
-
+import { CheckMiddleware } from './middleware/check.middleware';
 
 @Module({
     imports: [],
@@ -26,5 +26,8 @@ export class AuthenticationModule implements NestModule {
         consumer
             .apply(LogOutMiddleware)
             .forRoutes({ path: 'authentication/logout', method: RequestMethod.GET });
+        consumer
+            .apply(CheckMiddleware)
+            .forRoutes({ path: 'authentication/check', method: RequestMethod.GET });
     }
 }
