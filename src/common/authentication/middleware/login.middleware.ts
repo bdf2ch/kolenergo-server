@@ -1,4 +1,4 @@
-import { Middleware, NestMiddleware, ExpressMiddleware, Res, Req } from '@nestjs/common';
+import {Middleware, NestMiddleware, ExpressMiddleware, Res, Req, UnauthorizedException} from '@nestjs/common';
 import * as passport from 'passport';
 import { AsyncExpressMiddleware } from '@nestjs/common/interfaces';
 
@@ -8,6 +8,7 @@ export class LogInMiddleware implements NestMiddleware {
         return async (req, res, next) => {
             await passport.authenticate('local', (error, user) => {
                 if (error) {
+                    //throw new UnauthorizedException(error);
                     return next(error);
                 }
                 req.logIn(user, (err) => {
@@ -16,6 +17,11 @@ export class LogInMiddleware implements NestMiddleware {
                     }
                 });
             })(req, res, next);
+
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+            res.header('Access-Control-Allow-Credentials', true);
             next();
         };
     }

@@ -6,4 +6,4 @@ import { Module } from '@nestjs/common';
     controllers: [],
     exports: [],
 })
-export class UsersModule {}
+export class AhoRequestsModule {}

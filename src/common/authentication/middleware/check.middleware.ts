@@ -7,7 +7,7 @@ export class CheckMiddleware implements NestMiddleware {
   resolve(): ExpressMiddleware {
     return async (req, res, next) => {
       if (!req.isAuthenticated()) {
-        res.send(null);
+        //res.send(null);
       }
       next();
     };

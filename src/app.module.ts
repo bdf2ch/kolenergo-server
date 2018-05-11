@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { KolenergoModule } from './kolenergo/kolenergo.module';
+import { CommonModule } from './common/common.module';
 import { PhoneBookModule } from './phone-book/phone-book.module';
 import { AppController } from './app.controller';
 
 @Module({
   imports: [
-      KolenergoModule,
+      CommonModule,
       PhoneBookModule,
   ],
   controllers: [AppController],
