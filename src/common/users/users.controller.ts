@@ -14,12 +14,7 @@ export class UsersController {
     @Get(':id')
     async getById(@Param() params, @Res() response): Promise<any> {
         const result = await this.usersService.getById(params.id);
-        if (result) {
-            response.status(HttpStatus.OK).json(result);
-        } else {
-            response.status(HttpStatus.NOT_FOUND).json(result);
-        }
-
+        response.status(result ? HttpStatus.OK : HttpStatus.NOT_FOUND).json(result);
     }
 
     @Post()

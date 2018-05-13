@@ -1,3 +1,4 @@
+import * as proccess from 'process';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cors from 'cors';
@@ -5,6 +6,11 @@ import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
+
+proccess.on('uncaughtException', (err) => {
+  console.error(err.stack);
+  console.log("Node NOT Exiting...");
+});
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

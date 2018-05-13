@@ -12,7 +12,10 @@
     "sourceMap": true,
     "allowJs": true,
     "outDir": "./dist",
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "paths": {
+      "kolenergo": ["../../kolenergo-workspace/src/shared-lib/api.ts"]
+    }
   },
   "include": [
     "src/**/*"

@@ -4,9 +4,8 @@ import { ExpressMiddleware, Middleware, NestMiddleware } from '@nestjs/common';
 export class LogOutMiddleware implements NestMiddleware {
     resolve(...args: any[]): ExpressMiddleware {
         return async (req, res, next) => {
-            if (req.isAuthenticated()) {
-                req.logOut();
-            }
+            if (req.isAuthenticated()) { req.logOut(); }
+            res.send();
             next();
         };
     }

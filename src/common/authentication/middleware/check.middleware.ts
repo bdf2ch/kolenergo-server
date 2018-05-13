@@ -1,13 +1,14 @@
-import { Middleware, NestMiddleware, ExpressMiddleware, Res, Req } from '@nestjs/common';
-import * as passport from 'passport';
+import { Middleware, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import { AsyncExpressMiddleware } from '@nestjs/common/interfaces';
 
 @Middleware()
 export class CheckMiddleware implements NestMiddleware {
-  resolve(): ExpressMiddleware {
+  async resolve(...args: any[]): AsyncExpressMiddleware {
     return async (req, res, next) => {
-      if (!req.isAuthenticated()) {
-        //res.send(null);
+      if (req.isAuthenticated()) {
+        res.json(req.user);
+      } else {
+        throw new UnauthorizedException('User not authorized');
       }
       next();
     };
