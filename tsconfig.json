@@ -14,8 +14,8 @@
     "outDir": "./dist",
     "baseUrl": "./src",
     "paths": {
-      "@kolenergo/lib": ["../../kolenergo-workspace/src/shared-lib/api.ts"],
-      "@kolenergo/aho-requests": ["../../kolenergo-workspace/src/aho-requests/*"]
+      "@kolenergo/lib": ["../../kolenergo/src/shared-lib/api.ts"],
+      "@kolenergo/aho": ["../../kolenergo/src/aho-requests-app/exports.ts"]
     }
   },
   "include": [
