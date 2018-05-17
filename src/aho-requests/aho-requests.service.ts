@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import { IAhoRequest, IAhoRequestType, IAddAhoRequest } from '@kolenergo/aho';
+import { IAhoRequest, IAhoRequestType, IAddAhoRequest, IAhoRequestStatus } from '@kolenergo/aho';
 
 @Component()
 export class AhoRequestsService {
@@ -19,10 +19,18 @@ export class AhoRequestsService {
         return result ? result : [];
     }
 
-    async addRequestType(): Promise<IAhoRequestType> {
-        return null;
+    /**
+     * Получение всех статусов заявок АХО
+     * @returns {Promise<IAhoRequestStatus[]>}
+     */
+    async getRequestStatuses(): Promise<IAhoRequestStatus[]> {
+        const result = this.postgresService.query(
+            'get-aho-request-statuses',
+            `SELECT * FROM aho_requests_statuses`,
+            [],
+        );
+        return result ? result : [];
     }
-
 
     /**
      * Получение всех заявок
@@ -46,10 +54,11 @@ export class AhoRequestsService {
     async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
         const result = await this.postgresService.query(
             'add-aho-request',
-            `SELECT aho_requests_add($1, $2, $3, $4)`,
+            `SELECT aho_requests_add($1, $2, $3, $4, $5)`,
             [
                 request.userId,
-                request.requestTypeId,
+                request.type.id,
+                request.status.id,
                 request.comment,
                 request.room,
             ],
