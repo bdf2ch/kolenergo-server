@@ -47,6 +47,21 @@ export class AhoRequestsService {
     }
 
     /**
+     * Получение заявки по идентификатору
+     * @param {number} id - Идентификатор заявки
+     * @returns {Promise<IAhoRequest | null>}
+     */
+    async getRequestById(id: number): Promise<IAhoRequest | null> {
+        const result = this.postgresService.query(
+            'get-request-by-id',
+            `SELECT aho_requests_get_by_id($1)`,
+            [id],
+            'aho_requests_get_by_id',
+        );
+        return result ? result : null;
+    }
+
+    /**
      * Добавление новой заявки
      * @param {IAddAhoRequest} request - Новая заявка
      * @returns {Promise<IAhoRequest | null>}
