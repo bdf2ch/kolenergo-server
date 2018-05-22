@@ -1,4 +1,4 @@
-import { Component, UnauthorizedException } from '@nestjs/common';
+import { Component } from '@nestjs/common';
 import { Strategy } from 'passport-local';
 import * as passport from 'passport';
 import { UsersService } from '../users/users.service';
@@ -14,27 +14,43 @@ export class AuthenticationStrategy extends Strategy {
             usernameField: 'account',
             passwordField: 'password',
             session: true,
+              passReqToCallback: true,
           },
-          async (username, password, done) => await this.signInUser(username, password, done),
+          async (req, username, password, done) => await this.signInUser(req, username, password, done),
         );
         passport.use(this);
         passport.serializeUser(this.serializeUser);
         passport.deserializeUser(this.deserializeUser.bind(this));
     }
 
-    async signInUser(username, password, done: (error, user, info?) => void): Promise<any> {
+    async signInUser(req, username, password, done: (error, user, info?) => void): Promise<any> {
         try {
             const ldapUser: ILdapUser = await this.ldapService.logIn(username, password);
             console.log('ldap user', ldapUser);
             if (ldapUser) {
               const user = await this.usersService.getByAccount(ldapUser.sAMAccountName);
               if (user) return done(null, user);
-              if (!user) return done(`Local user with account '${ldapUser.sAMAccountName}' not found`, false);
+              if (!user) {
+                  if (req.body.addIfNotExists && req.body.addIfNotExists === true) {
+                      const fio = ldapUser.cn.split(' ');
+                      const newUser = await this.usersService.add({
+                          divisionId: 0,
+                          personalNumber: null,
+                          firstName: fio[1] ? fio[1] : '',
+                          secondName: fio[2] ? fio[2] : null,
+                          lastName: fio[0] ? fio[0] : '',
+                          position: null,
+                          email: ldapUser.mail,
+                          activeDirectoryAccount: ldapUser.sAMAccountName,
+                      });
+                      return done(null, newUser);
+                  }
+                  return done(`Local user with account '${ldapUser.sAMAccountName}' not found`, false);
+              }
             } else {
               done(`Active Directory user with account '${ldapUser.sAMAccountName}' not found`, false);
             }
         } catch (err) {
-            //console.log(err);
             return done(`Active Directory user with account '${username}' not found`, false, err);
         }
     }

@@ -11,6 +11,8 @@ export class LogInMiddleware implements NestMiddleware {
               if (error) {
                   //res.status(HttpStatus.UNAUTHORIZED).json(null);
                 //throw new UnauthorizedException();
+                  console.log('auth failed');
+                  console.log(req.body);
               }
               req.logIn(user, (err) => {
                   if (err) { return next(err); }

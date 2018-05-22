@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../database/postgres.service';
-import { IUser, IAddUser, IEditUser, IDeleteUser } from 'kolenergo';
+import { IUser, IAddUser, IEditUser, IDeleteUser } from '@kolenergo/lib';
 
 @Component()
 export class UsersService {
@@ -55,9 +55,10 @@ export class UsersService {
     async add(user: IAddUser): Promise<IUser | null> {
       const result = await this.postgresService.query(
         'add-user',
-        `SELECT user_add($1, $2, $3, $4, $5, $6, $7)`,
+        `SELECT users_add($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           user.divisionId,
+          user.personalNumber,
           user.firstName,
           user.secondName,
           user.lastName,
@@ -65,7 +66,7 @@ export class UsersService {
           user.email,
           user.activeDirectoryAccount,
         ],
-        'user_add',
+        'users_add',
       );
       return result ? result : null;
     }
@@ -78,10 +79,11 @@ export class UsersService {
     async edit(user: IEditUser): Promise<IUser | null> {
       const result = await this.postgresService.query(
         'edit-user',
-        `SELECT user_edit($1, $2, $3, $4, $5, $6, $7, $8)`,
+        `SELECT user_edit($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           user.id,
           user.divisionId,
+          user.personalNumber,
           user.firstName,
           user.secondName,
           user.lastName,
@@ -89,7 +91,7 @@ export class UsersService {
           user.email,
           user.activeDirectoryAccount,
         ],
-        'user_edit',
+        'users_edit',
       );
       return result ? result : null;
     }
