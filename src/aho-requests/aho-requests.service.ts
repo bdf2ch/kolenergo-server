@@ -62,6 +62,21 @@ export class AhoRequestsService {
     }
 
     /**
+     * Получение заявок по идентфикатору статуса
+     * @param {number} id - Идентификатор статуса заявки
+     * @returns {Promise<IAhoRequest[]>}
+     */
+    async getRequestsByStatusId(id: number): Promise<IAhoRequest[]> {
+        const result = this.postgresService.query(
+            'get-requests-by-status',
+            `SELECT aho_requests_get_by_status_id($1)`,
+            [id],
+            'aho_requests_get_by_status_id',
+        );
+        return result ? result : [];
+    }
+
+    /**
      * Добавление новой заявки
      * @param {IAddAhoRequest} request - Новая заявка
      * @returns {Promise<IAhoRequest | null>}
@@ -69,13 +84,14 @@ export class AhoRequestsService {
     async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
         const result = await this.postgresService.query(
             'add-aho-request',
-            `SELECT aho_requests_add($1, $2, $3, $4, $5)`,
+            `SELECT aho_requests_add($1, $2, $3, $4, $5, $6)`,
             [
                 request.userId,
                 request.type.id,
                 request.status.id,
                 request.comment,
                 request.room,
+                request.officeStuffList,
             ],
             'aho_requests_add',
         );

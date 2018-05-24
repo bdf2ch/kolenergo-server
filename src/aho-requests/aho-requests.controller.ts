@@ -1,4 +1,4 @@
-import {Controller, Post, Get, Body, Param} from '@nestjs/common';
+import {Controller, Post, Get, Body, Param, Query} from '@nestjs/common';
 import { AhoRequestsService } from './aho-requests.service';
 import { IAhoRequestType, IAhoRequest, IAddAhoRequest, IAhoRequestStatus } from '@kolenergo/aho';
 
@@ -19,7 +19,11 @@ export class AhoRequestsController {
     }
 
     @Get('/requests')
-    async getRequests(): Promise<IAhoRequest[]> {
+    async getRequests(@Query('statusId') statusId): Promise<IAhoRequest[]> {
+        if (statusId) {
+            const result = await this.ahoRequestsService.getRequestsByStatusId(statusId);
+            return result;
+        }
         const result = await this.ahoRequestsService.getRequests();
         return result;
     }
@@ -29,6 +33,15 @@ export class AhoRequestsController {
         const result = this.ahoRequestsService.getRequestById(params.id);
         return result;
     }
+
+    /*
+    @Get('/requests/*')
+    async getRequestsByStatusId(@Query('statusId') statusId): Promise<IAhoRequest[]> {
+        console.log('statusId', statusId);
+        const result = this.ahoRequestsService.getRequestsByStatusId(+statusId);
+        return result;
+    }
+    */
 
     @Post('/requests')
     async addRequest(@Body() request: IAddAhoRequest): Promise<IAhoRequest> {
