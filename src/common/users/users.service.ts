@@ -38,11 +38,13 @@ export class UsersService {
    * @param {string} account - Учетная запись Active Directory
    * @returns {Promise<IUser | null>}
    */
-    async getByAccount(account: string): Promise<IUser | null> {
+    async getByAccount(account: string, appCode?: string | null): Promise<IUser | null> {
+        console.log(appCode);
         const result = await this.postgresService.query(
-          '',
-          `SELECT * FROM users WHERE "activeDirectoryAccount" = $1`,
-          [account],
+          'get-user-by-account',
+          `SELECT users_get_by_account($1, $2)`,
+          [account, appCode],
+            'users_get_by_account',
         );
         return result ? result[0] : null;
     }

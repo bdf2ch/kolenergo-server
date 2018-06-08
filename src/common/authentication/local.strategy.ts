@@ -28,7 +28,8 @@ export class AuthenticationStrategy extends Strategy {
             const ldapUser: ILdapUser = await this.ldapService.logIn(username, password);
             console.log('ldap user', ldapUser);
             if (ldapUser) {
-              const user = await this.usersService.getByAccount(ldapUser.sAMAccountName);
+              const user = await this.usersService.getByAccount(ldapUser.sAMAccountName, req.body.appCode);
+              console.log(user);
               if (user) return done(null, user);
               if (!user) {
                   if (req.body.addIfNotExists && req.body.addIfNotExists === true) {
