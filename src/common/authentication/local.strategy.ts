@@ -68,8 +68,8 @@ export class AuthenticationStrategy extends Strategy {
         }
     }
 
-    async deserializeUser(id: number, callback: (error, user) => void): Promise<void> {
-        const user = await this.usersService.getById(id);
+    async deserializeUser(req, id: number, callback: (error, user) => void): Promise<void> {
+        const user = await this.usersService.getById(id, req.query.appCode ? req.query.appCode : null);
         if (user) {
             callback(null, user);
         } else {

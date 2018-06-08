@@ -24,13 +24,14 @@ export class UsersService {
    * @param {number} id - Идентфиикатор пользователя
    * @returns {Promise<IUser | null>}
    */
-    async getById(id: number): Promise<IUser | null> {
+    async getById(id: number, appCode?: string | null): Promise<IUser | null> {
         const result = await this.postgresService.query(
-          '',
-          `SELECT * FROM users WHERE id = $1`,
-          [id],
+          'get-user-by-id',
+          `SELECT users_get_by_id($1, $2)`,
+          [id, appCode],
+          'users_get_by_id',
         );
-        return result ? result[0] : null;
+        return result ? result : null;
     }
 
   /**
@@ -39,14 +40,13 @@ export class UsersService {
    * @returns {Promise<IUser | null>}
    */
     async getByAccount(account: string, appCode?: string | null): Promise<IUser | null> {
-        console.log(appCode);
         const result = await this.postgresService.query(
           'get-user-by-account',
           `SELECT users_get_by_account($1, $2)`,
           [account, appCode],
-            'users_get_by_account',
+          'users_get_by_account',
         );
-        return result ? result[0] : null;
+        return result ? result : null;
     }
 
   /**
