@@ -1,14 +1,20 @@
-import { Controller, Get, HttpStatus, Param, Post, Res } from '@nestjs/common';
+import {Controller, Get, HttpStatus, Param, Post, Query, Res} from '@nestjs/common';
 import { UsersService } from './users.service';
+import {IUser} from '@kolenergo/lib';
 
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @Get()
-    async getAll(@Res() response): Promise<any> {
+    async getAll(@Query('appCode') appCode): Promise<any> {
+        if (appCode) {
+            const result = await this.usersService.getByAppCode(appCode);
+            return result;
+        }
         const result = await this.usersService.getAll();
-        response.status(HttpStatus.OK).json(result);
+        return result;
+        // response.status(HttpStatus.OK).json(result);
     }
 
     @Get(':id')

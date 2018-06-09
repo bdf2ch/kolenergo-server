@@ -49,6 +49,21 @@ export class UsersService {
         return result ? result : null;
     }
 
+    /**
+     * Получение пользователей, задействованных в приложении
+     * @param {string} appCode
+     * @returns {Promise<IUser[]>}
+     */
+    async getByAppCode(appCode: string): Promise<IUser[]> {
+        const result = this.postgresService.query(
+            'get-app-users',
+            `SELECT users_get_by_application_code($1)`,
+            [appCode],
+            'users_get_by_application_code',
+        );
+        return result ? result : [];
+    }
+
   /**
    * Добавление нового пользователя
    * @param {IAddUser} user - Новый пользователь

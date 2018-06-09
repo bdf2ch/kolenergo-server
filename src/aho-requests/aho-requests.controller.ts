@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
 import { AhoRequestsService } from './aho-requests.service';
 import { IAhoRequestType, IAhoRequest, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent } from '@kolenergo/aho';
+import { IUser } from '@kolenergo/lib';
 
 @Controller('aho')
 export class AhoRequestsController {

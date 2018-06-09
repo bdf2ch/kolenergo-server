@@ -1,6 +1,7 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import {IAhoRequest, IAhoRequestType, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent} from '@kolenergo/aho';
+import { IAhoRequest, IAhoRequestType, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent } from '@kolenergo/aho';
+import { IUser } from '@kolenergo/lib';
 
 @Component()
 export class AhoRequestsService {
