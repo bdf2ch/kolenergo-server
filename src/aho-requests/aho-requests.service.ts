@@ -111,4 +111,39 @@ export class AhoRequestsService {
         );
         return result ? result : null;
     }
+
+    /**
+     * Изменение заявки АХО
+     * @param {IAhoRequest} request - Заявка АХО
+     * @returns {Promise<IAhoRequest | null>}
+     */
+    async editRequest(request: IAhoRequest): Promise<IAhoRequest | null> {
+        const result = await this.postgresService.query(
+            'edit-aho-request',
+            `SELECT aho_requests_edit($1, $2, $3, $4)`,
+            [
+                request.id,
+                request.status.id,
+                request.employee ? request.employee.id : 0,
+                request.tasks,
+            ],
+            'aho_requests_edit',
+        );
+        return result ? result : null;
+    }
+
+    /**
+     * Удаление заявки АХО
+     * @param {number} requestId - Идентификатор заявки
+     * @returns {Promise<boolean>}
+     */
+    async deleteRequest(requestId: number): Promise<boolean> {
+        const result = await this.postgresService.query(
+            'delete-request',
+            `SELECT aho_requests_delete($1)`,
+            [requestId],
+            'aho_requests_delete',
+        );
+        return result;
+    }
 }

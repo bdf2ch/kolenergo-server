@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
+import {Controller, Post, Get, Body, Param, Query, Delete, Patch} from '@nestjs/common';
 import { AhoRequestsService } from './aho-requests.service';
 import { IAhoRequestType, IAhoRequest, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent } from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
@@ -38,6 +38,18 @@ export class AhoRequestsController {
     @Get('/requests/:id')
     async getRequestById(@Param() params): Promise<IAhoRequest | null> {
         const result = this.ahoRequestsService.getRequestById(params.id);
+        return result;
+    }
+
+    @Patch('/requests/:id')
+    async editRequest(@Body() request, @Param() params): Promise<IAhoRequest | null> {
+        const result = this.ahoRequestsService.editRequest(request);
+        return result;
+    }
+
+    @Delete('/requests/:id')
+    async deleteRequest(@Param() params): Promise<boolean> {
+        const result = this.ahoRequestsService.deleteRequest(params.id);
         return result;
     }
 
