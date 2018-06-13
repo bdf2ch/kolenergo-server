@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import { IAhoRequest, IAhoRequestType, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent } from '@kolenergo/aho';
+import { IAhoRequest, IAhoRequestType, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent, IAhoRequestComment } from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
 @Component()
@@ -143,6 +143,25 @@ export class AhoRequestsService {
             `SELECT aho_requests_delete($1)`,
             [requestId],
             'aho_requests_delete',
+        );
+        return result;
+    }
+
+  /**
+   * Добавление комментария к заявке
+   * @param {IAhoRequestComment} comment - Комментарий
+   * @returns {Promise<IAhoRequestComment | null>}
+   */
+    async addComment(comment: IAhoRequestComment): Promise<IAhoRequestComment | null> {
+        const result = await this.postgresService.query(
+          'add-aho-request-comment',
+          `SELECT aho_requests_comments_add($1, $2, $3)`,
+          [
+            comment.requestId,
+            comment.userId,
+            comment.content,
+          ],
+          'aho_requests_comments_add',
         );
         return result;
     }

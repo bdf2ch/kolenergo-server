@@ -53,6 +53,12 @@ export class AhoRequestsController {
         return result;
     }
 
+  @Post('/requests/:id/comments')
+  async addComment(@Body() comment, @Param() params): Promise<IAhoRequest | null> {
+    const result = await this.ahoRequestsService.addComment(comment);
+    return result;
+  }
+
     /*
     @Get('/requests/*')
     async getRequestsByStatusId(@Query('statusId') statusId): Promise<IAhoRequest[]> {
