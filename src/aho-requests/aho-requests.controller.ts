@@ -1,6 +1,6 @@
 import {Controller, Post, Get, Body, Param, Query, Delete, Patch} from '@nestjs/common';
 import { AhoRequestsService } from './aho-requests.service';
-import { IAhoRequestType, IAhoRequest, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent } from '@kolenergo/aho';
+import {IAhoRequestType, IAhoRequest, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent, IAhoRequestComment} from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
 @Controller('aho')
@@ -54,7 +54,7 @@ export class AhoRequestsController {
     }
 
   @Post('/requests/:id/comments')
-  async addComment(@Body() comment, @Param() params): Promise<IAhoRequest | null> {
+  async addComment(@Body() comment, @Param() params): Promise<IAhoRequestComment | null> {
     const result = await this.ahoRequestsService.addComment(comment);
     return result;
   }
