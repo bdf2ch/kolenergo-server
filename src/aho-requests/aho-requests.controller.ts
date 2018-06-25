@@ -1,6 +1,14 @@
-import {Controller, Post, Get, Body, Param, Query, Delete, Patch} from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, Delete, Patch} from '@nestjs/common';
 import { AhoRequestsService } from './aho-requests.service';
-import {IAhoRequestType, IAhoRequest, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent, IAhoRequestComment} from '@kolenergo/aho';
+import {
+    IAhoRequestType,
+    IAhoRequest,
+    IAddAhoRequest,
+    IAhoRequestStatus,
+    IAhoRequestTaskContent,
+    IAhoRequestComment,
+    IAhoRequestNeed
+} from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
 @Controller('aho')
@@ -25,10 +33,20 @@ export class AhoRequestsController {
         return result;
     }
 
+    @Get('/needs')
+    async getNeeds(): Promise<IAhoRequestNeed[]> {
+        const result = this.ahoRequestsService.getNeeds();
+        return result;
+    }
+
     @Get('/requests')
-    async getRequests(@Query('statusId') statusId): Promise<IAhoRequest[]> {
+    async getRequests(@Query('statusId') statusId, @Query('employeeId') employeeId): Promise<IAhoRequest[]> {
         if (statusId) {
             const result = await this.ahoRequestsService.getRequestsByStatusId(statusId);
+            return result;
+        }
+        if (employeeId) {
+            const result = await this.ahoRequestsService.getRequestsByEmployeeId(employeeId);
             return result;
         }
         const result = await this.ahoRequestsService.getRequests();

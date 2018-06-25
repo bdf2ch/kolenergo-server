@@ -1,6 +1,14 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import { IAhoRequest, IAhoRequestType, IAddAhoRequest, IAhoRequestStatus, IAhoRequestTaskContent, IAhoRequestComment } from '@kolenergo/aho';
+import {
+    IAhoRequest,
+    IAhoRequestType,
+    IAddAhoRequest,
+    IAhoRequestStatus,
+    IAhoRequestTaskContent,
+    IAhoRequestComment,
+    IAhoRequestNeed
+} from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
 @Component()
@@ -91,6 +99,21 @@ export class AhoRequestsService {
     }
 
     /**
+     * Полученеи заявок по идентфиикатору исполнителя
+     * @param {number} id - Идентификатор исполнителя
+     * @returns {Promise<IAhoRequest[]>}
+     */
+    async getRequestsByEmployeeId(id: number): Promise<IAhoRequest[]> {
+        const result = this.postgresService.query(
+            'get-requests-by-employee',
+            `SELECT aho_requests_get_by_employee_id($1)`,
+            [id],
+            'aho_requests_get_by_employee_id',
+        );
+        return result ? result : [];
+    }
+
+    /**
      * Добавление новой заявки
      * @param {IAddAhoRequest} request - Новая заявка
      * @returns {Promise<IAhoRequest | null>}
@@ -147,22 +170,36 @@ export class AhoRequestsService {
         return result;
     }
 
-  /**
-   * Добавление комментария к заявке
-   * @param {IAhoRequestComment} comment - Комментарий
-   * @returns {Promise<IAhoRequestComment | null>}
-   */
+    /**
+     * Добавление комментария к заявке
+     * @param {IAhoRequestComment} comment - Комментарий
+     * @returns {Promise<IAhoRequestComment | null>}
+     */
     async addComment(comment: IAhoRequestComment): Promise<IAhoRequestComment | null> {
         const result = await this.postgresService.query(
-          'add-aho-request-comment',
-          `SELECT aho_requests_comments_add($1, $2, $3)`,
-          [
-            comment.requestId,
-            comment.userId,
-            comment.content,
-          ],
-          'aho_requests_comments_add',
+            'add-aho-request-comment',
+            `SELECT aho_requests_comments_add($1, $2, $3)`,
+            [
+                comment.requestId,
+                comment.userId,
+                comment.content,
+            ],
+            'aho_requests_comments_add',
         );
         return result;
+    }
+
+    /**
+     * Получение потребностей в материалах
+     * @returns {Promise<IAhoRequestNeed>}
+     */
+    async getNeeds(): Promise<IAhoRequestNeed[]> {
+        const result = this.postgresService.query(
+            'aho-requests-get-needs',
+            `SELECT aho_requests_tasks_content_get_needs()`,
+            [],
+            'aho_requests_tasks_content_get_needs',
+        );
+        return result ? result : [];
     }
 }
