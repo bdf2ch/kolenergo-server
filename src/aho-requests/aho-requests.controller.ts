@@ -7,7 +7,7 @@ import {
     IAhoRequestStatus,
     IAhoRequestTaskContent,
     IAhoRequestComment,
-    IAhoRequestNeed
+    IAhoRequestNeed,
 } from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
@@ -43,7 +43,13 @@ export class AhoRequestsController {
     exportNeeds() {}
 
     @Get('/requests')
-    async getRequests(@Query('statusId') statusId, @Query('employeeId') employeeId): Promise<IAhoRequest[]> {
+    async getRequests(@Query('start') start, @Query('end') end, @Query('employeeId') employeeId, @Query('requestTypeId') requestTypeId, @Query('requestStatusId') requestStatusId): Promise<IAhoRequest[]> {
+        console.log('start', start);
+      console.log('end', end);
+      console.log('employeeId', employeeId);
+      console.log('requestTypeId', requestTypeId);
+      console.log('requestStatusId', requestStatusId);
+        /*
         if (statusId) {
             const result = await this.ahoRequestsService.getRequestsByStatusId(statusId);
             return result;
@@ -52,7 +58,14 @@ export class AhoRequestsController {
             const result = await this.ahoRequestsService.getRequestsByEmployeeId(employeeId);
             return result;
         }
-        const result = await this.ahoRequestsService.getRequests();
+        */
+        const result = await this.ahoRequestsService.getRequests(
+          start,
+          end,
+          employeeId,
+          requestTypeId,
+          requestStatusId,
+        );
         return result;
     }
 

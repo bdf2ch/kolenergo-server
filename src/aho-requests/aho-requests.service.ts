@@ -60,11 +60,23 @@ export class AhoRequestsService {
      * Получение всех заявок
      * @returns {Promise<IAhoRequest[]>}
      */
-    async getRequests(): Promise<IAhoRequest[]> {
+    async getRequests(
+      start: number,
+      end: number,
+      employeeId: number,
+      requestTypeId: number,
+      requestStatusId: number,
+    ): Promise<IAhoRequest[]> {
         const result = await this.postgresService.query(
             'get-aho-requests',
-            `SELECT aho_requests_get_all()`,
-            [],
+            `SELECT aho_requests_get_all($1, $2, $3, $4, $5)`,
+            [
+              start,
+              end,
+              employeeId,
+              requestTypeId,
+              requestStatusId,
+            ],
             'aho_requests_get_all',
         );
         return result ? result : [];
@@ -123,12 +135,11 @@ export class AhoRequestsService {
     async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
         const result = await this.postgresService.query(
             'add-aho-request',
-            `SELECT aho_requests_add($1, $2, $3, $4, $5, $6)`,
+            `SELECT aho_requests_add($1, $2, $3, $4, $5)`,
             [
                 request.user.id,
                 request.type.id,
                 request.status.id,
-                request.comment,
                 request.room,
                 request.tasks,
             ],
