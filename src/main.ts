@@ -1,6 +1,8 @@
 import * as proccess from 'process';
+import * as path from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as express from 'express';
 import * as cors from 'cors';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
@@ -31,6 +33,7 @@ async function bootstrap() {
       }),
       passport.initialize(),
       passport.session(),
+      ('static', express.static(path.join(__dirname, 'static'))),
   );
   await app.listen(3000);
 }

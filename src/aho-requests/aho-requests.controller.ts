@@ -39,6 +39,9 @@ export class AhoRequestsController {
         return result;
     }
 
+    @Get('/needs/export')
+    exportNeeds() {}
+
     @Get('/requests')
     async getRequests(@Query('statusId') statusId, @Query('employeeId') employeeId): Promise<IAhoRequest[]> {
         if (statusId) {

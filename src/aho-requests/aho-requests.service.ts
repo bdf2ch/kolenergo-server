@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
 import {
@@ -10,6 +11,7 @@ import {
     IAhoRequestNeed
 } from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
+import * as excel from 'excel4node';
 
 @Component()
 export class AhoRequestsService {
@@ -201,5 +203,17 @@ export class AhoRequestsService {
             'aho_requests_tasks_content_get_needs',
         );
         return result ? result : [];
+    }
+
+    /**
+     * Получение выгрузки потребностей в материалах
+     * @returns {Promise<string>}
+     */
+    async exportNeeds(): Promise<string> {
+        let wb = new excel.Workbook();
+        let sheet = wb.addWorksheet('Потребность в материалах');
+        await wb.write('export.xlsx');
+        const url = path.resolve('./export.xlsx');
+        return url;
     }
 }
