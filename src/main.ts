@@ -1,4 +1,4 @@
-import * as proccess from 'process';
+import * as process from 'process';
 import * as path from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -9,10 +9,20 @@ import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
 
-proccess.on('uncaughtException', (err) => {
-  console.error(err.stack);
-  console.log("Node NOT Exiting...");
-});
+
+process
+    .on('uncaughtException', (err) => {
+        console.error(err.stack);
+        console.log("Node NOT Exiting...");
+    })
+    .on('ECONNRESET', (err) => {
+        console.error(err.stack);
+        console.log("Node NOT Exiting...");
+    })
+    .on('ETIMEDOUT', (err) => {
+        console.error(err.stack);
+        console.log("Node NOT Exiting...");
+    });
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -33,8 +43,9 @@ async function bootstrap() {
       }),
       passport.initialize(),
       passport.session(),
-      ('static', express.static(path.join(__dirname, 'static'))),
+      express.static(path.join(__dirname, 'static')),
   );
+  app.use('/static', express.static('./static'));
   await app.listen(3000);
 }
 bootstrap();

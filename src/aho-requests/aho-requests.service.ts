@@ -8,14 +8,15 @@ import {
     IAhoRequestStatus,
     IAhoRequestTaskContent,
     IAhoRequestComment,
-    IAhoRequestNeed
+    IAhoRequestNeed, IAhoRequestTask
 } from '@kolenergo/aho';
-import { IUser } from '@kolenergo/lib';
 import * as excel from 'excel4node';
+import { MailService } from '../common/mail/mail.service';
 
 @Component()
 export class AhoRequestsService {
-    constructor(private readonly postgresService: PostgresService) {}
+    constructor(private readonly postgresService: PostgresService,
+                private readonly mailService: MailService) {}
 
     /**
      * Получение все типов заявок АХО
@@ -80,6 +81,107 @@ export class AhoRequestsService {
             'aho_requests_get_all',
         );
         return result ? result : [];
+    }
+
+    /**
+     * "Экспорт заявок АХО в Excel
+     * @param {number} start - Дата начала периода
+     * @param {number} end - Дата окончания периода
+     * @param {number} employeeId - Идентификатор исполнителя
+     * @param {number} requestTypeId - Идентификатор типа заявки
+     * @param {number} requestStatusId - Идентификатор статуса заявки
+     * @returns {Promise<string>}
+     */
+    async exportRequests(
+        start: number,
+        end: number,
+        employeeId: number,
+        requestTypeId: number,
+        requestStatusId: number,
+        ): Promise<string> {
+        this.mailService.send();
+        const wb = new excel.Workbook();
+        const sheet = wb.addWorksheet('Заявки АХО');
+        const border = {
+            style: 'thin',
+            color: 'black',
+        };
+        const borderedStyle = wb.createStyle({
+            border: {
+                left: border,
+                top: border,
+                right: border,
+                bottom: border,
+            },
+        });
+        const contentStyle = wb.createStyle({
+            alignment: {
+                horizontal: 'left',
+                vertical: 'top',
+            },
+        });
+        sheet.row(1).setHeight(20);
+        sheet.cell(1, 1).string('#').style(borderedStyle);
+        sheet.column(1).setWidth(5);
+        sheet.cell(1, 2).string('Дата подачи').style(borderedStyle);
+        sheet.column(2).setWidth(15);
+        sheet.cell(1, 3).string('Заявитель').style(borderedStyle);
+        sheet.column(3).setWidth(40);
+        sheet.cell(1, 4).string('Кабинет').style(borderedStyle);
+        sheet.column(4).setWidth(10);
+        sheet.cell(1, 5).string('Содержание').style(borderedStyle);
+        sheet.column(5).setWidth(35);
+        sheet.cell(1, 6).string('Исполнитель').style(borderedStyle);
+        sheet.column(6).setWidth(40);
+        sheet.cell(1, 7).string('Статус').style(borderedStyle);
+        sheet.column(7).setWidth(15);
+        const requests = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId);
+        if (requests) {
+            let row = 2;
+            requests.forEach((request: IAhoRequest) => {
+                sheet
+                    .cell(row, 1, row + request.tasks.length - 1, 1, true)
+                    .number(request.id)
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row, 2, row + request.tasks.length - 1, 2, true)
+                    .date(new Date(request.dateCreated))
+                    .style(borderedStyle)
+                    .style(contentStyle)
+                    .style({ numberFormat: 'dd.mm.yyyy' });
+                sheet
+                    .cell(row, 3, row + request.tasks.length - 1, 3, true)
+                    .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`)
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row, 4,  row + request.tasks.length - 1, 4, true)
+                    .string(request.room)
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                request.tasks.forEach((task: IAhoRequestTask, index: number) => {
+                    sheet
+                        .cell(row, 5)
+                        .string(`${task.content.title} ${request.type.isCountable ? ' - ' + task.count.toString() : ''}`)
+                        .style({border: {bottom: {style: index === request.tasks.length - 1 ? 'thin' : 'none', color: 'black'}}});
+                    row++;
+                });
+                sheet
+                    .cell(row - request.tasks.length, 6, row - 1, 6, true)
+                    .string(request.employee ? `${request.employee.firstName} ${request.employee.secondName} ${request.employee.lastName}` : 'Не задан')
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row - request.tasks.length, 7, row - 1, 7, true)
+                    .string(request.status.title)
+                    .style(contentStyle)
+                    .style(borderedStyle);
+            });
+        }
+        await wb.write('aho.xlsx');
+        const url = path.resolve('./aho.xlsx');
+        return url;
     }
 
     /**
@@ -221,10 +323,48 @@ export class AhoRequestsService {
      * @returns {Promise<string>}
      */
     async exportNeeds(): Promise<string> {
-        let wb = new excel.Workbook();
-        let sheet = wb.addWorksheet('Потребность в материалах');
-        await wb.write('export.xlsx');
-        const url = path.resolve('./export.xlsx');
+        const wb = new excel.Workbook();
+        const sheet = wb.addWorksheet('Потребность в материалах');
+        const needs = await this.getNeeds();
+        if (needs) {
+            const now = new Date();
+            const headerStyle = wb.createStyle({
+                font: {
+                    size: 18,
+                    bold: true,
+                },
+                alignment: {
+                    vertical: 'center',
+                },
+            });
+            const border = {
+                style: 'thin',
+                color: 'black',
+            };
+            const borderedStyle = wb.createStyle({
+                border: {
+                    left: border,
+                    top: border,
+                    right: border,
+                    bottom: border,
+                },
+            });
+            sheet.cell(1, 1, 1, 3, true).string(`Потребность в материалах на ${now.getDate() < 10 ? '0' + now.getDate().toString() : now.getDate()}.${(now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1).toString() : (now.getMonth() + 1).toString()}.${now.getFullYear()}`,).style(headerStyle);
+            sheet.row(1).setHeight(40);
+            sheet.column(1).setWidth(5);
+            sheet.column(2).setWidth(50);
+            sheet.column(3).setWidth(15);
+            sheet.cell(2, 1).string('#').style(borderedStyle);
+            sheet.cell(2, 2).string('Наименование').style(borderedStyle);
+            sheet.cell(2, 3).string('Количество').style(borderedStyle);
+            needs.forEach((item: IAhoRequestNeed, index: number) => {
+                sheet.cell(index + 3, 1).number(index + 1).style(borderedStyle);
+                sheet.cell(index + 3, 2).string(item.content.title).style(borderedStyle);
+                sheet.cell(index + 3, 3).string(`${item.total} ${item.content.boxing ? item.content.boxing : 'штук'}`).style(borderedStyle);
+            });
+        }
+        await wb.write('needs.xlsx');
+        const url = path.resolve('./needs.xlsx');
         return url;
     }
 }

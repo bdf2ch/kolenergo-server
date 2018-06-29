@@ -12,16 +12,13 @@ export class ExportNeedsMiddleware implements NestMiddleware {
     async resolve(...args: any[]): AsyncExpressMiddleware {
         return async (req, res: Response, next) => {
             const url = await this.ahoRequestService.exportNeeds();
-            console.log(url);
-            fs.copyFile(url, path.resolve('./static/export.xlsx'), (error) => {
-                console.log('file copied');
+            fs.copyFile(url, path.resolve('./static/needs.xlsx'), (error) => {
+                if (error) {
+                    console.log(error);
+                }
+                res.json('static/needs.xlsx');
             });
-            //res.setHeader('Content-Description', 'File Transfer');
-            //res.setHeader('Cache-Control', 'max-age=0');
-            //res.setHeader('Content-Transfer-Encoding', 'binary');
-            //res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            //res.download(url, 'export.xlsx');
-            next();
+
         };
     }
 }

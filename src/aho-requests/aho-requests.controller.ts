@@ -43,22 +43,13 @@ export class AhoRequestsController {
     exportNeeds() {}
 
     @Get('/requests')
-    async getRequests(@Query('start') start, @Query('end') end, @Query('employeeId') employeeId, @Query('requestTypeId') requestTypeId, @Query('requestStatusId') requestStatusId): Promise<IAhoRequest[]> {
-        console.log('start', start);
-      console.log('end', end);
-      console.log('employeeId', employeeId);
-      console.log('requestTypeId', requestTypeId);
-      console.log('requestStatusId', requestStatusId);
-        /*
-        if (statusId) {
-            const result = await this.ahoRequestsService.getRequestsByStatusId(statusId);
-            return result;
-        }
-        if (employeeId) {
-            const result = await this.ahoRequestsService.getRequestsByEmployeeId(employeeId);
-            return result;
-        }
-        */
+    async getRequests(
+        @Query('start') start,
+        @Query('end') end,
+        @Query('employeeId') employeeId,
+        @Query('requestTypeId') requestTypeId,
+        @Query('requestStatusId') requestStatusId
+    ): Promise<IAhoRequest[]> {
         const result = await this.ahoRequestsService.getRequests(
           start,
           end,
@@ -68,6 +59,9 @@ export class AhoRequestsController {
         );
         return result;
     }
+
+    @Get('/requests/export')
+    exportRequests() {}
 
     @Get('/requests/:id')
     async getRequestById(@Param() params): Promise<IAhoRequest | null> {
