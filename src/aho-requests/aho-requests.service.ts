@@ -51,7 +51,7 @@ export class AhoRequestsService {
     async getRequestTasksContent(): Promise<IAhoRequestTaskContent[]> {
         const result = this.postgresService.query(
             'get-aho-requests-tasks-content',
-            `SELECT * FROM aho_requests_tasks_content`,
+            `SELECT * FROM aho_requests_tasks_content ORDER BY title DESC`,
             [],
         );
         return result ? result : [];
@@ -79,6 +79,21 @@ export class AhoRequestsService {
               requestStatusId,
             ],
             'aho_requests_get_all',
+        );
+        return result ? result : [];
+    }
+
+    /**
+     * Поиск заявок АХО
+     * @param {string} query - Условие поиска
+     * @returns {Promise<IAhoRequest[]>}
+     */
+    async searchRequests(query: string): Promise<IAhoRequest[]> {
+        const result = this.postgresService.query(
+            'search-aho-requests',
+            `SELECT aho_requests_search($1)`,
+            [query],
+            'aho_requests_search',
         );
         return result ? result : [];
     }
@@ -138,43 +153,43 @@ export class AhoRequestsService {
         const requests = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId);
         if (requests) {
             let row = 2;
-            requests.forEach((request: IAhoRequest) => {
+            requests.forEach((req: IAhoRequest) => {
                 sheet
-                    .cell(row, 1, row + request.tasks.length - 1, 1, true)
-                    .number(request.id)
+                    .cell(row, 1, row + req.tasks.length - 1, 1, true)
+                    .number(req.id)
                     .style(contentStyle)
                     .style(borderedStyle);
                 sheet
-                    .cell(row, 2, row + request.tasks.length - 1, 2, true)
-                    .date(new Date(request.dateCreated))
+                    .cell(row, 2, row + req.tasks.length - 1, 2, true)
+                    .date(new Date(req.dateCreated))
                     .style(borderedStyle)
                     .style(contentStyle)
                     .style({ numberFormat: 'dd.mm.yyyy' });
                 sheet
-                    .cell(row, 3, row + request.tasks.length - 1, 3, true)
-                    .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`)
+                    .cell(row, 3, row + req.tasks.length - 1, 3, true)
+                    .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`)
                     .style(contentStyle)
                     .style(borderedStyle);
                 sheet
-                    .cell(row, 4,  row + request.tasks.length - 1, 4, true)
-                    .string(request.room)
+                    .cell(row, 4,  row + req.tasks.length - 1, 4, true)
+                    .string(req.room)
                     .style(contentStyle)
                     .style(borderedStyle);
-                request.tasks.forEach((task: IAhoRequestTask, index: number) => {
+                req.tasks.forEach((task: IAhoRequestTask, index: number) => {
                     sheet
                         .cell(row, 5)
-                        .string(`${task.content.title} ${request.type.isCountable ? ' - ' + task.count.toString() : ''}`)
-                        .style({border: {bottom: {style: index === request.tasks.length - 1 ? 'thin' : 'none', color: 'black'}}});
+                        .string(`${task.content.title} ${req.type.isCountable ? ' - ' + task.count.toString() : ''}`)
+                        .style({border: {bottom: {style: index === req.tasks.length - 1 ? 'thin' : 'none', color: 'black'}}});
                     row++;
                 });
                 sheet
-                    .cell(row - request.tasks.length, 6, row - 1, 6, true)
-                    .string(request.employee ? `${request.employee.firstName} ${request.employee.secondName} ${request.employee.lastName}` : 'Не задан')
+                    .cell(row - req.tasks.length, 6, row - 1, 6, true)
+                    .string(req.employee ? `${req.employee.firstName} ${req.employee.secondName} ${req.employee.lastName}` : 'Не задан')
                     .style(contentStyle)
                     .style(borderedStyle);
                 sheet
-                    .cell(row - request.tasks.length, 7, row - 1, 7, true)
-                    .string(request.status.title)
+                    .cell(row - req.tasks.length, 7, row - 1, 7, true)
+                    .string(req.status.title)
                     .style(contentStyle)
                     .style(borderedStyle);
             });

@@ -48,16 +48,16 @@ export class AhoRequestsController {
         @Query('end') end,
         @Query('employeeId') employeeId,
         @Query('requestTypeId') requestTypeId,
-        @Query('requestStatusId') requestStatusId
+        @Query('requestStatusId') requestStatusId,
+        @Query('search') search,
     ): Promise<IAhoRequest[]> {
-        const result = await this.ahoRequestsService.getRequests(
-          start,
-          end,
-          employeeId,
-          requestTypeId,
-          requestStatusId,
-        );
-        return result;
+        if (search) {
+            const result = await this.ahoRequestsService.searchRequests(search);
+            return result;
+        } else {
+            const result = await this.ahoRequestsService.getRequests(start, end, employeeId, requestTypeId, requestStatusId);
+            return result;
+        }
     }
 
     @Get('/requests/export')
@@ -77,15 +77,16 @@ export class AhoRequestsController {
 
     @Delete('/requests/:id')
     async deleteRequest(@Param() params): Promise<boolean> {
+        console.log('edit request', params);
         const result = this.ahoRequestsService.deleteRequest(params.id);
         return result;
     }
 
-  @Post('/requests/:id/comments')
-  async addComment(@Body() comment, @Param() params): Promise<IAhoRequestComment | null> {
-    const result = await this.ahoRequestsService.addComment(comment);
-    return result;
-  }
+    @Post('/requests/:id/comments')
+    async addComment(@Body() comment, @Param() params): Promise<IAhoRequestComment | null> {
+        const result = await this.ahoRequestsService.addComment(comment);
+        return result;
+      }
 
     /*
     @Get('/requests/*')
