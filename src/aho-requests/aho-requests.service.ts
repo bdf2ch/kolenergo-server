@@ -51,7 +51,7 @@ export class AhoRequestsService {
     async getRequestTasksContent(): Promise<IAhoRequestTaskContent[]> {
         const result = this.postgresService.query(
             'get-aho-requests-tasks-content',
-            `SELECT * FROM aho_requests_tasks_content ORDER BY title DESC`,
+            `SELECT * FROM aho_requests_tasks_content ORDER BY title ASC`,
             [],
         );
         return result ? result : [];

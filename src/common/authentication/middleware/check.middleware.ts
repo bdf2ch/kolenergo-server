@@ -8,6 +8,7 @@ export class CheckMiddleware implements NestMiddleware {
       if (req.isAuthenticated()) {
         res.json(req.user);
       } else {
+        // res.send(null);
         throw new UnauthorizedException('User not authorized');
       }
       next();
