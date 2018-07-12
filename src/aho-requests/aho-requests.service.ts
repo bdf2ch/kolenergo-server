@@ -252,12 +252,13 @@ export class AhoRequestsService {
     async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
         const result = await this.postgresService.query(
             'add-aho-request',
-            `SELECT aho_requests_add($1, $2, $3, $4, $5)`,
+            `SELECT aho_requests_add($1, $2, $3, $4, $5, $6)`,
             [
                 request.user.id,
                 request.type.id,
                 request.status.id,
                 request.room,
+                new Date(request.dateExpires).getTime(),
                 request.tasks,
             ],
             'aho_requests_add',

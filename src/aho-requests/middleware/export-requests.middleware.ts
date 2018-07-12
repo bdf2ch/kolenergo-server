@@ -17,14 +17,7 @@ export class ExportRequestsMiddleware implements NestMiddleware {
             const requestTypeId = req.query.requestTypeId;
             const requestStatusId = req.query.requestStatusId;
             const url = await this.ahoRequestService.exportRequests(start, end, employeeId, requestTypeId, requestStatusId);
-            fs.copyFile(url, path.resolve('./static/aho.xlsx'), (error) => {
-                if (error) {
-                    console.log(error);
-                }
-                res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-                res.json('static/aho.xlsx');
-            });
-
+            res.download(url);
         };
     }
 }
