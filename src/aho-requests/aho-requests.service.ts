@@ -12,6 +12,7 @@ import {
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
+import {User} from '@kolenergo/lib';
 
 @Component()
 export class AhoRequestsService {
@@ -182,13 +183,16 @@ export class AhoRequestsService {
                         .style({border: {bottom: {style: index === req.tasks.length - 1 ? 'thin' : 'none', color: 'black'}}});
                     row++;
                 });
+                req.employees.forEach((employee: User) => {
+                    sheet
+                        .cell(row - req.tasks.length, 6, row - 1, 6, true)
+                        .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`)
+                        .style(contentStyle)
+                        .style(borderedStyle);
+                    row++;
+                });
                 sheet
-                    .cell(row - req.tasks.length, 6, row - 1, 6, true)
-                    .string(req.employee ? `${req.employee.firstName} ${req.employee.secondName} ${req.employee.lastName}` : 'Не задан')
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                sheet
-                    .cell(row - req.tasks.length, 7, row - 1, 7, true)
+                    .cell(row - req.employees.length, 7, row - 1, 7, true)
                     .string(req.status.title)
                     .style(contentStyle)
                     .style(borderedStyle);
@@ -212,36 +216,6 @@ export class AhoRequestsService {
             'aho_requests_get_by_id',
         );
         return result ? result : null;
-    }
-
-    /**
-     * Получение заявок по идентфикатору статуса
-     * @param {number} id - Идентификатор статуса заявки
-     * @returns {Promise<IAhoRequest[]>}
-     */
-    async getRequestsByStatusId(id: number): Promise<IAhoRequest[]> {
-        const result = this.postgresService.query(
-            'get-requests-by-status',
-            `SELECT aho_requests_get_by_status_id($1)`,
-            [id],
-            'aho_requests_get_by_status_id',
-        );
-        return result ? result : [];
-    }
-
-    /**
-     * Полученеи заявок по идентфиикатору исполнителя
-     * @param {number} id - Идентификатор исполнителя
-     * @returns {Promise<IAhoRequest[]>}
-     */
-    async getRequestsByEmployeeId(id: number): Promise<IAhoRequest[]> {
-        const result = this.postgresService.query(
-            'get-requests-by-employee',
-            `SELECT aho_requests_get_by_employee_id($1)`,
-            [id],
-            'aho_requests_get_by_employee_id',
-        );
-        return result ? result : [];
     }
 
     /**
@@ -278,7 +252,7 @@ export class AhoRequestsService {
             [
                 request.id,
                 request.status.id,
-                request.employee ? request.employee.id : 0,
+                request.employees,
                 request.tasks,
             ],
             'aho_requests_edit',
@@ -365,7 +339,10 @@ export class AhoRequestsService {
                     bottom: border,
                 },
             });
-            sheet.cell(1, 1, 1, 3, true).string(`Потребность в материалах на ${now.getDate() < 10 ? '0' + now.getDate().toString() : now.getDate()}.${(now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1).toString() : (now.getMonth() + 1).toString()}.${now.getFullYear()}`,).style(headerStyle);
+            sheet
+                .cell(1, 1, 1, 3, true)
+                .string(`Потребность в материалах на ${now.getDate() < 10 ? '0' + now.getDate().toString() : now.getDate()}.${(now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1).toString() : (now.getMonth() + 1).toString()}.${now.getFullYear()}`)
+                .style(headerStyle);
             sheet.row(1).setHeight(40);
             sheet.column(1).setWidth(5);
             sheet.column(2).setWidth(50);
