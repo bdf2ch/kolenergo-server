@@ -224,9 +224,10 @@ export class AhoRequestsService {
      * @returns {Promise<IAhoRequest | null>}
      */
     async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
+        console.log(request);
         const result = await this.postgresService.query(
             'add-aho-request',
-            `SELECT aho_requests_add($1, $2, $3, $4, $5, $6)`,
+            `SELECT aho_requests_add($1, $2, $3, $4, $5, $6, $7)`,
             [
                 request.user.id,
                 request.type.id,
@@ -234,6 +235,7 @@ export class AhoRequestsService {
                 request.room,
                 new Date(request.dateExpires).getTime(),
                 request.tasks,
+                request.employees,
             ],
             'aho_requests_add',
         );
