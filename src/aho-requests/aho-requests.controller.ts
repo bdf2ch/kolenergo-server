@@ -7,7 +7,7 @@ import {
     IAhoRequestStatus,
     IAhoRequestTaskContent,
     IAhoRequestComment,
-    IAhoRequestNeed,
+    IAhoRequestNeed, AhoRequestRejectReason,
 } from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
@@ -24,6 +24,12 @@ export class AhoRequestsController {
     @Get('/statuses')
     async getRequestStatuses(): Promise<IAhoRequestStatus[]> {
         const result = this.ahoRequestsService.getRequestStatuses();
+        return result;
+    }
+
+    @Get('/reject-reasons')
+    async getRejectReasons(): Promise<AhoRequestRejectReason[]> {
+        const result = this.ahoRequestsService.getRequestRejectReasons();
         return result;
     }
 

@@ -8,7 +8,7 @@ import {
     IAhoRequestStatus,
     IAhoRequestTaskContent,
     IAhoRequestComment,
-    IAhoRequestNeed, IAhoRequestTask
+    IAhoRequestNeed, IAhoRequestTask, IAhoRequestRejectReason,
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
@@ -53,6 +53,19 @@ export class AhoRequestsService {
         const result = this.postgresService.query(
             'get-aho-requests-tasks-content',
             `SELECT * FROM aho_requests_tasks_content ORDER BY title ASC`,
+            [],
+        );
+        return result ? result : [];
+    }
+
+    /**
+     * Получение списка причин отклонения заявок
+     * @returns {Promise<IAhoRequestRejectReason[]>}
+     */
+    async getRequestRejectReasons(): Promise<IAhoRequestRejectReason[]> {
+        const result = await this.postgresService.query(
+            'get-aho-request-reject-reasons',
+            'SELECT * FROM aho_requests_reject_reasons',
             [],
         );
         return result ? result : [];
@@ -275,6 +288,12 @@ export class AhoRequestsService {
             'aho_requests_delete',
         );
         return result;
+    }
+
+    async rejectRequest(): Promise<IAhoRequest | null> {
+        const result = this.postgresService.query(
+
+        );
     }
 
     /**
