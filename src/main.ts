@@ -9,7 +9,6 @@ import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
 
-
 process
     .on('uncaughtException', (err) => {
         console.error(err.stack);
@@ -43,9 +42,7 @@ async function bootstrap() {
       }),
       passport.initialize(),
       passport.session(),
-      express.static(path.join(__dirname, 'static')),
   );
-  app.use('/static', express.static('./static'));
   await app.listen(3000);
 }
 bootstrap();

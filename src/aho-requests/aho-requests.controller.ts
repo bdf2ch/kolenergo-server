@@ -7,7 +7,7 @@ import {
     IAhoRequestStatus,
     IAhoRequestTaskContent,
     IAhoRequestComment,
-    IAhoRequestNeed, AhoRequestRejectReason,
+    IAhoRequestNeed, AhoRequestRejectReason, AhoRequest,
 } from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
@@ -64,6 +64,18 @@ export class AhoRequestsController {
             const result = await this.ahoRequestsService.getRequests(start, end, employeeId, requestTypeId, requestStatusId);
             return result;
         }
+    }
+
+    @Post('/requests/reject')
+    async rejectRequest(@Body() request): Promise<IAhoRequest | null> {
+        const result = await this.ahoRequestsService.rejectRequest(request);
+        return result;
+    }
+
+    @Post('/requests/resume')
+    async resumeRequest(@Body() request): Promise<IAhoRequest | null> {
+        const result = await this.ahoRequestsService.resumeRequest(request);
+        return result;
     }
 
     @Get('/requests/export')

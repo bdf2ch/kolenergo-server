@@ -83,7 +83,7 @@ export class AhoRequestsService {
       requestStatusId: number,
     ): Promise<IAhoRequest[]> {
         const result = await this.postgresService.query(
-            'get-aho-requests',
+            'aho-requests-get',
             `SELECT aho_requests_get_all($1, $2, $3, $4, $5)`,
             [
               start,
@@ -104,7 +104,7 @@ export class AhoRequestsService {
      */
     async searchRequests(query: string): Promise<IAhoRequest[]> {
         const result = this.postgresService.query(
-            'search-aho-requests',
+            'aho-requests-search',
             `SELECT aho_requests_search($1)`,
             [query],
             'aho_requests_search',
@@ -113,7 +113,7 @@ export class AhoRequestsService {
     }
 
     /**
-     * "Экспорт заявок АХО в Excel
+     * Экспорт заявок АХО в Excel
      * @param {number} start - Дата начала периода
      * @param {number} end - Дата окончания периода
      * @param {number} employeeId - Идентификатор исполнителя
@@ -223,7 +223,7 @@ export class AhoRequestsService {
      */
     async getRequestById(id: number): Promise<IAhoRequest | null> {
         const result = this.postgresService.query(
-            'get-request-by-id',
+            'aho-requests-get-by-id',
             `SELECT aho_requests_get_by_id($1)`,
             [id],
             'aho_requests_get_by_id',
@@ -237,9 +237,8 @@ export class AhoRequestsService {
      * @returns {Promise<IAhoRequest | null>}
      */
     async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
-        console.log(request);
         const result = await this.postgresService.query(
-            'add-aho-request',
+            'aho-requests-add',
             `SELECT aho_requests_add($1, $2, $3, $4, $5, $6, $7)`,
             [
                 request.user.id,
@@ -261,12 +260,18 @@ export class AhoRequestsService {
      * @returns {Promise<IAhoRequest | null>}
      */
     async editRequest(request: IAhoRequest): Promise<IAhoRequest | null> {
+        let requestStatusId = 3;
+        request.tasks.forEach((task: IAhoRequestTask) => {
+           if (!task.done) {
+               requestStatusId = 2;
+           }
+        });
         const result = await this.postgresService.query(
-            'edit-aho-request',
+            'aho-requests-edit',
             `SELECT aho_requests_edit($1, $2, $3, $4)`,
             [
                 request.id,
-                request.status.id,
+                requestStatusId,
                 request.employees,
                 request.tasks,
             ],
@@ -282,7 +287,7 @@ export class AhoRequestsService {
      */
     async deleteRequest(requestId: number): Promise<boolean> {
         const result = await this.postgresService.query(
-            'delete-request',
+            'aho-requests-delete',
             `SELECT aho_requests_delete($1)`,
             [requestId],
             'aho_requests_delete',
@@ -290,10 +295,33 @@ export class AhoRequestsService {
         return result;
     }
 
-    async rejectRequest(): Promise<IAhoRequest | null> {
+    /**
+     * Отклонение заявки АХО
+     * @param {IAhoRequest} request - Заявка АХО
+     * @returns {Promise<IAhoRequest | null>}
+     */
+    async rejectRequest(request: IAhoRequest): Promise<IAhoRequest | null> {
         const result = this.postgresService.query(
-
+            'aho-requests-reject',
+            `SELECT aho_requests_reject($1, $2)`,
+            [request.id, request.rejectReason.id],
+            'aho_requests_reject',
         );
+        return result ? result : null;
+    }
+
+    /**
+     * Возобновление заявки АХО
+     * @param request (IAhoRequest) - Заявка АХО
+     */
+    async resumeRequest(request: IAhoRequest): Promise<IAhoRequest | null> {
+        const result = await this.postgresService.query(
+            'aho-requests-resume',
+            `SELECT aho_requests_resume($1)`,
+            [request.id],
+            'aho_requests_resume',
+        );
+        return result ? result : null;
     }
 
     /**
@@ -303,7 +331,7 @@ export class AhoRequestsService {
      */
     async addComment(comment: IAhoRequestComment): Promise<IAhoRequestComment | null> {
         const result = await this.postgresService.query(
-            'add-aho-request-comment',
+            'aho-requests-add-comment',
             `SELECT aho_requests_comments_add($1, $2, $3)`,
             [
                 comment.requestId,
@@ -362,7 +390,9 @@ export class AhoRequestsService {
             });
             sheet
                 .cell(1, 1, 1, 3, true)
-                .string(`Потребность в материалах на ${now.getDate() < 10 ? '0' + now.getDate().toString() : now.getDate()}.${(now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1).toString() : (now.getMonth() + 1).toString()}.${now.getFullYear()}`)
+                .string(`Потребность в материалах на ${now.getDate() < 10
+                    ? '0' + now.getDate().toString() : now.getDate()}.${(now.getMonth() + 1) < 10
+                        ? '0' + (now.getMonth() + 1).toString() : (now.getMonth() + 1).toString()}.${now.getFullYear()}`)
                 .style(headerStyle);
             sheet.row(1).setHeight(40);
             sheet.column(1).setWidth(5);
