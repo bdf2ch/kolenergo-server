@@ -12,7 +12,7 @@ import {
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
-import {User} from '@kolenergo/lib';
+import {IServerResponse, User} from '@kolenergo/lib';
 
 @Component()
 export class AhoRequestsService {
@@ -81,20 +81,44 @@ export class AhoRequestsService {
       employeeId: number,
       requestTypeId: number,
       requestStatusId: number,
-    ): Promise<IAhoRequest[]> {
-        const result = await this.postgresService.query(
+      page?: number,
+      itemsOnPage?: number,
+    ): Promise<IServerResponse<IAhoRequest[]>> {
+        const requests = await this.postgresService.query(
             'aho-requests-get',
-            `SELECT aho_requests_get_all($1, $2, $3, $4, $5)`,
+            `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7)`,
             [
               start,
               end,
               employeeId,
               requestTypeId,
-              requestStatusId,
+                requestStatusId,
+                page,
+                itemsOnPage,
             ],
             'aho_requests_get_all',
         );
-        return result ? result : [];
+        const count = await this.getRequestsCount();
+        const result: IServerResponse<IAhoRequest[]> = {
+            data: requests ? requests : [],
+            meta: {
+                totalRequests: count ? count : 0,
+            },
+        };
+        return result;
+    }
+
+    /**
+     * Получение общего количества заявок
+     */
+    async getRequestsCount(): Promise<number> {
+        const result = await this.postgresService.query(
+            'aho-requests-get-count',
+            'SELECT aho_requests_get_count()',
+            [],
+            'aho_requests_get_count',
+        );
+        return result ? result : 0;
     }
 
     /**

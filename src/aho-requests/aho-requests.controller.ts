@@ -55,13 +55,16 @@ export class AhoRequestsController {
         @Query('employeeId') employeeId,
         @Query('requestTypeId') requestTypeId,
         @Query('requestStatusId') requestStatusId,
+        @Query('page') page,
+        @Query('itemsOnPage') itemsOnPage,
         @Query('search') search,
     ): Promise<IAhoRequest[]> {
-        if (search) {
+        if (search && search !== null) {
+            console.log('FUKKEN SEARCH');
             const result = await this.ahoRequestsService.searchRequests(search);
             return result;
         } else {
-            const result = await this.ahoRequestsService.getRequests(start, end, employeeId, requestTypeId, requestStatusId);
+            const result = await this.ahoRequestsService.getRequests(start, end, employeeId, requestTypeId, requestStatusId, page, itemsOnPage);
             return result;
         }
     }
