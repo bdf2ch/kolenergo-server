@@ -7,13 +7,19 @@ import {
     IAhoRequestStatus,
     IAhoRequestTaskContent,
     IAhoRequestComment,
-    IAhoRequestNeed, AhoRequestRejectReason, AhoRequest,
+    IAhoRequestNeed, AhoRequestRejectReason, AhoRequest, IAhoRequestsInitialData,
 } from '@kolenergo/aho';
 import { IUser } from '@kolenergo/lib';
 
 @Controller('aho')
 export class AhoRequestsController {
     constructor(private readonly ahoRequestsService: AhoRequestsService) {}
+
+    @Get('/init')
+    async getInitialData(@Query('userId') userId, @Query('itemsOnPage') itemsOnPage): Promise<IAhoRequestsInitialData> {
+        const result = await this.ahoRequestsService.getInitialData(userId, itemsOnPage);
+        return result;
+    }
 
     @Get('/types')
     async getRequestTypes(): Promise<IAhoRequestType[]> {

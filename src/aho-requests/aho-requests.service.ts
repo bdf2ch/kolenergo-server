@@ -8,7 +8,7 @@ import {
     IAhoRequestStatus,
     IAhoRequestTaskContent,
     IAhoRequestComment,
-    IAhoRequestNeed, IAhoRequestTask, IAhoRequestRejectReason,
+    IAhoRequestNeed, IAhoRequestTask, IAhoRequestRejectReason, IAhoRequestsInitialData, IAhoServerResponse,
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
@@ -30,6 +30,25 @@ export class AhoRequestsService {
             [],
         );
         return result ? result : [];
+    }
+
+    /**
+     * Получение данных для инициализации приложения
+     * @param userId - Идентификатор пользователя
+     * @param itemsOnPage - Количество заявок на странице
+     */
+    async getInitialData(userId: number, itemsOnPage: number): Promise<any> {
+        const initialData = await this.postgresService.query(
+            'aho-requests-get-initial-data',
+            `SELECT aho_requests_get_init($1, $2)`,
+            [userId, itemsOnPage],
+            'aho_requests_get_init',
+        );
+        const result: IAhoServerResponse<IAhoRequestsInitialData> = {
+            data: initialData,
+            totalRequests: initialData.totalRequests,
+        };
+        return result;
     }
 
     /**
@@ -83,7 +102,7 @@ export class AhoRequestsService {
       requestStatusId: number,
       page?: number,
       itemsOnPage?: number,
-    ): Promise<IServerResponse<IAhoRequest[]>> {
+    ): Promise<IAhoServerResponse<IAhoRequest[]>> {
         const requests = await this.postgresService.query(
             'aho-requests-get',
             `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7)`,
