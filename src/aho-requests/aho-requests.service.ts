@@ -12,7 +12,7 @@ import {
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
-import {IServerResponse, User} from '@kolenergo/lib';
+import { IServerResponse, User } from '@kolenergo/lib';
 
 @Component()
 export class AhoRequestsService {
@@ -37,17 +37,13 @@ export class AhoRequestsService {
      * @param userId - Идентификатор пользователя
      * @param itemsOnPage - Количество заявок на странице
      */
-    async getInitialData(userId: number, itemsOnPage: number): Promise<any> {
-        const initialData = await this.postgresService.query(
+    async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoServerResponse>> {
+        const result = await this.postgresService.query(
             'aho-requests-get-initial-data',
             `SELECT aho_requests_get_init($1, $2)`,
             [userId, itemsOnPage],
             'aho_requests_get_init',
         );
-        const result: IAhoServerResponse<IAhoRequestsInitialData> = {
-            data: initialData,
-            totalRequests: initialData.totalRequests,
-        };
         return result;
     }
 
@@ -102,8 +98,8 @@ export class AhoRequestsService {
       requestStatusId: number,
       page?: number,
       itemsOnPage?: number,
-    ): Promise<IAhoServerResponse<IAhoRequest[]>> {
-        const requests = await this.postgresService.query(
+    ): Promise<IServerResponse<IAhoServerResponse>> {
+        const result = await this.postgresService.query(
             'aho-requests-get',
             `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7)`,
             [
@@ -117,15 +113,9 @@ export class AhoRequestsService {
             ],
             'aho_requests_get_all',
         );
-        const count = await this.getRequestsCount();
-        const result: IServerResponse<IAhoRequest[]> = {
-            data: requests ? requests : [],
-            meta: {
-                totalRequests: count ? count : 0,
-            },
-        };
         return result;
     }
+
 
     /**
      * Получение общего количества заявок
@@ -145,7 +135,7 @@ export class AhoRequestsService {
      * @param {string} query - Условие поиска
      * @returns {Promise<IAhoRequest[]>}
      */
-    async searchRequests(query: string): Promise<IAhoRequest[]> {
+    async searchRequests(query: string): Promise<IServerResponse<IAhoServerResponse>> {
         const result = this.postgresService.query(
             'aho-requests-search',
             `SELECT aho_requests_search($1)`,
@@ -207,10 +197,10 @@ export class AhoRequestsService {
         sheet.column(6).setWidth(40);
         sheet.cell(1, 7).string('Статус').style(borderedStyle);
         sheet.column(7).setWidth(15);
-        const requests = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId);
-        if (requests) {
+        const result = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId, 0, 0);
+        if (result) {
             let row = 2;
-            requests.forEach((req: IAhoRequest) => {
+            result.data.requests.forEach((req: IAhoRequest) => {
                 sheet
                     .cell(row, 1, row + req.tasks.length - 1, 1, true)
                     .number(req.id)
