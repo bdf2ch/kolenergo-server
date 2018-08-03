@@ -40,9 +40,9 @@ export class AhoRequestsService {
     async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoServerResponse>> {
         const result = await this.postgresService.query(
             'aho-requests-get-initial-data',
-            `SELECT aho_requests_get_init($1, $2)`,
+            `SELECT aho_requests_get_initial_data($1, $2)`,
             [userId, itemsOnPage],
-            'aho_requests_get_init',
+            'aho_requests_get_initial_data',
         );
         return result;
     }
@@ -96,18 +96,20 @@ export class AhoRequestsService {
       employeeId: number,
       requestTypeId: number,
       requestStatusId: number,
+      onlyExpired: boolean = false,
       page?: number,
       itemsOnPage?: number,
     ): Promise<IServerResponse<IAhoServerResponse>> {
         const result = await this.postgresService.query(
             'aho-requests-get',
-            `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7)`,
+            `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7, $8)`,
             [
               start,
               end,
               employeeId,
               requestTypeId,
                 requestStatusId,
+                onlyExpired,
                 page,
                 itemsOnPage,
             ],
@@ -197,7 +199,7 @@ export class AhoRequestsService {
         sheet.column(6).setWidth(40);
         sheet.cell(1, 7).string('Статус').style(borderedStyle);
         sheet.column(7).setWidth(15);
-        const result = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId, 0, 0);
+        const result = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId, false, 0, 0);
         if (result) {
             let row = 2;
             result.data.requests.forEach((req: IAhoRequest) => {

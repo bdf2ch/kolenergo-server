@@ -9,14 +9,14 @@ import {
     IAhoRequestComment,
     IAhoRequestNeed, AhoRequestRejectReason, AhoRequest, IAhoRequestsInitialData,
 } from '@kolenergo/aho';
-import { IUser } from '@kolenergo/lib';
+import {IServerResponse, IUser} from '@kolenergo/lib';
 
 @Controller('aho')
 export class AhoRequestsController {
     constructor(private readonly ahoRequestsService: AhoRequestsService) {}
 
     @Get('/init')
-    async getInitialData(@Query('userId') userId, @Query('itemsOnPage') itemsOnPage): Promise<IAhoRequestsInitialData> {
+    async getInitialData(@Query('userId') userId, @Query('itemsOnPage') itemsOnPage): Promise<IServerResponse<IAhoRequestsInitialData>> {
         const result = await this.ahoRequestsService.getInitialData(userId, itemsOnPage);
         return result;
     }
@@ -61,6 +61,7 @@ export class AhoRequestsController {
         @Query('employeeId') employeeId,
         @Query('requestTypeId') requestTypeId,
         @Query('requestStatusId') requestStatusId,
+        @Query('onlyExpired') onlyExpired,
         @Query('page') page,
         @Query('itemsOnPage') itemsOnPage,
         @Query('search') search,
@@ -70,7 +71,7 @@ export class AhoRequestsController {
             const result = await this.ahoRequestsService.searchRequests(search);
             return result;
         } else {
-            const result = await this.ahoRequestsService.getRequests(start, end, employeeId, requestTypeId, requestStatusId, page, itemsOnPage);
+            const result = await this.ahoRequestsService.getRequests(start, end, employeeId, requestTypeId, requestStatusId, onlyExpired, page, itemsOnPage);
             return result;
         }
     }
