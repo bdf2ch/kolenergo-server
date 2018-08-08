@@ -97,6 +97,9 @@ export class AhoRequestsController {
         return result;
     }
 
+    @Get('/requests/:id/export')
+    exportRequest() {}
+
     @Patch('/requests/:id')
     async editRequest(@Body() request, @Param() params): Promise<IAhoRequest | null> {
         const result = this.ahoRequestsService.editRequest(request);

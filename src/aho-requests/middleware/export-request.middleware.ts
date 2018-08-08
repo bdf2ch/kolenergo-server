@@ -4,17 +4,13 @@ import { AsyncExpressMiddleware } from '@nestjs/common/interfaces';
 import { AhoRequestsService } from '../aho-requests.service';
 
 @Middleware()
-export class ExportRequestsMiddleware implements NestMiddleware {
+export class ExportRequestMiddleware implements NestMiddleware {
     constructor(private readonly ahoRequestService: AhoRequestsService) {}
 
     async resolve(...args: any[]): AsyncExpressMiddleware {
         return async (req, res: Response, next) => {
-            const start = req.query.start;
-            const end = req.query.end;
-            const employeeId = req.query.employeeId;
-            const requestTypeId = req.query.requestTypeId;
-            const requestStatusId = req.query.requestStatusId;
-            const url = await this.ahoRequestService.exportRequests(start, end, employeeId, requestTypeId, requestStatusId);
+            const requestId = req.params.id;
+            const url = await this.ahoRequestService.exportRequest(requestId);
             res.download(url);
         };
     }

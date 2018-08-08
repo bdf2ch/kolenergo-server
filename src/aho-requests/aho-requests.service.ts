@@ -163,7 +163,7 @@ export class AhoRequestsService {
         requestTypeId: number,
         requestStatusId: number,
         ): Promise<string> {
-        this.mailService.send();
+        // this.mailService.send();
         const wb = new excel.Workbook();
         const sheet = wb.addWorksheet('Заявки АХО');
         const border = {
@@ -200,6 +200,7 @@ export class AhoRequestsService {
         sheet.cell(1, 7).string('Статус').style(borderedStyle);
         sheet.column(7).setWidth(15);
         const result = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId, false, 0, 0);
+        console.log(result);
         if (result) {
             let row = 2;
             result.data.requests.forEach((req: IAhoRequest) => {
@@ -252,6 +253,59 @@ export class AhoRequestsService {
     }
 
     /**
+     * Экспорт заявки АХО в Excel
+     * @param requestId - Идентификатор заявки
+     */
+    async exportRequest(requestId: number): Promise<string> {
+        const wb = new excel.Workbook();
+        const sheet = wb.addWorksheet('Заявка #' + requestId);
+        const border = {
+            style: 'thin',
+            color: 'black',
+        };
+        const borderedStyle = wb.createStyle({
+            border: {
+                left: border,
+                top: border,
+                right: border,
+                bottom: border,
+            },
+        });
+        const contentStyle = wb.createStyle({
+            alignment: {
+                horizontal: 'left',
+                vertical: 'top',
+            },
+        });
+        const request = await  this.getRequestById(requestId);
+        console.log(request);
+        if (request) {
+            let row = 1;
+            sheet
+                .cell(row, 1, row, 2, true)
+                .string(`Заявка ${request.id} от `)
+                .style(contentStyle)
+                .style(borderedStyle);
+            sheet
+                .cell(row, 3, row, 4, true)
+                .date(new Date(request.dateCreated))
+                .style(borderedStyle)
+                .style(contentStyle)
+                .style({ numberFormat: 'dd.mm.yyyy' });
+        }
+        return new Promise<string>((resolve, reject) => {
+            wb.write(`${requestId}.xlsx`, (err, stats) => {
+                if (err) {
+                    reject(null);
+                }
+                const url = path.resolve(`./${requestId}.xlsx`);
+                console.log('url', url);
+                resolve(url);
+            });
+        });
+    }
+
+    /**
      * Получение заявки по идентификатору
      * @param {number} id - Идентификатор заявки
      * @returns {Promise<IAhoRequest | null>}
@@ -274,12 +328,13 @@ export class AhoRequestsService {
     async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
         const result = await this.postgresService.query(
             'aho-requests-add',
-            `SELECT aho_requests_add($1, $2, $3, $4, $5, $6, $7)`,
+            `SELECT aho_requests_add($1, $2, $3, $4, $5, $6, $7, $8)`,
             [
                 request.user.id,
                 request.type.id,
                 request.status.id,
                 request.room,
+                request.numberOfLoaders,
                 new Date(request.dateExpires).getTime(),
                 request.tasks,
                 request.employees,

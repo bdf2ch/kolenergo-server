@@ -5,6 +5,7 @@ import { AhoRequestsService } from './aho-requests.service';
 import { AhoRequestsController } from './aho-requests.controller';
 import { ExportNeedsMiddleware } from './middleware/export-needs.middleware';
 import { ExportRequestsMiddleware } from './middleware/export-requests.middleware';
+import { ExportRequestMiddleware } from './middleware/export-request.middleware';
 
 @Module({
     imports: [
@@ -23,5 +24,8 @@ export class AhoRequestsModule {
         consumer
             .apply(ExportRequestsMiddleware)
             .forRoutes({ path: 'aho/requests/export', method: RequestMethod.GET });
+        consumer
+            .apply(ExportRequestMiddleware)
+            .forRoutes({ path: 'aho/requests/:id/export', method: RequestMethod.GET });
     }
 }
