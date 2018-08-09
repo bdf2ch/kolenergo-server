@@ -278,20 +278,35 @@ export class AhoRequestsService {
             },
         });
         const request = await  this.getRequestById(requestId);
-        console.log(request);
         if (request) {
-            let row = 1;
+            sheet.row(1).setHeight(50);
+            sheet.row(2).setHeight(30);
+            sheet.row(3).setHeight(30);
+            sheet.row(4).setHeight(30);
+            sheet.row(5).setHeight(30);
+            sheet.column(1).setWidth(30);
+            sheet.column(2).setWidth(40);
             sheet
-                .cell(row, 1, row, 2, true)
+                .cell(1, 1)
                 .string(`Заявка ${request.id} от `)
                 .style(contentStyle)
                 .style(borderedStyle);
             sheet
-                .cell(row, 3, row, 4, true)
+                .cell(1, 2)
                 .date(new Date(request.dateCreated))
                 .style(borderedStyle)
                 .style(contentStyle)
-                .style({ numberFormat: 'dd.mm.yyyy' });
+                .style({ numberFormat: 'dd.mm.yyyy, HH:mm' });
+            sheet
+                .cell(2, 1)
+                .string('Заявитель')
+                .style(contentStyle)
+                .style(borderedStyle);
+            sheet
+                .cell(2, 2, 2, 4, true)
+                .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`.replace('  ', ''))
+                .style(borderedStyle)
+                .style(contentStyle);
         }
         return new Promise<string>((resolve, reject) => {
             wb.write(`${requestId}.xlsx`, (err, stats) => {
@@ -299,7 +314,6 @@ export class AhoRequestsService {
                     reject(null);
                 }
                 const url = path.resolve(`./${requestId}.xlsx`);
-                console.log('url', url);
                 resolve(url);
             });
         });
