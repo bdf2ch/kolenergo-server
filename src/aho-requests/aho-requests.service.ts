@@ -118,7 +118,6 @@ export class AhoRequestsService {
         return result;
     }
 
-
     /**
      * Получение общего количества заявок
      */
@@ -279,34 +278,93 @@ export class AhoRequestsService {
         });
         const request = await  this.getRequestById(requestId);
         if (request) {
-            sheet.row(1).setHeight(50);
-            sheet.row(2).setHeight(30);
-            sheet.row(3).setHeight(30);
-            sheet.row(4).setHeight(30);
-            sheet.row(5).setHeight(30);
             sheet.column(1).setWidth(30);
-            sheet.column(2).setWidth(40);
+            sheet.column(2).setWidth(30);
+            let row = 1;
+            sheet.row(row).setHeight(50);
             sheet
-                .cell(1, 1)
+                .cell(row, 1)
                 .string(`Заявка ${request.id} от `)
                 .style(contentStyle)
                 .style(borderedStyle);
             sheet
-                .cell(1, 2)
+                .cell(row, 2)
                 .date(new Date(request.dateCreated))
                 .style(borderedStyle)
                 .style(contentStyle)
                 .style({ numberFormat: 'dd.mm.yyyy, HH:mm' });
+
+            row++;
+            sheet.row(row).setHeight(30);
             sheet
                 .cell(2, 1)
+                .string('Категория заявки')
+                .style(contentStyle)
+                .style(borderedStyle);
+            sheet
+                .cell(row, 2, row, 4, true)
+                .string(`${request.type.title}`)
+                .style(borderedStyle)
+                .style(contentStyle);
+
+            row++;
+            sheet.row(row).setHeight(30);
+            sheet
+                .cell(row, 1)
                 .string('Заявитель')
                 .style(contentStyle)
                 .style(borderedStyle);
             sheet
-                .cell(2, 2, 2, 4, true)
+                .cell(row, 2, row, 4, true)
                 .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`.replace('  ', ''))
                 .style(borderedStyle)
                 .style(contentStyle);
+
+            if (request.dateExpires) {
+                row++;
+                sheet.row(row).setHeight(30);
+                sheet
+                    .cell(row, 1)
+                    .string('Срок исполнения')
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row, 2)
+                    .date(new Date(request.dateExpires))
+                    .style(borderedStyle)
+                    .style(contentStyle)
+                    .style({ numberFormat: 'dd.mm.yyyy' });
+            }
+
+            if (request.room) {
+                row++;
+                sheet.row(row).setHeight(30);
+                sheet
+                    .cell(row, 1)
+                    .string('Кабинет')
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row, 2)
+                    .string(request.room)
+                    .style(borderedStyle)
+                    .style(contentStyle);
+            }
+
+            if (request.numberOfLoaders) {
+                row++;
+                sheet.row(row).setHeight(30);
+                sheet
+                    .cell(row, 1)
+                    .string('Количество грузчиков')
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row, 2)
+                    .number(request.numberOfLoaders)
+                    .style(borderedStyle)
+                    .style(contentStyle);
+            }
         }
         return new Promise<string>((resolve, reject) => {
             wb.write(`${requestId}.xlsx`, (err, stats) => {
