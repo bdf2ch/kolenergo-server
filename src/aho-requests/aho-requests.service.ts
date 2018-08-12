@@ -281,12 +281,15 @@ export class AhoRequestsService {
             sheet.column(1).setWidth(30);
             sheet.column(2).setWidth(30);
             let row = 1;
-            sheet.row(row).setHeight(50);
+
+            // sheet.row(row).setHeight(50);
             sheet
-                .cell(row, 1)
-                .string(`Заявка ${request.id} от `)
-                .style(contentStyle)
-                .style(borderedStyle);
+              .row(row)
+              .setHeight(50)
+              .cell(row, 1)
+              .string(`Заявка ${request.id} от `)
+              .style(contentStyle)
+              .style(borderedStyle);
             sheet
                 .cell(row, 2)
                 .date(new Date(request.dateCreated))
@@ -295,34 +298,34 @@ export class AhoRequestsService {
                 .style({ numberFormat: 'dd.mm.yyyy, HH:mm' });
 
             row++;
-            sheet.row(row).setHeight(30);
+            sheet.row(row).setHeight(40);
             sheet
-                .cell(2, 1)
+                .cell(row, 1)
                 .string('Категория заявки')
                 .style(contentStyle)
                 .style(borderedStyle);
             sheet
-                .cell(row, 2, row, 4, true)
+                .cell(row, 2)
                 .string(`${request.type.title}`)
                 .style(borderedStyle)
                 .style(contentStyle);
 
             row++;
-            sheet.row(row).setHeight(30);
+            sheet.row(row).setHeight(40);
             sheet
                 .cell(row, 1)
                 .string('Заявитель')
                 .style(contentStyle)
                 .style(borderedStyle);
             sheet
-                .cell(row, 2, row, 4, true)
+                .cell(row, 2)
                 .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`.replace('  ', ''))
                 .style(borderedStyle)
                 .style(contentStyle);
 
             if (request.dateExpires) {
                 row++;
-                sheet.row(row).setHeight(30);
+                sheet.row(row).setHeight(40);
                 sheet
                     .cell(row, 1)
                     .string('Срок исполнения')
@@ -338,7 +341,7 @@ export class AhoRequestsService {
 
             if (request.room) {
                 row++;
-                sheet.row(row).setHeight(30);
+                sheet.row(row).setHeight(40);
                 sheet
                     .cell(row, 1)
                     .string('Кабинет')
@@ -353,7 +356,7 @@ export class AhoRequestsService {
 
             if (request.numberOfLoaders) {
                 row++;
-                sheet.row(row).setHeight(30);
+                sheet.row(row).setHeight(40);
                 sheet
                     .cell(row, 1)
                     .string('Количество грузчиков')
