@@ -12,7 +12,7 @@ import {
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
-import { IServerResponse, User } from '@kolenergo/lib';
+import {IServerResponse, IUser, User} from '@kolenergo/lib';
 
 @Component()
 export class AhoRequestsService {
@@ -190,60 +190,141 @@ export class AhoRequestsService {
         sheet.column(2).setWidth(15);
         sheet.cell(1, 3).string('Заявитель').style(borderedStyle);
         sheet.column(3).setWidth(40);
-        sheet.cell(1, 4).string('Кабинет').style(borderedStyle);
-        sheet.column(4).setWidth(10);
-        sheet.cell(1, 5).string('Содержание').style(borderedStyle);
-        sheet.column(5).setWidth(35);
-        sheet.cell(1, 6).string('Исполнитель').style(borderedStyle);
-        sheet.column(6).setWidth(40);
-        sheet.cell(1, 7).string('Статус').style(borderedStyle);
-        sheet.column(7).setWidth(15);
+        sheet.cell(1, 4).string('Срок исполн.').style(borderedStyle);
+        sheet.column(4).setWidth(15);
+        sheet.cell(1, 5).string('Кабинет').style(borderedStyle);
+        sheet.column(5).setWidth(10);
+        sheet.cell(1, 6).string('Содержание').style(borderedStyle);
+        sheet.column(6).setWidth(35);
+        sheet.cell(1, 7).string('Исполнители').style(borderedStyle);
+        sheet.column(7).setWidth(40);
+        sheet.cell(1, 8).string('Статус').style(borderedStyle);
+        sheet.column(8).setWidth(15);
         const result = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId, false, 0, 0);
         console.log(result);
         if (result) {
             let row = 2;
             result.data.requests.forEach((req: IAhoRequest) => {
+                const max = req.numberOfLoaders
+                    ? Math.max(req.tasks.length, req.employees.length)
+                    : Math.max(req.tasks.length, req.employees.length) - 1;
                 sheet
-                    .cell(row, 1, row + req.tasks.length - 1, 1, true)
+                    .cell(row, 1, row + max, 1, true)
                     .number(req.id)
                     .style(contentStyle)
                     .style(borderedStyle);
                 sheet
-                    .cell(row, 2, row + req.tasks.length - 1, 2, true)
+                    .cell(row, 2, row + max, 2, true)
                     .date(new Date(req.dateCreated))
                     .style(borderedStyle)
                     .style(contentStyle)
                     .style({ numberFormat: 'dd.mm.yyyy' });
                 sheet
-                    .cell(row, 3, row + req.tasks.length - 1, 3, true)
-                    .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`)
+                    .cell(row, 3, row + max, 3, true)
+                    .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
                     .style(contentStyle)
                     .style(borderedStyle);
+                if (req.dateExpires) {
+                    sheet
+                        .cell(row, 4, row + max, 4, true)
+                        .date(new Date(req.dateExpires))
+                        .style(borderedStyle)
+                        .style(contentStyle)
+                        .style({ numberFormat: 'dd.mm.yyyy' });
+                } else {
+                    sheet
+                        .cell(row, 4)
+                        .string('Не задан')
+                        .style(contentStyle)
+                        .style({
+                            font: {
+                                color: '757575',
+                            },
+                        });
+                }
                 sheet
-                    .cell(row, 4,  row + req.tasks.length - 1, 4, true)
+                    .cell(row + max, 4)
+                    .style({
+                        border: {
+                            bottom: {
+                                style: 'thin',
+                                color: 'black',
+                            },
+                        },
+                    });
+                sheet
+                    .cell(row, 5,  row + max, 5, true)
                     .string(req.room)
                     .style(contentStyle)
                     .style(borderedStyle);
                 req.tasks.forEach((task: IAhoRequestTask, index: number) => {
                     sheet
-                        .cell(row, 5)
-                        .string(`${task.content.title} ${req.type.isCountable ? ' - ' + task.count.toString() : ''}`)
-                        .style({border: {bottom: {style: index === req.tasks.length - 1 ? 'thin' : 'none', color: 'black'}}});
-                    row++;
+                        .cell(row + index, 6)
+                        .string(`${task.content.title} ${req.type.isCountable && task.count ? ' - ' + task.count.toString() + (task.content.boxing ? ' ' + task.content.boxing : ' штук') : ''}`)
+                        .style({border: {bottom: {style: index === max ? 'thin' : 'none', color: 'black'}, right: {style: 'thin', color: 'black'}}});
                 });
-                req.employees.forEach((employee: User) => {
+                if (req.numberOfLoaders) {
                     sheet
-                        .cell(row - req.tasks.length, 6, row - 1, 6, true)
-                        .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`)
+                        .cell(row + max, 6)
+                        .string(`Требуется грузчиков - ${req.numberOfLoaders} человек`)
+                        .style({
+                            font: {
+                                color: '424242',
+                            },
+                            border: {
+                                bottom: {
+                                    style: 'thin',
+                                    color: 'black',
+                                },
+                                right: {
+                                    style: 'thin',
+                                    color: 'black',
+                                },
+                            },
+                        });
+                }
+                if (req.employees.length > 0) {
+                    req.employees.forEach((employee: IUser, index: number) => {
+                        sheet
+                            .cell(row + index, 7)
+                            .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`.replace('  ', ''))
+                            .style(contentStyle)
+                            .style({
+                                border: {
+                                    top: {
+                                        style: index === 0 ? 'thin' : 'none',
+                                        color: 'black',
+                                    },
+                                },
+                            });
+                    });
+                } else {
+                    sheet
+                        .cell(row, 7)
+                        .string('Не назначены')
                         .style(contentStyle)
-                        .style(borderedStyle);
-                    row++;
-                });
+                        .style({
+                            font: {
+                                color: '757575',
+                            },
+                        });
+                }
                 sheet
-                    .cell(row - req.employees.length, 7, row - 1, 7, true)
+                    .cell(row + max, 7)
+                    .style({
+                        border: {
+                            bottom: {
+                                style: 'thin',
+                                color: 'black',
+                            },
+                        },
+                    });
+                sheet
+                    .cell(row, 8, row + max, 8, true)
                     .string(req.status.title)
                     .style(contentStyle)
                     .style(borderedStyle);
+                row += max + 1;
             });
         }
         await wb.write('aho.xlsx');
@@ -272,99 +353,226 @@ export class AhoRequestsService {
         });
         const contentStyle = wb.createStyle({
             alignment: {
+                horizontal: 'center',
+                vertical: 'center',
+            },
+        });
+        const headerStyle = wb.createStyle({
+            alignment: {
                 horizontal: 'left',
-                vertical: 'top',
+                vertical: 'center',
+            },
+            font: {
+                size: 25,
             },
         });
         const request = await  this.getRequestById(requestId);
         if (request) {
             sheet.column(1).setWidth(30);
-            sheet.column(2).setWidth(30);
+            sheet.column(2).setWidth(60);
             let row = 1;
 
-            // sheet.row(row).setHeight(50);
+            /**
+             * Заголовок
+             */
             sheet
-              .row(row)
-              .setHeight(50)
-              .cell(row, 1)
-              .string(`Заявка ${request.id} от `)
-              .style(contentStyle)
-              .style(borderedStyle);
+                .row(row)
+                .setHeight(40);
             sheet
-                .cell(row, 2)
+              .cell(row, 1, row, 2, true)
+              .string(`Заявка #${request.id}`)
+              .style(headerStyle);
+            row++;
+
+            /**
+             * Дата подачи заявки
+             */
+            sheet
+                .cell(row, 1, row + 1, 1, true)
+                .string('Дата подачи заявки')
+                .style(borderedStyle)
+                .style(contentStyle);
+            sheet
+                .cell(row, 2, row + 1, 2, true)
                 .date(new Date(request.dateCreated))
                 .style(borderedStyle)
                 .style(contentStyle)
                 .style({ numberFormat: 'dd.mm.yyyy, HH:mm' });
+            row += 2;
 
-            row++;
-            sheet.row(row).setHeight(40);
+            /**
+             * Заявитель
+             */
             sheet
-                .cell(row, 1)
-                .string('Категория заявки')
-                .style(contentStyle)
-                .style(borderedStyle);
-            sheet
-                .cell(row, 2)
-                .string(`${request.type.title}`)
-                .style(borderedStyle)
-                .style(contentStyle);
-
-            row++;
-            sheet.row(row).setHeight(40);
-            sheet
-                .cell(row, 1)
+                .cell(row, 1, row + 1, 1, true)
                 .string('Заявитель')
                 .style(contentStyle)
                 .style(borderedStyle);
             sheet
-                .cell(row, 2)
+                .cell(row, 2, row + 1, 2, true)
                 .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`.replace('  ', ''))
                 .style(borderedStyle)
                 .style(contentStyle);
+            row += 2;
 
-            if (request.dateExpires) {
-                row++;
-                sheet.row(row).setHeight(40);
+            /**
+             * Категория заявки
+             */
+            sheet
+                .cell(row, 1, row + 1, 1, true)
+                .string('Категория заявки')
+                .style(contentStyle)
+                .style(borderedStyle);
+            sheet
+                .cell(row, 2, row + 1, 2, true)
+                .string(`${request.type.title}`)
+                .style(borderedStyle)
+                .style(contentStyle);
+            row += 2;
+
+            /**
+             * Содержание заявки
+             */
+            sheet
+                .cell(row, 1, request.tasks.length === 1 ? row + 1 : row + request.tasks.length - 1, 1, true)
+                .string('Содержание заявки')
+                .style(borderedStyle)
+                .style(contentStyle);
+            request.tasks.forEach((task: IAhoRequestTask, index: number) => {
                 sheet
-                    .cell(row, 1)
+                    .cell(row + index, 2, request.tasks.length === 1 ? row + 1 : row + index, 2, true)
+                    .string(
+                        `${task.content.title}${request.type.isCountable && task.count
+                        ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук')
+                        : ''}`)
+                    .style({border: {right: {style: 'thin', color: 'black'}}})
+                    .style(contentStyle);
+            });
+            row += request.tasks.length > 2 ? request.tasks.length : 2;
+
+            /**
+             * Срок исполнения заявки
+             */
+            if (request.dateExpires) {
+                sheet
+                    .cell(row, 1, row + 1, 1, true)
                     .string('Срок исполнения')
                     .style(contentStyle)
                     .style(borderedStyle);
                 sheet
-                    .cell(row, 2)
+                    .cell(row, 2, row + 1, 2, true)
                     .date(new Date(request.dateExpires))
                     .style(borderedStyle)
                     .style(contentStyle)
                     .style({ numberFormat: 'dd.mm.yyyy' });
+                row += 2;
             }
 
+            /**
+             * Кабинет
+             */
             if (request.room) {
-                row++;
-                sheet.row(row).setHeight(40);
                 sheet
-                    .cell(row, 1)
+                    .cell(row, 1, row + 1, 1, true)
                     .string('Кабинет')
                     .style(contentStyle)
                     .style(borderedStyle);
                 sheet
-                    .cell(row, 2)
+                    .cell(row, 2, row + 1, 2, true)
                     .string(request.room)
                     .style(borderedStyle)
                     .style(contentStyle);
+                row += 2;
             }
 
+            /**
+             * Количество грузчиков
+             */
             if (request.numberOfLoaders) {
-                row++;
-                sheet.row(row).setHeight(40);
                 sheet
-                    .cell(row, 1)
+                    .cell(row, 1, row + 1, 1, true)
                     .string('Количество грузчиков')
                     .style(contentStyle)
                     .style(borderedStyle);
                 sheet
-                    .cell(row, 2)
+                    .cell(row, 2, row + 1, 2, true)
                     .number(request.numberOfLoaders)
+                    .style(borderedStyle)
+                    .style(contentStyle);
+                row += 2;
+            }
+
+            /**
+             * Исполнители заявки
+             */
+            sheet
+                .cell(row, 1, request.employees.length === 1 || request.employees.length === 0
+                    ? row + 1
+                    : row + request.employees.length - 1, 1, true)
+                .string('Исполнители')
+                .style(borderedStyle)
+                .style(contentStyle);
+            if (request.employees.length > 1) {
+                request.employees.forEach((employee: IUser, index: number, array: IUser[]) => {
+                    sheet
+                        .cell(row + index, 2)
+                        .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`.replace('  ', ''))
+                        .style({
+                            border: {
+                                right: {
+                                    style: 'thin',
+                                    color: 'black',
+                                },
+                                bottom: {
+                                    style: index === array.length - 1 ? 'thin' : 'none',
+                                    color: 'black',
+                                },
+                            },
+                        })
+                        .style(contentStyle);
+                });
+            } else if (request.employees.length === 1) {
+                sheet
+                    .cell(row, 2, row + 1, 2, true)
+                    .string(`${request.employees[0].firstName} ${request.employees[0].secondName} ${request.employees[0].lastName}`.replace('  ', ''))
+                    .style(borderedStyle)
+                    .style(contentStyle);
+            } else {
+                sheet
+                    .cell(row, 2, row + 1, 2, true)
+                    .string('Не назначены')
+                    .style(borderedStyle)
+                    .style(contentStyle);
+            }
+            row += request.employees.length > 2 ? request.employees.length : 2;
+
+            /**
+             * Статус заявки
+             */
+            sheet
+                .cell(row, 1, row + 1, 1, true)
+                .string('Статус заявки')
+                .style(contentStyle)
+                .style(borderedStyle);
+            sheet
+                .cell(row, 2, row + 1, 2, true)
+                .string(request.status.title)
+                .style(borderedStyle)
+                .style(contentStyle);
+            row += 2;
+
+            /**
+             * Причина отклонения заячки
+             */
+            if (request.rejectReason) {
+                sheet
+                    .cell(row, 1, row + 1, 1, true)
+                    .string('Причина отклонения заявки')
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row, 2, row + 1, 2, true)
+                    .string(request.rejectReason.content)
                     .style(borderedStyle)
                     .style(contentStyle);
             }
