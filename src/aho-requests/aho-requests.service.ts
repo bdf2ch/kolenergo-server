@@ -93,6 +93,7 @@ export class AhoRequestsService {
     async getRequests(
       start: number,
       end: number,
+      userId: number,
       employeeId: number,
       requestTypeId: number,
       requestStatusId: number,
@@ -102,10 +103,11 @@ export class AhoRequestsService {
     ): Promise<IServerResponse<IAhoServerResponse>> {
         const result = await this.postgresService.query(
             'aho-requests-get',
-            `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7, $8)`,
+            `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
             [
               start,
               end,
+              userId,
               employeeId,
               requestTypeId,
                 requestStatusId,
@@ -158,6 +160,7 @@ export class AhoRequestsService {
     async exportRequests(
         start: number,
         end: number,
+        userId: number,
         employeeId: number,
         requestTypeId: number,
         requestStatusId: number,
@@ -200,7 +203,7 @@ export class AhoRequestsService {
         sheet.column(7).setWidth(40);
         sheet.cell(1, 8).string('Статус').style(borderedStyle);
         sheet.column(8).setWidth(15);
-        const result = await this.getRequests(start, end, employeeId, requestTypeId, requestStatusId, false, 0, 0);
+        const result = await this.getRequests(start, end, userId, employeeId, requestTypeId, requestStatusId, false, 0, 0);
         console.log(result);
         if (result) {
             let row = 2;

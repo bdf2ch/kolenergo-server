@@ -58,6 +58,7 @@ export class AhoRequestsController {
     async getRequests(
         @Query('start') start,
         @Query('end') end,
+        @Query('userId') userId,
         @Query('employeeId') employeeId,
         @Query('requestTypeId') requestTypeId,
         @Query('requestStatusId') requestStatusId,
@@ -71,7 +72,18 @@ export class AhoRequestsController {
             const result = await this.ahoRequestsService.searchRequests(search);
             return result;
         } else {
-            const result = await this.ahoRequestsService.getRequests(start, end, employeeId, requestTypeId, requestStatusId, onlyExpired, page, itemsOnPage);
+            const result =
+                await this.ahoRequestsService.getRequests(
+                    start,
+                    end,
+                    userId,
+                    employeeId,
+                    requestTypeId,
+                    requestStatusId,
+                    onlyExpired,
+                    page,
+                    itemsOnPage,
+                );
             return result;
         }
     }
