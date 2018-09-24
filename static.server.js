@@ -43,7 +43,7 @@ app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Credentials', true);
     next();
   })
-  .use(express.static('/var/wwwn/aho/dist/'))
+  .use(express.static('/var/wwwn/kolenergo/dist/aho-requests-app'))
   .use(parser.json())
   .get('*', (req, res) => {
     res.sendFile(path.resolve('/var/wwwn/kolenergo/dist/aho-requests-app/index.html'));
@@ -57,8 +57,8 @@ app.use(function (req, res, next) {
   // .use('/phonebook/feedback', feedback.routes)
   // .use('/phonebook/uploads', uploads.routes)
   // .use('/auth', sms.routes)
-  .listen(6666, function () {
-    console.log('Server started at 6666');
+  .listen(12345, function () {
+    console.log('Server started at 12345');
   }).on('error', function(err){
   console.log('ON ERROR HANDLER');
   console.log(err);
