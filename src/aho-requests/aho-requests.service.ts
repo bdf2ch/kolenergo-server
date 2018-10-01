@@ -629,6 +629,7 @@ export class AhoRequestsService {
             ],
             'aho_requests_add',
         );
+        this.mailService.send('Заявки АХО <aho@kolenergo.ru>', 'savoronov@kolenergo.ru', `Заявка №${result.id}`, 'Ваша заявка принята');
         return result ? result : null;
     }
 
