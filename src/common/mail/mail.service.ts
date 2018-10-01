@@ -1,6 +1,7 @@
 import { Component } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { MailOptions } from 'nodemailer/lib/sendmail-transport';
+import { sendFeedback } from './mail.js';
 
 @Component()
 export class MailService {
@@ -8,7 +9,9 @@ export class MailService {
 
     constructor() {}
 
-    send() {
+    async send() {
+        await sendFeedback('test message');
+        /*
         nodemailer.createTestAccount((error, account) => {
             if (error) {
                 console.log('account', error);
@@ -19,9 +22,13 @@ export class MailService {
                 host: 'kolu-mail.nw.mrsksevzap.ru',
                 port: 25,
                 secure: false,
-                tls: {
+                                tls: {
                     rejectUnauthorized: false
                 },
+                tls: {
+                    rejectUnauthorized: false,
+                    ciphers: 'SSLv3',
+                }
             });
 
             transporter.verify((err, success) => {
@@ -52,5 +59,6 @@ export class MailService {
                 // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
             });
         });
+        */
     }
 }

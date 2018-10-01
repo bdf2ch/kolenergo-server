@@ -43,10 +43,10 @@ app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Credentials', true);
     next();
   })
-  .use(express.static('/var/wwwn/kolenergo/dist/aho-requests-app'))
+  .use(express.static('../kolenergo/dist/aho-requests-app'))
   .use(parser.json())
   .get('*', (req, res) => {
-    res.sendFile(path.resolve('/var/wwwn/kolenergo/dist/aho-requests-app/index.html'));
+    res.sendFile(path.resolve('../kolenergo/dist/aho-requests-app/index.html'));
   })
   // .use('/users', users.routes)
   // .use('/phonebook/session', session.routes)
