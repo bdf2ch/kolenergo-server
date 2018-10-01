@@ -1,9 +1,8 @@
 "use strict";
 const nodemailer = require('nodemailer');
 
-export function sendFeedback(message) {
+export function sendFeedback(from, to, subject, message) {
     return new Promise(async (resolve, reject) => {
-        if (userId) {
             try {
                     let transporter = nodemailer.createTransport({
                         host: 'kolu-mail.nw.mrsksevzap.ru',
@@ -15,12 +14,10 @@ export function sendFeedback(message) {
                     });
 
                     let mailOptions = {
-                        from: '"Телефонный справочник" <phonebook@kolenergo.ru>',
-                        to: 'savoronov@kolenergo.ru',
-                        subject: `Отправлено сообщение (${theme}).`,
-                        html: `<b>${user.name} ${user.fname} ${user.surname}</b> отправил сообщение.<br>
-                                       Тема сообщения: ${theme}<br>
-                                       Текст сообщения: ${message['message']}`
+                        from: from,
+                        to: to,
+                        subject: subject,
+                        html: message
                     };
 
                     transporter.sendMail(mailOptions, (error, info) => {
@@ -35,9 +32,5 @@ export function sendFeedback(message) {
             } catch (err) {
                 reject(err);
             }
-        } else {
-            //resolve(false);
-            reject({error: 'User id not specified', description: 'User id parameter not specified'});
-}
 });
 }
