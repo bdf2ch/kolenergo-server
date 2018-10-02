@@ -61,6 +61,20 @@ export class AhoRequestsService {
     }
 
     /**
+     * Получение статуса заявки АХО по идентификатору
+     * @param id - Идентификатор статуса
+     * @returns {Promise<IAhoRequestStatus | null>}
+     */
+    async getRequestStatusById(id: number): Promise<IAhoRequestStatus | null> {
+        const result = this.postgresService.query(
+            'aho-requests-get-status-by-id',
+            `SELECT aho_requests_statuses WHERE id = $1`,
+            [id],
+        );
+        return result ? result : null;
+    }
+
+    /**
      * Получение всего содержимого задач заявки АХО
      * @returns {Promise<IAhoRequestTaskContent[]>}
      */
@@ -117,7 +131,6 @@ export class AhoRequestsService {
             ],
             'aho_requests_get_all',
         );
-        this.mailService.send();
         return result;
     }
 
@@ -166,7 +179,6 @@ export class AhoRequestsService {
         requestTypeId: number,
         requestStatusId: number,
         ): Promise<string> {
-        // this.mailService.send();
         const wb = new excel.Workbook();
         const sheet = wb.addWorksheet('Заявки АХО');
         const border = {
@@ -205,7 +217,6 @@ export class AhoRequestsService {
         sheet.cell(1, 8).string('Статус').style(borderedStyle);
         sheet.column(8).setWidth(15);
         const result = await this.getRequests(start, end, userId, employeeId, requestTypeId, requestStatusId, false, 0, 0);
-        console.log(result);
         if (result) {
             let row = 2;
             result.data.requests.forEach((req: IAhoRequest) => {
@@ -658,12 +669,40 @@ export class AhoRequestsService {
      * @returns {Promise<IAhoRequest | null>}
      */
     async editRequest(request: IAhoRequest): Promise<IAhoRequest | null> {
+        const request_ = await this.getRequestById(request.id);
+        request.employees.forEach((employee: IUser) => {
+                const findEmployeeById = (user: IUser) => user.id === employee.id;
+                const user = request_.employees.find(findEmployeeById);
+                if (!user && user.email) {
+                    this.mailService.send(
+                        'Заявки АХО <aho@kolenergo.ru>',
+                        user.email,
+                        `Вы назначены исполнителем заявки №${request.id}`,
+                        `Вы назначены исполнителем заявки №${request.id}.` +
+                        `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+                    );
+
+                }
+        });
+
         let requestStatusId = 3;
         request.tasks.forEach((task: IAhoRequestTask) => {
            if (!task.done) {
                requestStatusId = 2;
            }
         });
+        if (request_.requestStatusId !== requestStatusId) {
+            if (request.user.email) {
+                const status = await this.getRequestStatusById(requestStatusId);
+                this.mailService.send(
+                    'Заявки АХО <aho@kolenergo.ru>',
+                    request.user.email,
+                    `Статус Вашей заявки №${request.id} изменен: ${status.title}`,
+                    `Статус Вашей заявки №${request.id} изменен: ${status.title}` +
+                    `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+                );
+            }
+        }
         const result = await this.postgresService.query(
             'aho-requests-edit',
             `SELECT aho_requests_edit($1, $2, $3, $4)`,
@@ -728,6 +767,7 @@ export class AhoRequestsService {
      * @returns {Promise<IAhoRequestComment | null>}
      */
     async addComment(comment: IAhoRequestComment): Promise<IAhoRequestComment | null> {
+        const request_ = await this.getRequestById(comment.requestId);
         const result = await this.postgresService.query(
             'aho-requests-add-comment',
             `SELECT aho_requests_comments_add($1, $2, $3)`,
@@ -738,6 +778,15 @@ export class AhoRequestsService {
             ],
             'aho_requests_comments_add',
         );
+        if (comment.userId !== request_.userId && request_.user.email) {
+            this.mailService.send(
+                'Заявки АХО <aho@kolenergo.ru>',
+                request_.user.email,
+                `К Вашей заявки №${request_.id} добавлен комментарий`,
+                `К Вашей заявки №${request_.id} добавлен комментарий:<br>$<i>{comment.content}</i>` +
+                `<br><a href="http://10.50.0.153:12345/request/${request_.id}">Открыть заявку в системе заявок АХО</a>`,
+            );
+        }
         return result;
     }
 
