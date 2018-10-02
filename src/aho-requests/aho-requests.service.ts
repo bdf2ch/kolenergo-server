@@ -676,7 +676,7 @@ export class AhoRequestsService {
                 if (!user && employee.email) {
                     this.mailService.send(
                         'Заявки АХО <aho@kolenergo.ru>',
-                        user.email,
+                        employee.email,
                         `Вы назначены исполнителем заявки №${request.id}`,
                         `Вы назначены исполнителем заявки №${request.id}.` +
                         `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
