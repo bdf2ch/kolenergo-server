@@ -71,7 +71,7 @@ export class AhoRequestsService {
             `SELECT * FROM aho_requests_statuses WHERE id = $1`,
             [id],
         );
-        return result ? result[0] : null;
+        return result ? result : null;
     }
 
     /**
@@ -694,12 +694,12 @@ export class AhoRequestsService {
         if (request_.requestStatusId !== requestStatusId) {
             if (request.user.email) {
                 const status = await this.getRequestStatusById(requestStatusId);
-                console.log('status', status);
+                console.log('status = ', status);
                 this.mailService.send(
                     'Заявки АХО <aho@kolenergo.ru>',
                     request.user.email,
-                    `Статус Вашей заявки №${request.id} изменен: ${status.title}`,
-                    `Статус Вашей заявки №${request.id} изменен: ${status.title}` +
+                    `Статус Вашей заявки №${request.id} изменен: ${status[0].title}`,
+                    `Статус Вашей заявки №${request.id} изменен: ${status[0].title}` +
                     `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
                 );
             }
