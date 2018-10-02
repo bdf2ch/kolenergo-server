@@ -629,7 +629,28 @@ export class AhoRequestsService {
             ],
             'aho_requests_add',
         );
-        this.mailService.send('Заявки АХО <aho@kolenergo.ru>', 'savoronov@kolenergo.ru', `Заявка №${result.id}`, 'Ваша заявка принята');
+        if (request.user.email) {
+            this.mailService.send(
+                'Заявки АХО <aho@kolenergo.ru>',
+                'savoronov@kolenergo.ru',
+                `Заявка №${result.id} принята`,
+                `Ваша заявка принята.` +
+                        `<br>Посмотреть заявку можно по ссылке` +
+                        `<a href="http://10.50.0.153:12345/request/${result.id}">http://10.50.0.153:12345/request/${result.id}</a>`,
+            );
+        }
+        request.employees.forEach((user: User) => {
+            if (user.email) {
+                this.mailService.send(
+                    'Заявки АХО <aho@kolenergo.ru>',
+                    user.email,
+                    `Вы назначены исполнителем заявки №${result.id}`,
+                    `Вы назначены исполнителем заявки №${result.id}.` +
+                             `<br>Посмотреть заявку можно по ссылке` +
+                             `<a href="http://10.50.0.153:12345/request/${result.id}">http://10.50.0.153:12345/request/${result.id}</a>`,
+                );
+            }
+        });
         return result ? result : null;
     }
 
