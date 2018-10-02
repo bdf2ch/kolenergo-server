@@ -71,7 +71,7 @@ export class AhoRequestsService {
             `SELECT * FROM aho_requests_statuses WHERE id = $1`,
             [id],
         );
-        return result ? result : null;
+        return result ? result[0] : null;
     }
 
     /**
