@@ -68,7 +68,7 @@ export class AhoRequestsService {
     async getRequestStatusById(id: number): Promise<IAhoRequestStatus | null> {
         const result = this.postgresService.query(
             'aho-requests-get-status-by-id',
-            `SELECT aho_requests_statuses WHERE id = $1`,
+            `SELECT * FROM aho_requests_statuses WHERE id = $1`,
             [id],
         );
         return result ? result : null;
