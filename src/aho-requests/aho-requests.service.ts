@@ -673,7 +673,7 @@ export class AhoRequestsService {
         request.employees.forEach((employee: IUser) => {
                 const findEmployeeById = (user: IUser) => user.id === employee.id;
                 const user = request_.employees.find(findEmployeeById);
-                if (!user && user.email) {
+                if (!user && employee.email) {
                     this.mailService.send(
                         'Заявки АХО <aho@kolenergo.ru>',
                         user.email,
