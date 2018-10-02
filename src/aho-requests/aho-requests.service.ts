@@ -694,6 +694,7 @@ export class AhoRequestsService {
         if (request_.requestStatusId !== requestStatusId) {
             if (request.user.email) {
                 const status = await this.getRequestStatusById(requestStatusId);
+                console.log(status);
                 this.mailService.send(
                     'Заявки АХО <aho@kolenergo.ru>',
                     request.user.email,
