@@ -643,7 +643,7 @@ export class AhoRequestsService {
         if (request.user.email) {
             this.mailService.send(
                 'Заявки АХО <aho@kolenergo.ru>',
-                'savoronov@kolenergo.ru',
+                request.user.email,
                 `Заявка №${result.id} принята`,
                 `Ваша заявка принята.` +
                         `<br><a href="http://10.50.0.153:12345/request/${result.id}">Открыть заявку в системе заявок АХО</a>`,
@@ -694,7 +694,6 @@ export class AhoRequestsService {
         if (request_.requestStatusId !== requestStatusId) {
             if (request.user.email) {
                 const status = await this.getRequestStatusById(requestStatusId);
-                console.log('status = ', status);
                 this.mailService.send(
                     'Заявки АХО <aho@kolenergo.ru>',
                     request.user.email,
@@ -784,7 +783,7 @@ export class AhoRequestsService {
                 'Заявки АХО <aho@kolenergo.ru>',
                 request_.user.email,
                 `К Вашей заявки №${request_.id} добавлен комментарий`,
-                `К Вашей заявки №${request_.id} добавлен комментарий:<br>$<i>{comment.content}</i>` +
+                `К Вашей заявки №${request_.id} добавлен комментарий:<br>$<i>${comment.content}</i>` +
                 `<br><a href="http://10.50.0.153:12345/request/${request_.id}">Открыть заявку в системе заявок АХО</a>`,
             );
         }
