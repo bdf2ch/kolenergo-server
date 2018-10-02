@@ -635,8 +635,7 @@ export class AhoRequestsService {
                 'savoronov@kolenergo.ru',
                 `Заявка №${result.id} принята`,
                 `Ваша заявка принята.` +
-                        `<br>Посмотреть заявку можно по ссылке` +
-                        `<a href="http://10.50.0.153:12345/request/${result.id}">http://10.50.0.153:12345/request/${result.id}</a>`,
+                        `<br><a href="http://10.50.0.153:12345/request/${result.id}">Открыть заявку в системе заявок АХО</a>`,
             );
         }
         request.employees.forEach((user: User) => {
@@ -646,8 +645,7 @@ export class AhoRequestsService {
                     user.email,
                     `Вы назначены исполнителем заявки №${result.id}`,
                     `Вы назначены исполнителем заявки №${result.id}.` +
-                             `<br>Посмотреть заявку можно по ссылке` +
-                             `<a href="http://10.50.0.153:12345/request/${result.id}">http://10.50.0.153:12345/request/${result.id}</a>`,
+                             `<br><a href="http://10.50.0.153:12345/request/${result.id}">Открыть заявку в системе заявок АХО</a>`,
                 );
             }
         });
