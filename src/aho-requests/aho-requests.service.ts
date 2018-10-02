@@ -783,7 +783,7 @@ export class AhoRequestsService {
                 'Заявки АХО <aho@kolenergo.ru>',
                 request_.user.email,
                 `К Вашей заявки №${request_.id} добавлен комментарий`,
-                `К Вашей заявки №${request_.id} добавлен комментарий:<br>$<i>${comment.content}</i>` +
+                `К Вашей заявки №${request_.id} добавлен комментарий:<br><i>${comment.content}</i>` +
                 `<br><a href="http://10.50.0.153:12345/request/${request_.id}">Открыть заявку в системе заявок АХО</a>`,
             );
         }
