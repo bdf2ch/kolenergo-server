@@ -744,6 +744,13 @@ export class AhoRequestsService {
             [request.id, request.rejectReason.id],
             'aho_requests_reject',
         );
+        this.mailService.send(
+            'Заявки АХО <aho@kolenergo.ru>',
+            request.user.email,
+            `Ваша заявки №${request.id} отклонена`,
+            `Ваша заявки №${request.id} отклонена, причина: ${request.rejectReason.content}.` +
+            `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+        );
         return result ? result : null;
     }
 
@@ -757,6 +764,13 @@ export class AhoRequestsService {
             `SELECT aho_requests_resume($1)`,
             [request.id],
             'aho_requests_resume',
+        );
+        this.mailService.send(
+            'Заявки АХО <aho@kolenergo.ru>',
+            request.user.email,
+            `Ваша заявки №${request.id} возобновлена`,
+            `Ваша заявки №${request.id} возобновлена.` +
+            `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
         );
         return result ? result : null;
     }
