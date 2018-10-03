@@ -747,8 +747,9 @@ export class AhoRequestsService {
         this.mailService.send(
             'Заявки АХО <aho@kolenergo.ru>',
             request.user.email,
-            `Ваша заявки №${request.id} отклонена`,
-            `Ваша заявки №${request.id} отклонена, причина: ${request.rejectReason.content}.` +
+            `Ваша заявка №${request.id} отклонена`,
+            `Ваша заявка №${request.id} отклонена.` +
+            `<br> Причина отклонения заявки: ${request.rejectReason.content}.` +
             `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
         );
         return result ? result : null;
@@ -768,8 +769,8 @@ export class AhoRequestsService {
         this.mailService.send(
             'Заявки АХО <aho@kolenergo.ru>',
             request.user.email,
-            `Ваша заявки №${request.id} возобновлена`,
-            `Ваша заявки №${request.id} возобновлена.` +
+            `Ваша заявка №${request.id} возобновлена`,
+            `Ваша заявка №${request.id} возобновлена.` +
             `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
         );
         return result ? result : null;
