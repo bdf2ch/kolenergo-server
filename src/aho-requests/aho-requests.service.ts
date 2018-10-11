@@ -705,11 +705,12 @@ export class AhoRequestsService {
         }
         const result = await this.postgresService.query(
             'aho-requests-edit',
-            `SELECT aho_requests_edit($1, $2, $3, $4)`,
+            `SELECT aho_requests_edit($1, $2, $3, $4, $5)`,
             [
                 request.id,
                 requestStatusId,
                 request.employees,
+                new Date(request.dateExpires).getTime(),
                 request.tasks,
             ],
             'aho_requests_edit',
