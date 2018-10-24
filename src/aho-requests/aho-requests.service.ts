@@ -691,7 +691,7 @@ export class AhoRequestsService {
                requestStatusId = 2;
            }
         });
-        if (request_.requestStatusId !== requestStatusId) {
+        if (request_.status.id !== requestStatusId) {
             if (request.user.email) {
                 const status = await this.getRequestStatusById(requestStatusId);
                 this.mailService.send(
@@ -739,21 +739,45 @@ export class AhoRequestsService {
      * @returns {Promise<IAhoRequest | null>}
      */
     async rejectRequest(request: IAhoRequest): Promise<IAhoRequest | null> {
-        const result = this.postgresService.query(
-            'aho-requests-reject',
-            `SELECT aho_requests_reject($1, $2)`,
-            [request.id, request.rejectReason.id],
-            'aho_requests_reject',
-        );
-        this.mailService.send(
-            'Заявки АХО <aho@kolenergo.ru>',
-            request.user.email,
-            `Ваша заявка №${request.id} отклонена`,
-            `Ваша заявка №${request.id} отклонена.` +
-            `<br> Причина отклонения заявки: ${request.rejectReason.content}.` +
-            `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
-        );
-        return result ? result : null;
+        if (request.rejectReason.id === 0) {
+            const rejectReason: IAhoRequestRejectReason = await this.postgresService.query(
+                'aho-requests-reject-reason-add',
+                `SELECT aho_requests_reject_reason_add($1, $2)`,
+                [],
+                'aho_requests_reject_reason_add',
+            );
+            const result = await this.postgresService.query(
+                'aho-requests-reject',
+                `SELECT aho_requests_reject($1, $2)`,
+                [request.id, rejectReason.id],
+                'aho_requests_reject',
+            );
+            this.mailService.send(
+                'Заявки АХО <aho@kolenergo.ru>',
+                request.user.email,
+                `Ваша заявка №${request.id} отклонена`,
+                `Ваша заявка №${request.id} отклонена.` +
+                `<br> Причина отклонения заявки: ${rejectReason.content}.` +
+                `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+            );
+            return result ? result : null;
+        } else {
+            const result = this.postgresService.query(
+                'aho-requests-reject',
+                `SELECT aho_requests_reject($1, $2)`,
+                [request.id, request.rejectReason.id],
+                'aho_requests_reject',
+            );
+            this.mailService.send(
+                'Заявки АХО <aho@kolenergo.ru>',
+                request.user.email,
+                `Ваша заявка №${request.id} отклонена`,
+                `Ваша заявка №${request.id} отклонена.` +
+                `<br> Причина отклонения заявки: ${request.rejectReason.content}.` +
+                `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+            );
+            return result ? result : null;
+        }
     }
 
     /**
