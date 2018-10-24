@@ -39,6 +39,12 @@ export class AhoRequestsController {
         return result;
     }
 
+    @Post('/reject-reasons')
+    async addRejectReason(@Body() rejectReason): Promise<AhoRequestRejectReason | null> {
+        const result = this.ahoRequestsService.addRejectReason(rejectReason);
+        return result;
+    }
+
     @Get('/tasks')
     async getTasksContent(): Promise<IAhoRequestTaskContent[]> {
         const result = this.ahoRequestsService.getRequestTasksContent();
