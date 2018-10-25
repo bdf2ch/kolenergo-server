@@ -11,10 +11,11 @@ export class ExportRequestsMiddleware implements NestMiddleware {
         return async (req, res: Response, next) => {
             const start = req.query.start;
             const end = req.query.end;
+            const userId = req.query.userId;
             const employeeId = req.query.employeeId;
             const requestTypeId = req.query.requestTypeId;
             const requestStatusId = req.query.requestStatusId;
-            const url = await this.ahoRequestService.exportRequests(start, end, employeeId, requestTypeId, requestStatusId);
+            const url = await this.ahoRequestService.exportRequests(start, end, userId, employeeId, requestTypeId, requestStatusId);
             res.download(url);
         };
     }
