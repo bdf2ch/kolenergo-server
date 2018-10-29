@@ -256,12 +256,17 @@ export class AhoRequestsService {
                         .string(req.initiator)
                         .style(contentStyle)
                         .style(borderedStyle);
+                    sheet
+                        .cell(req.initiator ? row + 1 : row, 3)
+                        .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
+                        .style({border: {bottom: {style: 'thin', color: 'black'}, right: {style: 'thin', color: 'black'}}});
+                } else {
+                    sheet
+                        .cell(row, 3, row + max, 3, true)
+                        .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
+                        .style(contentStyle)
+                        .style(borderedStyle);
                 }
-                sheet
-                    .cell(req.initiator ? row + 1 : row, 3)
-                    .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
-                    .style(contentStyle)
-                    .style(borderedStyle);
                 if (req.dateExpires) {
                     sheet
                         .cell(row, 4, row + max, 4, true)
