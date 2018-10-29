@@ -255,11 +255,19 @@ export class AhoRequestsService {
                         .cell(row, 3)
                         .string(req.initiator)
                         .style(contentStyle)
-                        .style({border: {bottom: {style: 'none'}, right: {style: 'thin', color: 'black'}, left: {style: 'thin', color: 'black'}}});
+                        .style({
+                            border:
+                                {
+                                    bottom: {style: 'none'},
+                                    right: {style: 'thin', color: 'black'},
+                                    left: {style: 'thin', color: 'black'},
+                                    top: {style: 'thin', color: 'black'},
+                                },
+                        });
                     sheet
                         .cell(req.initiator ? row + 1 : row, 3)
                         .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
-                        .style({border: {bottom: {style: 'thin', color: 'black'}, right: {style: 'thin', color: 'black'}}});
+                        .style({border: {right: {style: 'thin', color: 'black'}}});
                 } else {
                     sheet
                         .cell(row, 3, row + max, 3, true)
@@ -338,7 +346,7 @@ export class AhoRequestsService {
                                         style: index === 0 ? 'thin' : 'none',
                                         color: 'black',
                                     },
-                                    right: {
+                                    left: {
                                         style: 'thin',
                                         color: 'black',
                                     },
