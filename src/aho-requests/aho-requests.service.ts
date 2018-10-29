@@ -786,13 +786,24 @@ export class AhoRequestsService {
    * @returns {Promise<boolean>}
    */
   async deleteRequest(requestId: number): Promise<boolean> {
-    const result = await this.postgresService.query(
-      'aho-requests-delete',
-      `SELECT aho_requests_delete($1)`,
-      [requestId],
-      'aho_requests_delete',
-    );
-    return result;
+      const request = await this.getRequestById(requestId);
+      const result = await this.postgresService.query(
+          'aho-requests-delete',
+          `SELECT aho_requests_delete($1)`,
+          [requestId],
+          'aho_requests_delete',
+      );
+      request.employees.forEach((employee: IUser) => {
+          if (employee.email) {
+              this.mailService.send(
+                  'Заявки АХО <aho@kolenergo.ru>',
+                  employee.email,
+                  `Заявка №${request.id} удалена админинстратором системы`,
+                  `Заявка №${request.id}, в которой Вы были назначены исполнителем была удалена администратором системы`,
+              );
+          }
+      });
+      return result;
   }
 
   /**
