@@ -284,8 +284,9 @@ export class AhoRequestsService {
                         .style({ numberFormat: 'dd.mm.yyyy' });
                 } else {
                     sheet
-                        .cell(row, 4)
+                        .cell(row, 4, row + max, 4, true)
                         .string('Не задан')
+                        .style(borderedStyle)
                         .style(contentStyle)
                         .style({
                             font: {
