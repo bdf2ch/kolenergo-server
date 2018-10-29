@@ -255,7 +255,7 @@ export class AhoRequestsService {
                         .cell(row, 3)
                         .string(req.initiator)
                         .style(contentStyle)
-                        .style(borderedStyle);
+                        .style({border: {bottom: {style: 'none'}, right: {style: 'thin', color: 'black'}, left: {style: 'thin', color: 'black'}}});
                     sheet
                         .cell(req.initiator ? row + 1 : row, 3)
                         .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
@@ -336,6 +336,10 @@ export class AhoRequestsService {
                                 border: {
                                     top: {
                                         style: index === 0 ? 'thin' : 'none',
+                                        color: 'black',
+                                    },
+                                    right: {
+                                        style: 'thin',
                                         color: 'black',
                                     },
                                 },
