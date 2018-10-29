@@ -252,14 +252,13 @@ export class AhoRequestsService {
                     .style({ numberFormat: 'dd.mm.yyyy' });
                 if (req.initiator) {
                     sheet
-                        .cell(row, 3, row, 3, true)
+                        .cell(row, 3)
                         .string(req.initiator)
                         .style(contentStyle)
                         .style(borderedStyle);
-                    row++;
                 }
                 sheet
-                    .cell(row, 3, req.initiator ? row + max - 1 : row + max, 3, true)
+                    .cell(req.initiator ? row + 1 : row, 3)
                     .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
                     .style(contentStyle)
                     .style(borderedStyle);
