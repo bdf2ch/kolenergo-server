@@ -668,11 +668,12 @@ export class AhoRequestsService {
     const administrators = await this.getAdministrators();
     administrators.forEach((user: IUser) => {
       if (request.user.email) {
-        let tasks = '';
+        let tasks = '<ul>';
         request.tasks.forEach((task: IAhoRequestTask, index: number) => {
-          tasks += `${task.content.title} ${task.count ? ' - ' + task.content + task.content.boxing : ''}`;
+          tasks += `<li>${task.content.title} ${request.type.isCountable ? ' - ' + task.content + task.content.boxing : ''}</li>`;
           tasks += index < request.tasks.length - 1 ? '<br>' : '';
         });
+        tasks += '</ul>';
         this.mailService.send(
           'Заявки АХО <aho@kolenergo.ru>',
           request.user.email,
@@ -680,15 +681,15 @@ export class AhoRequestsService {
           `Новая заявка №${result.id}.<br><br>` +
           `Категория заявки: ${request.type.title}<br>` +
           `${request.initiator ? 'Инициатор: ' + request.initiator + '<br>' : ''}` +
-          `Заявитель: ${request.user.firstName} ${request.user.secondName ? request.user.secondName : ''} ${request.user.lastName}` +
+          `Заявитель: ${request.user.firstName} ${request.user.secondName ? request.user.secondName : ''} ${request.user.lastName}<br>` +
           `${request.room ? 'Кабинет: ' + request.room + '<br>' : ''}` +
           `${request.numberOfLoaders ? 'Количество грузчиков: ' + request.numberOfLoaders + '<br>' : ''}` +
           `${request.dateExpires ? 'Срок исполнения: ' +
             request.dateExpires.getDate() + '.' +
             (request.dateExpires.getMonth() + 1) + '.' +
-            request.dateExpires.getFullYear() + '<br><br>' : ''}` +
+            request.dateExpires.getFullYear() + '<br>' : ''}` +
           `Содержимое заявки:<br>` + tasks +
-          `<br><a href="http://10.50.0.153:12345/request/${result.id}">Открыть заявку в системе заявок АХО</a>`,
+          `<br><br><a href="http://10.50.0.153:12345/request/${result.id}">Открыть заявку в системе заявок АХО</a>`,
         );
       }
     });
@@ -846,9 +847,7 @@ export class AhoRequestsService {
         }
     });
     const administrators = await this.getAdministrators();
-    console.log('administrators', administrators);
     administrators.forEach((user: IUser) => {
-        console.log('admin', user);
         if (user.email) {
           this.mailService.send(
             'Заявки АХО <aho@kolenergo.ru>',
