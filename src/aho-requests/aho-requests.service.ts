@@ -668,7 +668,7 @@ export class AhoRequestsService {
     const administrators = await this.getAdministrators();
     administrators.forEach((user: IUser) => {
       if (request.user.email) {
-        let tasks = '<ul>';
+        let tasks = '<ul style="margin-top: 0px; margin-bottom: 0px;">';
         request.tasks.forEach((task: IAhoRequestTask, index: number) => {
           tasks += `<li>${task.content.title} ${request.type.isCountable ? ' - ' + task.content + task.content.boxing : ''}</li>`;
         });
