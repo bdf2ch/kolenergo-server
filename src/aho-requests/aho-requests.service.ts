@@ -670,7 +670,7 @@ export class AhoRequestsService {
       if (request.user.email) {
         let tasks = '<ul style="margin-top: 0px; margin-bottom: 0px;">';
         request.tasks.forEach((task: IAhoRequestTask, index: number) => {
-          tasks += `<li>${task.content.title} ${request.type.isCountable ? ' - ' + task.count + task.content.boxing : ''}</li>`;
+          tasks += `<li>${task.content.title} ${request.type.isCountable ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук') : ''}</li>`;
         });
         tasks += '</ul>';
         this.mailService.send(
