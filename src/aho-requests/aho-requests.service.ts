@@ -220,7 +220,7 @@ export class AhoRequestsService {
         sheet.column(1).setWidth(5);
         sheet.cell(1, 2).string('Дата подачи').style(borderedStyle);
         sheet.column(2).setWidth(15);
-        sheet.cell(1, 3).string('Заявитель').style(borderedStyle);
+        sheet.cell(1, 3).string('Инициатор / Заявитель').style(borderedStyle);
         sheet.column(3).setWidth(40);
         sheet.cell(1, 4).string('Срок исполн.').style(borderedStyle);
         sheet.column(4).setWidth(15);
@@ -250,8 +250,15 @@ export class AhoRequestsService {
                     .style(borderedStyle)
                     .style(contentStyle)
                     .style({ numberFormat: 'dd.mm.yyyy' });
+                if (req.initiator) {
+                    sheet
+                        .cell(row, 3, row, 3, true)
+                        .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
+                        .style(contentStyle)
+                        .style(borderedStyle);
+                }
                 sheet
-                    .cell(row, 3, row + max, 3, true)
+                    .cell(row, 3, req.initiator ? (row + 1 + max) : (row + max), 3, true)
                     .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
                     .style(contentStyle)
                     .style(borderedStyle);
