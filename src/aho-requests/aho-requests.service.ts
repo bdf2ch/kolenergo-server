@@ -968,6 +968,7 @@ export class AhoRequestsService {
         'aho-requests-get-administrators',
         `SELECT users_get_by_role_id(1)`,
         [],
+          'users_get_by_role_id',
       );
       return result ? result : [];
     }
