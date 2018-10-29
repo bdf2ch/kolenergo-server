@@ -715,9 +715,24 @@ export class AhoRequestsService {
           `Вы назначены исполнителем заявки №${request.id}.` +
           `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
         );
-
       }
     });
+    if (request.dateExpires && request.dateExpires !== request_.dateExpires) {
+        request.employees.forEach((employee: IUser) => {
+            if (employee.email) {
+                this.mailService.send(
+                    'Заявки АХО <aho@kolenergo.ru>',
+                    employee.email,
+                    `У заявки №${request.id} изменен срок исполнения`,
+                    `У заявки №${request.id} изменен срок исполенния, новый срок исполнения:` +
+                    `${new Date(request.dateExpires).getDate() +
+                    '.' + (new Date(request.dateExpires).getMonth() + 1) +
+                    '.' + new Date(request.dateExpires).getFullYear()}` +
+                    `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+                );
+            }
+        });
+    }
 
     let requestStatusId = 3;
     request.tasks.forEach((task: IAhoRequestTask) => {
