@@ -253,12 +253,13 @@ export class AhoRequestsService {
                 if (req.initiator) {
                     sheet
                         .cell(row, 3, row, 3, true)
-                        .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
+                        .string(req.initiator)
                         .style(contentStyle)
                         .style(borderedStyle);
+                    row++;
                 }
                 sheet
-                    .cell(row, 3, req.initiator ? (row + 1 + max) : (row + max), 3, true)
+                    .cell(row, 3, row + max, 3, true)
                     .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
                     .style(contentStyle)
                     .style(borderedStyle);
