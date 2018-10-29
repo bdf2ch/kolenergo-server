@@ -259,7 +259,7 @@ export class AhoRequestsService {
                     row++;
                 }
                 sheet
-                    .cell(row, 3, row + max, 3, true)
+                    .cell(row, 3, req.initiator ? row + max - 1 : row + max, 3, true)
                     .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
                     .style(contentStyle)
                     .style(borderedStyle);
