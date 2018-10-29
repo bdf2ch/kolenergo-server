@@ -717,7 +717,20 @@ export class AhoRequestsService {
         );
       }
     });
-    if (request.dateExpires && new Date(request.dateExpires) !== new Date(request_.dateExpires)) {
+    request_.employees.forEach((employee: IUser) => {
+        const findEmployeeById = (user: IUser) => user.id === employee.id;
+        const user = request.employees.find(findEmployeeById);
+        if (!user && employee.email) {
+            this.mailService.send(
+                'Заявки АХО <aho@kolenergo.ru>',
+                employee.email,
+                `Вы больше не являетесь исполнителем заявки №${request.id}`,
+                `Вы больше не являетесь исполнителем заявки №${request.id}.` +
+                `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+            );
+        }
+    });
+    if (request.dateExpires && new Date(request.dateExpires).getTime() !== new Date(request_.dateExpires).getTime()) {
         request.employees.forEach((employee: IUser) => {
             if (employee.email) {
                 this.mailService.send(
