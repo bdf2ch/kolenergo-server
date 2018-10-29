@@ -432,6 +432,23 @@ export class AhoRequestsService {
             row += 2;
 
             /**
+             * Инициатор
+             */
+            if (request.initiator) {
+                sheet
+                    .cell(row, 1, row + 1, 1, true)
+                    .string('Инициатор')
+                    .style(contentStyle)
+                    .style(borderedStyle);
+                sheet
+                    .cell(row, 2, row + 1, 2, true)
+                    .string(request.initiator)
+                    .style(borderedStyle)
+                    .style(contentStyle);
+                row += 2;
+            }
+
+            /**
              * Заявитель
              */
             sheet
@@ -737,7 +754,7 @@ export class AhoRequestsService {
                     'Заявки АХО <aho@kolenergo.ru>',
                     employee.email,
                     `У заявки №${request.id} изменен срок исполнения`,
-                    `У заявки №${request.id} изменен срок исполенния, новый срок исполнения: ` +
+                    `У заявки №${request.id} изменен срок исполнения, новый срок исполнения: ` +
                     `${new Date(request.dateExpires).getDate() +
                     '.' + (new Date(request.dateExpires).getMonth() + 1) +
                     '.' + new Date(request.dateExpires).getFullYear()}` +
@@ -799,7 +816,7 @@ export class AhoRequestsService {
                   'Заявки АХО <aho@kolenergo.ru>',
                   employee.email,
                   `Заявка №${request.id} удалена админинстратором системы`,
-                  `Заявка №${request.id}, в которой Вы были назначены исполнителем была удалена администратором системы`,
+                  `Заявка №${request.id}, в которой Вы были назначены исполнителем была удалена администратором системы.`,
               );
           }
       });
