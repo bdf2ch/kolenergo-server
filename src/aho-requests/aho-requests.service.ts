@@ -670,7 +670,9 @@ export class AhoRequestsService {
       if (request.user.email) {
         let tasks = '<ul style="margin-top: 0px; margin-bottom: 0px;">';
         request.tasks.forEach((task: IAhoRequestTask, index: number) => {
-          tasks += `<li>${task.content.title} ${request.type.isCountable ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук') : ''}</li>`;
+          tasks += `<li>${task.content.title} ${request.type.isCountable
+              ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук')
+              : ''}</li>`;
         });
         tasks += '</ul>';
         this.mailService.send(
@@ -684,11 +686,11 @@ export class AhoRequestsService {
           `${request.room ? 'Кабинет: ' + request.room + '<br>' : ''}` +
           `${request.numberOfLoaders ? 'Количество грузчиков: ' + request.numberOfLoaders + '<br>' : ''}` +
           `${request.dateExpires ? 'Срок исполнения: ' +
-            request.dateExpires.getDate() + '.' +
-            (request.dateExpires.getMonth() + 1) + '.' +
-            request.dateExpires.getFullYear() + '<br>' : ''}` +
+            new Date(request.dateExpires).getDate() + '.' +
+            (new Date(request.dateExpires).getMonth() + 1) + '.' +
+            new Date(request.dateExpires).getFullYear() + '<br>' : ''}` +
           `Содержимое заявки:<br>` + tasks +
-          `<br><br><a href="http://10.50.0.153:12345/request/${result.id}">Открыть заявку в системе заявок АХО</a>`,
+          `<br><a href="http://10.50.0.153:12345/request/${result.id}">Открыть заявку в системе заявок АХО</a>`,
         );
       }
     });
