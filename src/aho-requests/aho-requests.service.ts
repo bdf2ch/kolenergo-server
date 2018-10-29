@@ -671,7 +671,6 @@ export class AhoRequestsService {
         let tasks = '<ul>';
         request.tasks.forEach((task: IAhoRequestTask, index: number) => {
           tasks += `<li>${task.content.title} ${request.type.isCountable ? ' - ' + task.content + task.content.boxing : ''}</li>`;
-          tasks += index < request.tasks.length - 1 ? '<br>' : '';
         });
         tasks += '</ul>';
         this.mailService.send(
