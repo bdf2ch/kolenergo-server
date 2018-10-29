@@ -846,7 +846,7 @@ export class AhoRequestsService {
         }
     });
     const administrators = await this.getAdministrators();
-    console.log(administrators);
+    console.log('administrators', administrators);
     administrators.forEach((user: IUser) => {
         if (user.email) {
           this.mailService.send(
@@ -965,8 +965,8 @@ export class AhoRequestsService {
   async getAdministrators(): Promise<IUser[]> {
       const result = this.postgresService.query(
         'aho-requests-get-administrators',
-        `SELECT users_get_by_role_id($1)`,
-        [1],
+        `SELECT users_get_by_role_id(1)`,
+        [],
       );
       return result ? result : [];
     }
