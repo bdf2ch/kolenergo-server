@@ -848,12 +848,13 @@ export class AhoRequestsService {
     const administrators = await this.getAdministrators();
     console.log('administrators', administrators);
     administrators.forEach((user: IUser) => {
+        console.log('admin', user);
         if (user.email) {
           this.mailService.send(
             'Заявки АХО <aho@kolenergo.ru>',
             user.email,
-            `Заявка №${request.id} отменена`,
-            `Заявка №${request.id} отменена.` +
+            `Заявка №${request.id} отменена заявителем`,
+            `Заявка №${request.id} отменена заявителем.` +
             `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
           );
         }
