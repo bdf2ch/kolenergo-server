@@ -717,14 +717,14 @@ export class AhoRequestsService {
         );
       }
     });
-    if (request.dateExpires && request.dateExpires !== request_.dateExpires) {
+    if (request.dateExpires && new Date(request.dateExpires) !== new Date(request_.dateExpires)) {
         request.employees.forEach((employee: IUser) => {
             if (employee.email) {
                 this.mailService.send(
                     'Заявки АХО <aho@kolenergo.ru>',
                     employee.email,
                     `У заявки №${request.id} изменен срок исполнения`,
-                    `У заявки №${request.id} изменен срок исполенния, новый срок исполнения:` +
+                    `У заявки №${request.id} изменен срок исполенния, новый срок исполнения: ` +
                     `${new Date(request.dateExpires).getDate() +
                     '.' + (new Date(request.dateExpires).getMonth() + 1) +
                     '.' + new Date(request.dateExpires).getFullYear()}` +
