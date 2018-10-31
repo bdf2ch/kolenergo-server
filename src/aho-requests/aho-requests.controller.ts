@@ -74,7 +74,7 @@ export class AhoRequestsController {
     @Query('search') search,
   ): Promise<IAhoRequest[]> {
     if (search && search !== null) {
-      const result = await this.ahoRequestsService.searchRequests(search);
+      const result = await this.ahoRequestsService.searchRequests(userId, search);
       return result;
     } else {
       const result =

@@ -168,11 +168,11 @@ export class AhoRequestsService {
      * @param {string} query - Условие поиска
      * @returns {Promise<IAhoRequest[]>}
      */
-    async searchRequests(query: string): Promise<IServerResponse<IAhoServerResponse>> {
+    async searchRequests(userId: number, query: string): Promise<IServerResponse<IAhoServerResponse>> {
         const result = this.postgresService.query(
             'aho-requests-search',
-            `SELECT aho_requests_search($1)`,
-            [query],
+            `SELECT aho_requests_search($1, $2)`,
+            [userId, query],
             'aho_requests_search',
         );
         return result ? result : [];
