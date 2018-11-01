@@ -872,6 +872,14 @@ export class AhoRequestsService {
               );
           }
       });
+      if (request.user.email) {
+          this.mailService.send(
+              'Заявки АХО <aho@kolenergo.ru>',
+              request.user.email,
+              `Ваша заявка №${request.id} удалена администратором системы`,
+              `Ваша заявка №${request.id} удалена администратором системы`,
+          );
+      }
       return result;
   }
 
