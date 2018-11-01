@@ -837,6 +837,15 @@ export class AhoRequestsService {
             ],
             'aho_requests_set_status',
         );
+        if (request.user.email) {
+            this.mailService.send(
+                'Заявки АХО <aho@kolenergo.ru>',
+                request.user.email,
+                `Статус Вашей заявки №${request.id} изменен: ${status.title}`,
+                `Статус Вашей заявки №${request.id} изменен: ${status.title}` +
+                `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+            );
+        }
         return result ? result : null;
     }
 
