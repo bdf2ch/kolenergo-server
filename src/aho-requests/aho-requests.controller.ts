@@ -93,6 +93,12 @@ export class AhoRequestsController {
     }
   }
 
+    @Post('/requests/status')
+    async setRequestStatus(@Body() data): Promise<IAhoRequest | null> {
+        const result = await this.ahoRequestsService.setRequestStatus(data.request, data.status);
+        return result;
+    }
+
   @Post('/requests/reject')
   async rejectRequest(@Body() request): Promise<IAhoRequest | null> {
     const result = await this.ahoRequestsService.rejectRequest(request);

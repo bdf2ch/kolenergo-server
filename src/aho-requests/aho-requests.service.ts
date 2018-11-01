@@ -822,6 +822,24 @@ export class AhoRequestsService {
     return result ? result : null;
   }
 
+    /**
+     * Изменение статуса заявки
+     * @param request {IAhoRequest} - Заявка АХО
+     * @param status {IAhorequestStatus} - Статус заявки АХО
+     */
+    async setRequestStatus(request: IAhoRequest, status: IAhoRequestStatus): Promise<IAhoRequest | null> {
+        const result = await this.postgresService.query(
+            'aho-requests-set-status',
+            `SELECT aho_requests_set_status($1, $2)`,
+            [
+                request.id,
+                status.id,
+            ],
+            'aho_requests_set_status',
+        );
+        return result ? result : null;
+    }
+
   /**
    * Удаление заявки АХО
    * @param {number} requestId - Идентификатор заявки
