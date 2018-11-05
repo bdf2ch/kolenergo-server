@@ -26,12 +26,22 @@ export class AuthenticationStrategy extends Strategy {
     async signInUser(req, username, password, done: (error, user, info?) => void): Promise<any> {
         try {
             const ldapUser: ILdapUser = await this.ldapService.logIn(username, password);
-            console.log('ldap user', ldapUser);
+            console.log('ldap user', ldapUser, ldapUser['dn'].split(',').reverse());
+            console.log('company', ldapUser['dn'].split(',').reverse()[3].split('=')[1]);
+            console.log('department', ldapUser['dn'].split(',').reverse()[5].split('=')[1]);
             if (ldapUser) {
               const user = await this.usersService.getByAccount(ldapUser.sAMAccountName, req.body.appCode);
               console.log(user);
               if (user) return done(null, user);
               if (!user) {
+                  const companyUid = ldapUser.dn
+                    .split(',')
+                    .reverse()[3]
+                    .split('=')[1];
+                  const departmentUid = ldapUser.dn
+                    .split(',')
+                    .reverse()[3]
+                    .split('=')[1];
                   if (req.body.addIfNotExists && req.body.addIfNotExists === true) {
                       const fio = ldapUser.cn.split(' ');
                       const newUser = await this.usersService.add({
@@ -43,6 +53,8 @@ export class AuthenticationStrategy extends Strategy {
                           position: null,
                           email: ldapUser.mail,
                           activeDirectoryAccount: ldapUser.sAMAccountName,
+                          activeDirectoryCompanyUid: companyUid,
+                          activeDirectoryDepartmentUid: departmentUid,
                       });
                       return done(null, newUser);
                   }
