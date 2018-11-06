@@ -719,7 +719,7 @@ export class AhoRequestsService {
         tasks += '</ul>';
         this.mailService.send(
           'Заявки АХО <aho@kolenergo.ru>',
-          request.user.email,
+          user.email,
           `Новая заявка №${result.id}`,
           `Новая заявка №${result.id}.<br><br>` +
           `Категория заявки: ${request.type.title}<br>` +
