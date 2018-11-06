@@ -38,10 +38,12 @@ export class AuthenticationStrategy extends Strategy {
                     .split(',')
                     .reverse()[3]
                     .split('=')[1];
+                  console.log('companyUid', companyUid);
                   const departmentUid = ldapUser.dn
                     .split(',')
                     .reverse()[3]
                     .split('=')[1];
+                  console.log('departmentUid', departmentUid);
                   if (req.body.addIfNotExists && req.body.addIfNotExists === true) {
                       const fio = ldapUser.cn.split(' ');
                       const newUser = await this.usersService.add({
