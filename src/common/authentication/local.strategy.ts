@@ -41,7 +41,7 @@ export class AuthenticationStrategy extends Strategy {
                   console.log('companyUid', companyUid);
                   const departmentUid = ldapUser.dn
                     .split(',')
-                    .reverse()[3]
+                    .reverse()[5]
                     .split('=')[1];
                   console.log('departmentUid', departmentUid);
                   if (req.body.addIfNotExists && req.body.addIfNotExists === true) {
