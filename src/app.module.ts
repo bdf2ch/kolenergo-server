@@ -12,7 +12,9 @@ import { AppController } from './app.controller';
       PhoneBookModule,
       ControlPanelModule,
   ],
-  controllers: [AppController],
+  controllers: [
+    AppController,
+  ],
   components: [],
 })
 export class AppModule {}
