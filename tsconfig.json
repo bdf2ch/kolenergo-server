@@ -15,7 +15,8 @@
     "baseUrl": "./src",
     "paths": {
       "@kolenergo/lib": ["../../kolenergo-workspace/src/shared-lib/api.ts"],
-      "@kolenergo/aho": ["../../kolenergo-workspace/src/aho-requests-app/exports.ts"]
+      "@kolenergo/aho": ["../../kolenergo-workspace/src/aho-requests-app/exports.ts"],
+      "@kolenergo/cp": ["../../kolenergo-workspace/src/control-panel-app/exports.ts"]
     }
   },
   "include": [

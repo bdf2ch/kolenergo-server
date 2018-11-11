@@ -100,7 +100,6 @@ export class AhoRequestsService {
         return result ? result : [];
     }
 
-
     /**
      * Добавление причины отклоенния заявки
      * @param rejectReason
