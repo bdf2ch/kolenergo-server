@@ -13,6 +13,11 @@ import { UsersModule } from './users/users.module';
     ],
     components: [],
     controllers: [],
-    exports: [],
+    exports: [
+        DataBaseModule,
+        MailModule,
+        AuthenticationModule,
+        UsersModule,
+    ],
 })
 export class CommonModule {}

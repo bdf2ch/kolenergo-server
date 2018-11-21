@@ -3,7 +3,7 @@ import { ApplicationsService } from './applications.service';
 import { IServerResponse } from '@kolenergo/lib';
 import { IApplication } from '@kolenergo/cp';
 
-@Controller('applications')
+@Controller('cp/applications')
 export class ApplicationsController {
     constructor(private readonly applicationsService: ApplicationsService) {}
 
