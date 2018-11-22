@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../../common/database/postgres.service';
-import { IServerResponse } from '@kolenergo/lib';
+import { IPermission, IServerResponse } from '@kolenergo/lib';
 import { IAhoServerResponse } from '@kolenergo/aho';
 import { IApplication } from '@kolenergo/cp';
 
@@ -18,6 +18,24 @@ export class ApplicationsService {
             `SELECT applications_get_all()`,
             [],
             'applications_get_all',
+        );
+        return result ? result : null;
+    }
+
+    /**
+     * Изменение права пользователя
+     * @param permission
+     */
+    async editPermission(permission: IPermission): Promise<IServerResponse<IPermission>> {
+        const result = await this.postgresService.query(
+            'edit-permission',
+            `SELECT applications_edit_permission($1, $2, $3)`,
+            [
+                permission.id,
+                permission.code,
+                permission.title,
+            ],
+            'applications_edit_permission',
         );
         return result ? result : null;
     }
