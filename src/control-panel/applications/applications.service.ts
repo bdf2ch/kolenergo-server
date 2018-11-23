@@ -23,6 +23,24 @@ export class ApplicationsService {
     }
 
     /**
+     * Добавление нового права пользователя
+     * @param permission - Добавляемое право пользователя
+     */
+    async addPermission(permission: IPermission): Promise<IServerResponse<IPermission>> {
+        const result = await this.postgresService.query(
+            'add-permission',
+            'SELECT applications_add_permission($1, $2, $3)',
+            [
+                permission.applicationId,
+                permission.code,
+                permission.title,
+            ],
+            'applications_add_permission',
+        );
+        return result ? result : null;
+    }
+
+    /**
      * Изменение права пользователя
      * @param permission
      */

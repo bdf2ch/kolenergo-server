@@ -13,6 +13,12 @@ export class ApplicationsController {
         return result;
     }
 
+    @Post('/permissions')
+    async addPermission(@Body() permission: IPermission): Promise<IServerResponse<IPermission>> {
+        const result = await this.applicationsService.addPermission(permission);
+        return result;
+    }
+
     @Patch('/permissions/:id')
     async editPermission(@Body() permission: IPermission): Promise<IServerResponse<IPermission>> {
         const result = await this.applicationsService.editPermission(permission);
