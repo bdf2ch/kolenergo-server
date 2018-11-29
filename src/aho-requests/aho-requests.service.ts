@@ -389,7 +389,7 @@ export class AhoRequestsService {
                         .style(borderedStyle);
                 } else {
                     sheet
-                        .cell(row, 7)
+                        .cell(row, 9)
                         .string('Не указан')
                         .style(contentStyle)
                         .style({
