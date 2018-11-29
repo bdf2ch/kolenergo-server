@@ -392,6 +392,7 @@ export class AhoRequestsService {
                         .cell(row, 9)
                         .string('Не указан')
                         .style(contentStyle)
+                        .style(borderedStyle)
                         .style({
                             font: {
                                 color: '757575',
