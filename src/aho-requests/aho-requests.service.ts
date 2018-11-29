@@ -389,10 +389,10 @@ export class AhoRequestsService {
                         .style(borderedStyle);
                 } else {
                     sheet
-                        .cell(row, 9)
+                        .cell(row, 9, row + max, 9, true)
                         .string('Не указан')
-                        .style(contentStyle)
                         .style(borderedStyle)
+                        .style(contentStyle)
                         .style({
                             font: {
                                 color: '757575',
