@@ -231,6 +231,8 @@ export class AhoRequestsService {
         sheet.column(7).setWidth(40);
         sheet.cell(1, 8).string('Статус').style(borderedStyle);
         sheet.column(8).setWidth(15);
+        sheet.cell(1, 9).string('Телефон').style(borderedStyle);
+        sheet.column(9).setWidth(15);
         const result = await this.getRequests(start, end, userId, employeeId, requestTypeId, requestStatusId, false, 0, 0);
         if (result) {
             let row = 2;
@@ -379,6 +381,23 @@ export class AhoRequestsService {
                     .string(req.status.title)
                     .style(contentStyle)
                     .style(borderedStyle);
+                if (req.phone) {
+                    sheet
+                        .cell(row, 9, row + max, 9, true)
+                        .string(req.phone)
+                        .style(contentStyle)
+                        .style(borderedStyle);
+                } else {
+                    sheet
+                        .cell(row, 7)
+                        .string('Не указан')
+                        .style(contentStyle)
+                        .style({
+                            font: {
+                                color: '757575',
+                            },
+                        });
+                }
                 row += max + 1;
             });
         }
@@ -683,7 +702,7 @@ export class AhoRequestsService {
   async addRequest(request: IAddAhoRequest): Promise<IAhoRequest | null> {
     const result = await this.postgresService.query(
       'aho-requests-add',
-      `SELECT aho_requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `SELECT aho_requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         request.user.id,
         request.type.id,
@@ -694,6 +713,7 @@ export class AhoRequestsService {
         request.tasks,
         request.employees,
         request.initiator,
+          request.phone,
       ],
       'aho_requests_add',
     );
