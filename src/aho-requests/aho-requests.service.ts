@@ -508,6 +508,21 @@ export class AhoRequestsService {
             row += 2;
 
             /**
+             * Заявитель
+             */
+            sheet
+                .cell(row, 1, row + 1, 1, true)
+                .string('Контактный телефон')
+                .style(contentStyle)
+                .style(borderedStyle);
+            sheet
+                .cell(row, 2, row + 1, 2, true)
+                .string(request.phone)
+                .style(borderedStyle)
+                .style(contentStyle);
+            row += 2;
+
+            /**
              * Категория заявки
              */
             sheet
