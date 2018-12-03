@@ -1,12 +1,26 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
 import { ICompany, IServerResponse } from '@kolenergo/lib';
-import {IOperativeSituationReport, OperativeSituationReport} from '@kolenergo/osr';
+import { IOperativeSituationReport, IOperativeSituationReportsInitialData, OperativeSituationReport } from '@kolenergo/osr';
 import moment = require('moment');
 
 @Component()
 export class OperativeSituationService {
   constructor(private readonly postgresService: PostgresService) {}
+
+  async getInitialData(companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
+    const date = moment();
+    const result = await this.postgresService.query(
+      'operative-situation-reports-get-initial-data',
+      'SELECT operative_situation_reports_get_initial_data($1, $2)',
+      [
+        companyId,
+        date.format('DD.MM.YYYY'),
+      ],
+      'operative_situation_reports_get_initial_data',
+    );
+    return result ? result : null;
+  }
 
   /**
    * Получение отчетов об оперративной обстановке по дате
@@ -21,18 +35,6 @@ export class OperativeSituationService {
     return result;
   }
 
-    /**
-     * Получение отчетов об оперративной обстановке по дате
-     */
-    async getCompanies(): Promise<ICompany[]> {
-        const result = await this.postgresService.query(
-            'get-companies',
-            `SELECT * FROM companies`,
-            [],
-            '',
-        );
-        return result;
-    }
 
     async addReport(report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
       console.log(report);

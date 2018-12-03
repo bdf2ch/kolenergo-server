@@ -2,7 +2,7 @@ import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestj
 import * as moment from 'moment';
 import { OperativeSituationService } from './operative-situation.service';
 import { ICompany, IServerResponse } from '@kolenergo/lib';
-import { IOperativeSituationReport, OperativeSituationReport } from '@kolenergo/osr';
+import { IOperativeSituationReport, IOperativeSituationReportsInitialData, OperativeSituationReport } from '@kolenergo/osr';
 
 @Controller('osr')
 export class OperativeSituationController {
@@ -16,11 +16,12 @@ export class OperativeSituationController {
         return result;
     }
 
-    @Get('/companies')
-    async getCompanies(): Promise<ICompany[]> {
-        const result = await this.operativeSituationService.getCompanies();
-        return result;
-    }
+  @Get('/init')
+  async getInitialData(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
+    const result = await this.operativeSituationService.getInitialData(companyId);
+    result.data.date = moment().format('DD.MM.YYYY');
+    return result;
+  }
 
     @Post('')
     async addReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
