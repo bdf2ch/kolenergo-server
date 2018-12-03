@@ -1,23 +1,20 @@
 import { Module } from '@nestjs/common';
 import { CommonModule } from '../common/common.module';
-import { ApplicationsModule } from './applications/applications.module';
-import { ControlPanelService } from './control-panel.service';
-import { ControlPanelController } from './control-panel.controller';
+import { OperativeSituationService } from './operative-situation.service';
+import { OperativeSituationController } from './operative-situation.controller';
 
 @Module({
   imports: [
     CommonModule,
-    ApplicationsModule,
   ],
   components: [
-    ControlPanelService,
+    OperativeSituationService,
   ],
   controllers: [
-    ControlPanelController,
+    OperativeSituationController,
   ],
   exports: [
-    ApplicationsModule,
-    ControlPanelService,
+    OperativeSituationService,
   ],
 })
-export class ControlPanelModule {}
+export class OperativeSituationModule {}
