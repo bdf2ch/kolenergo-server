@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import { ICompany, IServerResponse } from '@kolenergo/lib';
+import { IServerResponse } from '@kolenergo/lib';
 import { IOperativeSituationReport, IOperativeSituationReportsInitialData, OperativeSituationReport } from '@kolenergo/osr';
 import moment = require('moment');
 
@@ -35,13 +35,13 @@ export class OperativeSituationService {
     return result;
   }
 
-
     async addReport(report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
-      console.log(report);
       const date = moment();
       const result = await this.postgresService.query(
           'add-operative-situation-report',
-          'SELECT operative_situation_reports_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)',
+          `SELECT operative_situation_reports_add(
+                  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+                )`,
           [
               report.company.id,
               report.user.id,
@@ -51,15 +51,24 @@ export class OperativeSituationService {
               Number(report.equipment_35_150.lep_35),
               Number(report.equipment_35_150.ps_110_150),
               Number(report.equipment_35_150.ps_35),
-              Number(report.equipment_35_150.effect.tp_6_20),
+              parseFloat(String(report.equipment_35_150.effect.tp_6_20)),
               Number(report.equipment_35_150.effect.population),
-              Number(report.equipment_35_150.effect.power),
+              report.equipment_35_150.effect.power,
               Number(report.equipment_35_150.effect.szo),
               Number(report.equipment_network.lep_6_20),
               Number(report.equipment_network.tp_6_20),
               Number(report.equipment_network.effect.population),
-              Number(report.equipment_network.effect.power),
+              parseFloat(String(report.equipment_network.effect.power)),
               Number(report.equipment_network.effect.szo),
+              Number(report.weather.min),
+              Number(report.weather.max),
+              report.weather.wind,
+              report.weather.precipitations,
+              report.weather.rpg,
+              report.weather.orr,
+              Number(report.resources.brigades),
+              Number(report.resources.people),
+              Number(report.resources.technics),
           ],
           'operative_situation_reports_add',
       );
