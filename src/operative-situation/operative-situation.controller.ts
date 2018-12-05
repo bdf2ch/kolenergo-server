@@ -28,4 +28,10 @@ export class OperativeSituationController {
         const result = await this.operativeSituationService.addReport(report);
         return result;
     }
+
+    @Patch('')
+    async editReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
+        const result = await this.operativeSituationService.editReport(report);
+        return result;
+    }
 }
