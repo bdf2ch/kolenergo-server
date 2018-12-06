@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
 import * as moment from 'moment';
 import { OperativeSituationService } from './operative-situation.service';
-import { ICompany, IServerResponse } from '@kolenergo/lib';
+import { IServerResponse } from '@kolenergo/lib';
 import { IOperativeSituationReport, IOperativeSituationReportsInitialData, OperativeSituationReport } from '@kolenergo/osr';
 
 @Controller('osr')
