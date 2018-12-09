@@ -40,7 +40,9 @@ export class OperativeSituationService {
       const result = await this.postgresService.query(
           'add-operative-situation-report',
           `SELECT operative_situation_reports_add(
-                  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+                  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
+                  $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
+                  $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38
                 )`,
           [
               report.company.id,
@@ -69,6 +71,19 @@ export class OperativeSituationService {
               Number(report.resources.brigades),
               Number(report.resources.people),
               Number(report.resources.technics),
+            report.violations.total_6,
+            report.violations.uapv_35,
+            report.violations.napv_35,
+            report.violations.power_off_35,
+            report.violations.lep_rs,
+            report.violations.tn_cancel,
+            report.violations.from_6_04,
+            report.violations.power_off_04,
+            report.violations.greater_3_04,
+            report.violations.population_srez_04,
+            report.violations.population_greater_3_04,
+            report.consumption,
+
           ],
           'operative_situation_reports_add',
       );
@@ -79,7 +94,9 @@ export class OperativeSituationService {
         const result = await this.postgresService.query(
             'edit-operative-situation-report',
             `SELECT operative_situation_reports_edit(
-                  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
+                  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
+                  $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
+                  $27, $28, $29, $30, $31, $32, $33, $34, $35
                 )`,
             [
                 report.id,
@@ -105,6 +122,18 @@ export class OperativeSituationService {
                 report.resources.brigades,
                 report.resources.people,
                 report.resources.technics,
+              report.violations.total_6,
+              report.violations.uapv_35,
+              report.violations.napv_35,
+              report.violations.power_off_35,
+              report.violations.lep_rs,
+              report.violations.tn_cancel,
+              report.violations.from_6_04,
+              report.violations.power_off_04,
+              report.violations.population_greater_3_04,
+              report.violations.population_srez_04,
+              report.violations.population_greater_3_04,
+              report.consumption,
             ],
             'operative_situation_reports_edit',
         );
