@@ -16,12 +16,12 @@ export class OperativeSituationController {
         return result;
     }
 
-  @Get('/init')
-  async getInitialData(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
-    const result = await this.operativeSituationService.getInitialData(companyId);
-    result.data.date = moment().format('DD.MM.YYYY');
-    return result;
-  }
+    @Get('/init')
+    async getInitialData(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
+        const result = await this.operativeSituationService.getInitialData(companyId);
+        result.data.date = moment().format('DD.MM.YYYY');
+        return result;
+    }
 
     @Post('')
     async addReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
