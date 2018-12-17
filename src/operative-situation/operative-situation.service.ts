@@ -22,6 +22,16 @@ export class OperativeSituationService {
         return result ? result : null;
     }
 
+    async getAllReports(): Promise<IOperativeSituationReport[]> {
+        const result = await this.postgresService.query(
+            'operative-situation-reports-get-all',
+            `SELECT * FROM operative_situation_reports`,
+            [],
+            '',
+        );
+        return result;
+    }
+
     /**
      * Получение отчетов об оперративной обстановке по дате
      */

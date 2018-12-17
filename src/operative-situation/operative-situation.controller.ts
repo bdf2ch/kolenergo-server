@@ -16,6 +16,12 @@ export class OperativeSituationController {
         return result;
     }
 
+    @Get('/all')
+    async getAllReports(): Promise<IOperativeSituationReport[]> {
+        const result = await this.operativeSituationService.getAllReports();
+        return result;
+    }
+
     @Get('/init')
     async getInitialData(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
         const result = await this.operativeSituationService.getInitialData(companyId);
