@@ -35,6 +35,12 @@ export class OperativeSituationController {
         return result;
     }
 
+    @Post('/consumption')
+    async addReport(@Body() consumption: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
+        const result = await this.operativeSituationService.addReport(report);
+        return result;
+    }
+
     @Patch('')
     async editReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
         const result = await this.operativeSituationService.editReport(report);
