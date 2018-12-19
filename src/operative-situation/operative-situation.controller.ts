@@ -2,7 +2,13 @@ import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestj
 import * as moment from 'moment';
 import { OperativeSituationService } from './operative-situation.service';
 import { IServerResponse } from '@kolenergo/lib';
-import { IOperativeSituationReport, IOperativeSituationReportsInitialData, OperativeSituationReport } from '@kolenergo/osr';
+import {
+    IOperativeSituationConsumption,
+    IOperativeSituationReport,
+    IOperativeSituationReportsInitialData,
+    OperativeSituationConsumption,
+    OperativeSituationReport,
+} from '@kolenergo/osr';
 
 @Controller('osr')
 export class OperativeSituationController {
@@ -11,7 +17,6 @@ export class OperativeSituationController {
     @Get('')
     async getReportsByDate(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReport[]>> {
         const date = moment();
-        console.log(date.format('DD.MM.YYYY'));
         const result = await this.operativeSituationService.getReportsByDate(companyId, date.format('DD.MM.YYYY'));
         return result;
     }
@@ -36,14 +41,20 @@ export class OperativeSituationController {
     }
 
     @Post('/consumption')
-    async addReport(@Body() consumption: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
-        const result = await this.operativeSituationService.addReport(report);
+    async addConsumption(@Body() consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
+        const result = await this.operativeSituationService.addConsumption(consumption);
         return result;
     }
 
     @Patch('')
     async editReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
         const result = await this.operativeSituationService.editReport(report);
+        return result;
+    }
+
+    @Patch('/consumption')
+    async editConsumption(@Body() consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
+        const result = await this.operativeSituationService.editConsumption(consumption);
         return result;
     }
 }

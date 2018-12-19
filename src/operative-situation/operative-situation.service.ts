@@ -1,13 +1,23 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
 import { IServerResponse } from '@kolenergo/lib';
-import { IOperativeSituationReport, IOperativeSituationReportsInitialData, OperativeSituationReport } from '@kolenergo/osr';
+import {
+    IOperativeSituationReport,
+    IOperativeSituationReportsInitialData,
+    OperativeSituationReport,
+    OperativeSituationConsumption,
+    IOperativeSituationConsumption,
+} from '@kolenergo/osr';
 import moment = require('moment');
 
 @Component()
 export class OperativeSituationService {
   constructor(private readonly postgresService: PostgresService) {}
 
+    /**
+     * Получение данных для инициализации приложения
+     * @param companyId
+     */
     async getInitialData(companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
         const date = moment();
         const result = await this.postgresService.query(
@@ -22,6 +32,9 @@ export class OperativeSituationService {
         return result ? result : null;
     }
 
+    /**
+     * Получение всех отчетов об оперативной обстановке
+     */
     async getAllReports(): Promise<IOperativeSituationReport[]> {
         const result = await this.postgresService.query(
             'operative-situation-reports-get-all',
@@ -33,7 +46,7 @@ export class OperativeSituationService {
     }
 
     /**
-     * Получение отчетов об оперративной обстановке по дате
+     * Получение отчетов об оперативной обстановке по дате
      */
     async getReportsByDate(companyId: number, date: string): Promise<IServerResponse<IOperativeSituationReport[]>> {
         const result = await this.postgresService.query(
@@ -45,6 +58,10 @@ export class OperativeSituationService {
         return result;
     }
 
+    /**
+     * Добавление отчета обоперативной обстановке
+     * @param report - Добавляемый отчет об оперативной обстановке
+     */
     async addReport(report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
         const date = moment();
         const result = await this.postgresService.query(
@@ -100,6 +117,10 @@ export class OperativeSituationService {
         return result ? result : null;
     }
 
+    /**
+     * Изменение отчета об оперативной обстановке
+     * @param report - Изменяемый отчет об оперативной обстановке
+     */
     async editReport(report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
         const result = await this.postgresService.query(
             'edit-operative-situation-report',
@@ -146,6 +167,43 @@ export class OperativeSituationService {
                 report.consumption,
             ],
             'operative_situation_reports_edit',
+        );
+        return result ? result : null;
+    }
+
+    /**
+     * Добавление отчета о максимальном потреблении за прошедшие сутки
+     * @param report - Добавляемый отчет об максимальном потреблении за прошедшие сутки
+     */
+    async addConsumption(consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
+        const date = moment();
+        const result = await this.postgresService.query(
+            'add-operative-situation-consumption',
+            `SELECT operative_situation_reports_consumption_add($1, $2, $3, $4)`,
+            [
+                consumption.company.id,
+                consumption.user.id,
+                date.format('DD.MM.YYYY'),
+                consumption.consumption,
+            ],
+            'operative_situation_reports_consumption_add',
+        );
+        return result ? result : null;
+    }
+
+    /**
+     * Изменение отчета о максимальном потреблении за прошедшие сутки
+     * @param consumption - Изменяемый отчет о максималньо потреблении за прошедшие сутки
+     */
+    async editConsumption(consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
+        const result = await this.postgresService.query(
+            'edit-operative-situation-report_consumption',
+            `SELECT operative_situation_reports_consumption_edit($1, $2)`,
+            [
+                consumption.id,
+                consumption.consumption,
+            ],
+            'operative_situation_reports_consumption_edit',
         );
         return result ? result : null;
     }
