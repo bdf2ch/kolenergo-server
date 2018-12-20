@@ -15,9 +15,8 @@ export class OperativeSituationController {
     constructor(private readonly operativeSituationService: OperativeSituationService) {}
 
     @Get('')
-    async getReportsByDate(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReport[]>> {
-        const date = moment();
-        const result = await this.operativeSituationService.getReportsByDate(companyId, date.format('DD.MM.YYYY'));
+    async getReportsByDate(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
+        const result = await this.operativeSituationService.getReportsByDate(companyId, moment().format('DD.MM.YYYY'));
         return result;
     }
 
