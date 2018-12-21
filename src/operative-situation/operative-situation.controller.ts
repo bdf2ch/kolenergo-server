@@ -30,6 +30,7 @@ export class OperativeSituationController {
     async getInitialData(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
         const result = await this.operativeSituationService.getInitialData(companyId);
         result.data.date = moment().format('DD.MM.YYYY');
+        result.data.time = moment().format('HH:mm');
         return result;
     }
 
