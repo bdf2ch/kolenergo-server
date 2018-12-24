@@ -43,8 +43,6 @@ export class CompaniesService {
     }
     */
 
-
-
     /**
      * Изменение права пользователя
      * @param permission - Изменяемое право пользователя

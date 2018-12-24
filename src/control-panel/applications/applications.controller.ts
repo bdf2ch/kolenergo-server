@@ -1,7 +1,6 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
-import { IServerResponse } from '@kolenergo/lib';
-import { IApplication, IPermission, IRole } from '@kolenergo/cpa';
+import { IServerResponse, IApplication, IPermission, IRole } from '@kolenergo/cpa';
 
 @Controller('cp/applications')
 export class ApplicationsController {

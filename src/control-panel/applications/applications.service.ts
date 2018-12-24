@@ -1,7 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../../common/database/postgres.service';
-import { IServerResponse } from '@kolenergo/lib';
-import { IPermission, IRole, IApplication } from '@kolenergo/cpa';
+import { IServerResponse, IPermission, IRole, IApplication } from '@kolenergo/cpa';
 import { IAhoServerResponse } from '@kolenergo/aho';
 
 @Component()

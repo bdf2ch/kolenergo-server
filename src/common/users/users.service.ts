@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../database/postgres.service';
-import { IUser, IAddUser, IEditUser, IDeleteUser } from '@kolenergo/lib';
+import { IUser, IAddUser, IEditUser, IDeleteUser } from '@kolenergo/cpa';
 
 @Component()
 export class UsersService {

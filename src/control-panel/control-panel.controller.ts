@@ -1,7 +1,6 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch} from '@nestjs/common';
 import { ControlPanelService } from './control-panel.service';
-import { IServerResponse } from '@kolenergo/lib';
-import { IControlPanelInitData } from '@kolenergo/cp';
+import { IServerResponse, IControlPanelInitData } from '@kolenergo/cpa';
 
 @Controller('cp')
 export class ControlPanelController {

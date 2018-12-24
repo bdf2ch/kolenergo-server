@@ -1,6 +1,6 @@
 import {Controller, Get, HttpStatus, Param, Post, Query, Res} from '@nestjs/common';
 import { UsersService } from './users.service';
-import {IUser} from '@kolenergo/lib';
+import { IUser } from '@kolenergo/cpa';
 
 @Controller('users')
 export class UsersController {

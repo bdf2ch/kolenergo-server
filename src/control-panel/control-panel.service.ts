@@ -1,7 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import { IServerResponse } from '@kolenergo/lib';
-import { IControlPanelInitData } from '@kolenergo/cp';
+import { IServerResponse, IControlPanelInitData } from '@kolenergo/cpa';
 
 @Component()
 export class ControlPanelService {

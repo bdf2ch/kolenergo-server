@@ -1,4 +1,4 @@
-import {Controller, Get, Post, UseFilters} from '@nestjs/common';
+import { Controller, Get, Post, UseFilters } from '@nestjs/common';
 import { AuthenticationExceptionFilter } from './filters/authentication.filter';
 
 @Controller('authentication')

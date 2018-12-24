@@ -12,7 +12,7 @@ import {
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
-import { IServerResponse, IUser, User } from '@kolenergo/lib';
+import { IServerResponse, IUser, User } from '@kolenergo/cpa';
 
 @Component()
 export class AhoRequestsService {

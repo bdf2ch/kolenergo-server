@@ -9,7 +9,7 @@ import {
     IAhoRequestComment,
     IAhoRequestNeed, AhoRequestRejectReason, AhoRequest, IAhoRequestsInitialData,
 } from '@kolenergo/aho';
-import {IServerResponse, IUser} from '@kolenergo/lib';
+import { IServerResponse, IUser } from '@kolenergo/cpa';
 
 @Controller('aho')
 export class AhoRequestsController {

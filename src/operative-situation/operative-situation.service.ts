@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import { IServerResponse } from '@kolenergo/lib';
+import { IServerResponse } from '@kolenergo/cpa';
 import {
     IOperativeSituationReport,
     IOperativeSituationReportsInitialData,

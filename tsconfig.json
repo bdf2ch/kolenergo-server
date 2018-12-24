@@ -14,11 +14,9 @@
     "outDir": "./dist",
     "baseUrl": "./src",
     "paths": {
-      "@kolenergo/lib": ["../../kolenergo-workspace/src/shared-lib/api.ts"],
       "@kolenergo/aho": ["../../kolenergo-workspace/src/aho-requests-app/exports.ts"],
       "@kolenergo/osr": ["../../kolenergo-workspace/src/operative-situation-app/exports.ts"],
       "@kolenergo/cpa": ["../../kolenergo-workspace/src/control-panel-app/exports.ts"]
-
     }
   },
   "include": [
