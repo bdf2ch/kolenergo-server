@@ -29,11 +29,12 @@ export class ApplicationsService {
   async addRole(role: IRole): Promise<IServerResponse<IRole>> {
     const result = await this.postgresService.query(
       'add-dole',
-      'SELECT applications_add_role($1, $2, $3)',
+      'SELECT applications_add_role($1, $2, $3, $4)',
       [
         role.applicationId,
         role.code,
         role.title,
+          role.permissions,
       ],
       'applications_add_role',
     );
@@ -47,11 +48,12 @@ export class ApplicationsService {
   async editRole(role: IRole): Promise<IServerResponse<IRole>> {
     const result = await this.postgresService.query(
       'edit-role',
-      `SELECT applications_edit_role($1, $2, $3)`,
+      `SELECT applications_edit_role($1, $2, $3, $4)`,
       [
         role.id,
         role.code,
         role.title,
+          role.permissions,
       ],
       'applications_edit_role',
     );
