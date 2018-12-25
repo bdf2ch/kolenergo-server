@@ -1,7 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../../common/database/postgres.service';
-import { IServerResponse } from '@kolenergo/lib';
-import { IAhoServerResponse } from '@kolenergo/aho';
+import { IServerResponse } from '@kolenergo/cpa';
 import { ICompany } from '@kolenergo/cpa';
 
 @Component()
@@ -24,24 +23,22 @@ export class CompaniesService {
     }
 
     /**
-     * Добавление новой роли пользователя
-     * @param role - Добавляемая роль пользователя
+     * Добавление новой организации
+     * @param company - Добавляемая организация
      */
-    /*
-    async addRole(role: IRole): Promise<IServerResponse<IRole>> {
+    async addCompany(company: ICompany): Promise<IServerResponse<ICompany>> {
         const result = await this.postgresService.query(
-            'add-dole',
-            'SELECT applications_add_role($1, $2, $3)',
+            'add-company',
+            'SELECT companies_add($1, $2, $3)',
             [
-                role.applicationId,
-                role.code,
-                role.title,
+                company.title,
+                company.shortTitle,
+                company.activeDirectoryUid,
             ],
-            'applications_add_role',
+            'companies_add',
         );
         return result ? result : null;
     }
-    */
 
     /**
      * Изменение права пользователя
@@ -68,6 +65,7 @@ export class CompaniesService {
      * @param userId - Идентификатор пользователя
      * @param itemsOnPage - Количество заявок на странице
      */
+    /*
     async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoServerResponse>> {
         const result = await this.postgresService.query(
             'aho-requests-get-initial-data',
@@ -77,4 +75,5 @@ export class CompaniesService {
         );
         return result;
     }
+    */
 }

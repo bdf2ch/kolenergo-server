@@ -8,8 +8,14 @@ export class CompaniesController {
     }
 
     @Get('/')
-    async getApplications(): Promise<IServerResponse<ICompany[]>> {
+    async getCompanies(): Promise<IServerResponse<ICompany[]>> {
         const result = await this.companiesService.getCompanies();
+        return result;
+    }
+
+    @Post('/')
+    async addCompany(@Body() company: ICompany): Promise<IServerResponse<ICompany>> {
+        const result = await this.companiesService.addCompany(company);
         return result;
     }
 
@@ -23,12 +29,6 @@ export class CompaniesController {
     @Patch('/roles/:id')
     async editRole(@Body() role: IRole): Promise<IServerResponse<IRole>> {
         const result = await this.applicationsService.editRole(role);
-        return result;
-    }
-
-    @Post('/permissions')
-    async addPermission(@Body() permission: IPermission): Promise<IServerResponse<IPermission>> {
-        const result = await this.applicationsService.addPermission(permission);
         return result;
     }
 
