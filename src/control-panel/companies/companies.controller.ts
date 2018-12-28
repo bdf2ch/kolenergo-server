@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
-import { IServerResponse, ICompany } from '@kolenergo/cpa';
+import { IServerResponse, ICompany, IOffice } from '@kolenergo/cpa';
 
 @Controller('cp/companies')
 export class CompaniesController {
@@ -16,6 +16,12 @@ export class CompaniesController {
     @Post('/')
     async addCompany(@Body() company: ICompany): Promise<IServerResponse<ICompany>> {
         const result = await this.companiesService.addCompany(company);
+        return result;
+    }
+
+    @Post('/offices')
+    async addOffice(@Body() office: IOffice): Promise<IServerResponse<IOffice>> {
+        const result = await this.companiesService.addOffice(office);
         return result;
     }
 

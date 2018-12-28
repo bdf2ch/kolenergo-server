@@ -1,7 +1,7 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../../common/database/postgres.service';
 import { IServerResponse } from '@kolenergo/cpa';
-import { ICompany } from '@kolenergo/cpa';
+import { ICompany, IOffice } from '@kolenergo/cpa';
 
 @Component()
 export class CompaniesService {
@@ -36,6 +36,29 @@ export class CompaniesService {
                 company.activeDirectoryUid,
             ],
             'companies_add',
+        );
+        return result ? result : null;
+    }
+
+    /**
+     * Добавление нового офиса организации
+     * @param office - Добавляемый офис организации
+     */
+    async addOffice(office: IOffice): Promise<IServerResponse<IOffice>> {
+        const result = await this.postgresService.query(
+            'add-office',
+            'SELECT companies_add_office($1, $2, $3, $4, $5, $6, $7, $8)',
+            [
+                office.companyId,
+                office.departmentId,
+                office.title,
+                office.description,
+                office.address,
+                office.floors,
+                office.isWithLoft,
+                office.isWithBasement,
+            ],
+            'companies_add_office',
         );
         return result ? result : null;
     }
