@@ -1,14 +1,17 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
-import * as moment from 'moment';
 import { OperativeSituationService } from './operative-situation.service';
 import { IServerResponse } from '@kolenergo/cpa';
 import {
-    IOperativeSituationConsumption,
-    IOperativeSituationReport,
-    IOperativeSituationReportsInitialData,
-    OperativeSituationConsumption,
-    OperativeSituationReport,
+  IOperativeSituationConsumption,
+  IOperativeSituationRegion,
+  IOperativeSituationReport,
+  IOperativeSituationReportsInitialData,
+  IOperativeSituationWeatherReport,
+  OperativeSituationConsumption,
+  OperativeSituationReport,
 } from '@kolenergo/osr';
+import * as moment from 'moment';
+import * as https from 'https';
 
 @Controller('osr')
 export class OperativeSituationController {
@@ -44,6 +47,12 @@ export class OperativeSituationController {
     async addConsumption(@Body() consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
         const result = await this.operativeSituationService.addConsumption(consumption);
         return result;
+    }
+
+    @Post('/weather')
+    async addWeather(@Body() weather: IOperativeSituationWeatherReport): Promise<IServerResponse<IOperativeSituationWeatherReport>> {
+      const result = this.operativeSituationService.addWeather();
+      return result;
     }
 
     @Patch('')

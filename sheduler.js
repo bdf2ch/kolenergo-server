@@ -1,25 +1,36 @@
 "use strict";
 const cron = require('node-cron');
-const https = require('https');
+const http = require('http');
 
-cron.schedule('* * * * *', () => {
+cron.schedule('*/59 * * * *', () => {
     console.log('running a task every minute');
-    https.get('https://api.openweathermap.org/data/2.5/weather?q=Murmansk&appid=7d76240ac937e51c8544c06d87e8be27&units=metric', (resp) => {
-        let data = '';
 
-        // A chunk of data has been recieved.
-        resp.on('data', (chunk) => {
-            data += chunk;
+    const options = {
+        hostname: 'localhost',
+        port: 3000,
+        path: '/osr/weather',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    const request = http.request(options, (response) => {
+        response.setEncoding('utf8');
+        let weatherData = '';
+        response.on('data', (data) => {
+            console.log(`data: ${data}`);
+            weatherData += data;
         });
-
-        // The whole response has been received. Print out the result.
-        resp.on('end', () => {
-            console.log(JSON.parse(data));
+        response.on('end', () => {
+            console.log('No more data in response.');
+            console.log(weatherData);
         });
-
-    }).on("error", (err) => {
-        console.log("Error: " + err.message);
     });
+    request.on('error', (e) => {
+        console.error(`problem with request: ${e.message}`);
+    });
+    request.end();
 });
 
 
