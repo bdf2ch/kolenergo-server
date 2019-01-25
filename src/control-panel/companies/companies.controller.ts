@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
-import { IServerResponse, ICompany, IOffice } from '@kolenergo/cpa';
+import {IServerResponse, ICompany, IOffice, IDivision} from '@kolenergo/cpa';
 
 @Controller('cp/companies')
 export class CompaniesController {
@@ -25,6 +25,23 @@ export class CompaniesController {
         return result;
     }
 
+    @Post('/divisions')
+    async addDivision(@Body() division: IDivision): Promise<IServerResponse<IDivision>> {
+        const result = await this.companiesService.addDivision(division);
+        return result;
+    }
+
+    @Patch('/divisions/:id')
+    async editPermission(@Body() division: IDivision): Promise<IServerResponse<IDivision>> {
+        const result = await this.companiesService.editDivision(division);
+        return result;
+    }
+
+    @Delete('/divisions/:id')
+    async deleteDivision(@Param('id') divisionId: number): Promise<IServerResponse<boolean>> {
+        const result = await this.companiesService.deleteDivision(divisionId);
+        return result;
+    }
     /*
     @Post('/roles')
     async addRole(@Body() role: IRole): Promise<IServerResponse<IRole>> {

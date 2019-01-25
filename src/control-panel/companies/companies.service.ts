@@ -1,7 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../../common/database/postgres.service';
-import { IServerResponse } from '@kolenergo/cpa';
-import { ICompany, IOffice } from '@kolenergo/cpa';
+import { ICompany, IOffice, IDivision, IServerResponse } from '@kolenergo/cpa';
 
 @Component()
 export class CompaniesService {
@@ -64,39 +63,54 @@ export class CompaniesService {
     }
 
     /**
-     * Изменение права пользователя
-     * @param permission - Изменяемое право пользователя
+     * Добавление нового структурного подразделения организации
+     * @param division - Добавляемое структурное подразделение
      */
-    /*
-    async editPermission(permission: IPermission): Promise<IServerResponse<IPermission>> {
+    async addDivision(division: IDivision): Promise<IServerResponse<IDivision>> {
         const result = await this.postgresService.query(
-            'edit-permission',
-            `SELECT applications_edit_permission($1, $2, $3)`,
+            'add-division',
+            'SELECT companies_divisions_add($1, $2, $3, $4)',
             [
-                permission.id,
-                permission.code,
-                permission.title,
+                division.companyId,
+                division.parentId,
+                division.title,
+                division.order,
             ],
-            'applications_edit_permission',
+            'companies_divisions_add',
         );
         return result ? result : null;
     }
-    */
 
     /**
-     * Получение данных для инициализации приложения
-     * @param userId - Идентификатор пользователя
-     * @param itemsOnPage - Количество заявок на странице
+     * Изменение структурного подразделения
+     * @param division - Изменяемое структурное подразделение
      */
-    /*
-    async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoServerResponse>> {
+    async editDivision(division: IDivision): Promise<IServerResponse<IDivision>> {
         const result = await this.postgresService.query(
-            'aho-requests-get-initial-data',
-            `SELECT aho_requests_get_initial_data($1, $2)`,
-            [userId, itemsOnPage],
-            'aho_requests_get_initial_data',
+            'edit-division',
+            `SELECT companies_divisions_edit($1, $2, $3, $4)`,
+            [
+                division.id,
+                division.parentId,
+                division.title,
+                division.order,
+            ],
+            'companies_divisions_edit',
         );
-        return result;
+        return result ? result : null;
     }
-    */
+
+    /**
+     * Удваление структурного подразделения орагнизации
+     * @param division - Удаляемое структурне подразделение
+     */
+    async deleteDivision(divisionId: number): Promise<IServerResponse<boolean>> {
+        const result = this.postgresService.query(
+            'delete-division',
+            'SELECT companies_divisions_delete($1)',
+            [divisionId],
+            'companies_divisions_delete',
+        );
+        return result ? result : null;
+    }
 }

@@ -223,7 +223,9 @@ export class OperativeSituationService {
     let maxTemperature = 0;
     let minWind = 0;
     let maxWind = 0;
-    let precipitations = null;
+    let minHumidity = 0;
+    let maxHumidity = 0;
+    let precipitations = [];
     const regions = await this.postgresService.query(
       'get-weather-regions',
       'SELECT * FROM operative_situation_reports_weather_regions',
@@ -245,6 +247,8 @@ export class OperativeSituationService {
             maxTemperature = weather['list'][0]['main']['temp_max'];
             minWind = weather['list'][0]['wind']['speed'];
             maxWind = weather['list'][0]['wind']['speed'];
+            minHumidity = weather['list'][0]['main']['humidity'];
+            maxHumidity = weather['list'][0]['main']['humidity'];
             let date = null;
             weather['list'].forEach((city: any) => {
               /*
@@ -260,11 +264,16 @@ export class OperativeSituationService {
               maxTemperature = city['main']['temp_max'] > maxTemperature ? city['main']['temp_max'] : maxTemperature;
               minWind = city['wind']['speed'] < minWind ? city['wind']['speed'] : minWind;
               maxWind = city['wind']['speed'] > maxWind ? city['wind']['speed'] : maxWind;
-              precipitations = city['weather'][0]['description'];
+              minHumidity = city['main']['humidity'] < minHumidity ? city['main']['humidity'] : minHumidity;
+              maxHumidity = city['main']['humidity'] > maxHumidity ? city['main']['humidity'] : maxHumidity;
+              if (precipitations.indexOf(city['weather'][0]['description']) === -1) {
+                  precipitations.push(city['weather'][0]['description'].replace('"', ''));
+              }
+              // precipitations = city['weather'][0]['description'];
             });
             const result = await this.postgresService.query(
               'add-weather',
-              'SELECT operative_situation_reports_weather_add($1, $2, $3, $4, $5, $6, $7, $8)',
+              'SELECT operative_situation_reports_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
               [
                 reg.companyId,
                 reg.id,
@@ -272,6 +281,8 @@ export class OperativeSituationService {
                 date.format('HH:mm'),
                 Math.ceil(minTemperature),
                 Math.ceil(maxTemperature),
+                  Math.ceil(minHumidity),
+                  Math.ceil(maxHumidity),
                 `${Math.round(minWind)}-${Math.round(maxWind)}`,
                 precipitations,
               ],
