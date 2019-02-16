@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
-import {IServerResponse, ICompany, IOffice, IDivision} from '@kolenergo/cpa';
+import { IServerResponse, ICompany, IDepartment, IOffice, IOfficeLocation, IDivision } from '@kolenergo/cpa';
 
 @Controller('cp/companies')
 export class CompaniesController {
@@ -19,9 +19,69 @@ export class CompaniesController {
         return result;
     }
 
+    @Patch('/:id')
+    async editCompany(@Body() company: ICompany): Promise<IServerResponse<ICompany>> {
+        const result = await this.companiesService.editCompany(company);
+        return result;
+    }
+
+    @Delete('/:id')
+    async deleteCompany(@Param('id') companyId: number): Promise<IServerResponse<boolean>> {
+        const result = await this.companiesService.deleteCompany(companyId);
+        return result;
+    }
+
     @Post('/offices')
     async addOffice(@Body() office: IOffice): Promise<IServerResponse<IOffice>> {
         const result = await this.companiesService.addOffice(office);
+        return result;
+    }
+
+    @Post('/departments')
+    async addDepartment(@Body() department: IDepartment): Promise<IServerResponse<IDepartment>> {
+        const result = await this.companiesService.addDepartment(department);
+        return result;
+    }
+
+    @Patch('/departments/:id')
+    async editDepartment(@Body() department: IDepartment): Promise<IServerResponse<IDepartment>> {
+        const result = await this.companiesService.editDepartment(department);
+        return result;
+    }
+
+    @Delete('/departments/:id')
+    async deleteDepartment(@Param('id') departmentId: number): Promise<IServerResponse<boolean>> {
+        const result = await this.companiesService.deleteDepartment(departmentId);
+        return result;
+    }
+
+    @Patch('/offices/:id')
+    async editOffice(@Body() office: IOffice): Promise<IServerResponse<IOffice>> {
+        const result = await this.companiesService.editOffice(office);
+        return result;
+    }
+
+    @Delete('/offices/:id')
+    async deleteOffice(@Param('id') officeId: number): Promise<IServerResponse<boolean>> {
+        const result = await this.companiesService.deleteOffice(officeId);
+        return result;
+    }
+
+    @Post('/locations')
+    async addLocation(@Body() location: IOfficeLocation): Promise<IServerResponse<IOfficeLocation>> {
+        const result = await this.companiesService.addLocation(location);
+        return result;
+    }
+
+    @Patch('/locations/:id')
+    async editLocation(@Body() location: IOfficeLocation): Promise<IServerResponse<IOfficeLocation>> {
+        const result = await this.companiesService.editLocation(location);
+        return result;
+    }
+
+    @Delete('/locations/:id')
+    async deleteLocation(@Param('id') locationId: number): Promise<IServerResponse<boolean>> {
+        const result = await this.companiesService.deleteLocation(locationId);
         return result;
     }
 
@@ -42,23 +102,4 @@ export class CompaniesController {
         const result = await this.companiesService.deleteDivision(divisionId);
         return result;
     }
-    /*
-    @Post('/roles')
-    async addRole(@Body() role: IRole): Promise<IServerResponse<IRole>> {
-        const result = await this.applicationsService.addRole(role);
-        return result;
-    }
-
-    @Patch('/roles/:id')
-    async editRole(@Body() role: IRole): Promise<IServerResponse<IRole>> {
-        const result = await this.applicationsService.editRole(role);
-        return result;
-    }
-
-    @Patch('/permissions/:id')
-    async editPermission(@Body() permission: IPermission): Promise<IServerResponse<IPermission>> {
-        const result = await this.applicationsService.editPermission(permission);
-        return result;
-    }
-    */
 }
