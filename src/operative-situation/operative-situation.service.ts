@@ -339,51 +339,70 @@ export class OperativeSituationService {
         [company.id],
         '',
       );
-      locations.forEach((loc: ILocation, index: number) => {
-        https.get(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${loc.coordinates.x}&lon=${loc.coordinates.y}&units=metric&lang=ru&appid=${apiKey}`,
-          (response: any) => {
-            let data = '';
-            response.on('data', (chunk) => {
-              data += chunk;
-            });
-            response.on('end', async () => {
-              const weather: IWeatherSummaryResponse = JSON.parse(data);
-              const locationWeather = await this.postgresService.query(
-                'add-location-weather',
-                'SELECT operative_situation_reports_locations_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
-                [
-                  summary.data.id,
-                  loc.companyId,
-                  loc.id,
-                  moment.unix(weather.dt).format('DD.MM.YYYY'),
-                  moment.unix(weather.dt).format('HH:mm'),
-                  Math.ceil(weather.main.temp),
-                  Math.ceil(weather.main.humidity),
-                  weather.main.pressure,
-                  Math.ceil(weather.wind.speed),
-                  weather.wind.deg,
-                  weather.weather[0].description,
-                  weather.weather[0].main,
-                  weather.weather[0].icon,
-                ],
-                'operative_situation_reports_locations_weather_add',
-              );
-              loc.weather = locationWeather;
-              if (index === locations.length - 1) {
-                await this.postgresService.query(
-                  'complete-weather-summary',
-                  'UPDATE operative_situation_reports_weather_summary SET "isCompleted" = true WHERE "id" = $1',
-                  [summary.data.id],
-                  '',
-                );
-              }
-            });
-          });
+      locations.forEach(async (loc: ILocation, index: number) => {
+        const weather = await this.getLocationWeather(apiKey, loc);
+        const locationWeather = await this.postgresService.query(
+          'add-location-weather',
+          'SELECT operative_situation_reports_locations_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+          [
+            summary.data.id,
+            loc.companyId,
+            loc.id,
+            moment.unix(weather.dt).format('DD.MM.YYYY'),
+            moment.unix(weather.dt).format('HH:mm'),
+            Math.ceil(weather.main.temp),
+            Math.ceil(weather.main.humidity),
+            weather.main.pressure,
+            Math.ceil(weather.wind.speed),
+            weather.wind.deg,
+            weather.weather[0].description,
+            weather.weather[0].main,
+            weather.weather[0].icon,
+          ],
+          'operative_situation_reports_locations_weather_add',
+        );
+        loc.weather = locationWeather;
+        if (index === locations.length - 1) {
+          await this.postgresService.query(
+            'complete-weather-summary',
+            'UPDATE operative_situation_reports_weather_summary SET "isCompleted" = true WHERE "id" = $1',
+            [summary.data.id],
+            '',
+          );
+        }
       });
       summary.data.locations = locations;
       result.data.push(summary.data);
     });
     return result;
+  }
+
+  /**
+   * Выполнение запроса погодной сводки по местоположению
+   * @param apiKey - Ключ API openweather.org
+   * @param loc - Местоположение
+   */
+  private getLocationWeather(apiKey: string, loc: ILocation): Promise<IWeatherSummaryResponse> {
+    return new Promise((resolve, reject) => {
+      https.get(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${loc.coordinates.x}&lon=${loc.coordinates.y}&units=metric&lang=ru&appid=${apiKey}`,
+        (response: any) => {
+          let data = '';
+          response.on('data', (chunk) => {
+            data += chunk;
+          });
+          response.on('end', async () => {
+            let weather: IWeatherSummaryResponse = null;
+            try {
+              weather = JSON.parse(data);
+            } catch (e) {
+              reject(e);
+            }
+            resolve(weather);
+          });
+        }).on('error', (e) => {
+            reject(e);
+        });
+    });
   }
 }
