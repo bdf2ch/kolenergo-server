@@ -362,6 +362,7 @@ export class OperativeSituationService {
           'operative_situation_reports_locations_weather_add',
         );
         loc.weather = locationWeather;
+        /*
         if (index === locations.length - 1) {
           await this.postgresService.query(
             'complete-weather-summary',
@@ -370,7 +371,14 @@ export class OperativeSituationService {
             '',
           );
         }
+        */
       });
+      await this.postgresService.query(
+        'complete-weather-summary',
+        'UPDATE operative_situation_reports_weather_summary SET "isCompleted" = true WHERE "id" = $1',
+        [summary.data.id],
+        '',
+      );
       summary.data.locations = locations;
       result.data.push(summary.data);
     });
