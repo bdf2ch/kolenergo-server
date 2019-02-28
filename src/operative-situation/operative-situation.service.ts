@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
-import {ICompany, IServerResponse} from '@kolenergo/cpa';
+import { ICompany, IServerResponse } from '@kolenergo/cpa';
 import {
   IOperativeSituationReport,
   IOperativeSituationWeatherReport,
@@ -11,6 +11,8 @@ import {
 } from '@kolenergo/osr';
 import moment = require('moment');
 import * as https from 'https';
+import * as path from 'path';
+import * as excel from 'excel4node';
 
 @Component()
 export class OperativeSituationService {
@@ -115,6 +117,7 @@ export class OperativeSituationService {
         report.resources.rise,
         report.resources.riseSumPower,
         report.resources.risePeople,
+        report.weatherSummary ? report.weatherSummary.id : 0,
       ],
       'operative_situation_reports_add',
     );
@@ -411,6 +414,58 @@ export class OperativeSituationService {
         }).on('error', (e) => {
             reject(e);
         });
+    });
+  }
+
+  exportReport(reportId: number): Promise<string> {
+    const wb = new excel.Workbook();
+    const sheet = wb.addWorksheet('Оперативная обстановка');
+    const border = {
+      style: 'thin',
+      color: 'black',
+    };
+    const borderedStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+    });
+    const contentStyle = wb.createStyle({
+      alignment: {
+        horizontal: 'left',
+        vertical: 'top',
+      },
+    });
+    sheet.row(1).setHeight(20);
+    sheet.cell(1, 1).string('#').style(borderedStyle);
+    sheet.column(1).setWidth(5);
+    sheet.cell(1, 2).string('Дата подачи').style(borderedStyle);
+    sheet.column(2).setWidth(15);
+    sheet.cell(1, 3).string('Инициатор / Заявитель').style(borderedStyle);
+    sheet.column(3).setWidth(40);
+    sheet.cell(1, 4).string('Срок исполн.').style(borderedStyle);
+    sheet.column(4).setWidth(15);
+    sheet.cell(1, 5).string('Кабинет').style(borderedStyle);
+    sheet.column(5).setWidth(10);
+    sheet.cell(1, 6).string('Содержание').style(borderedStyle);
+    sheet.column(6).setWidth(35);
+    sheet.cell(1, 7).string('Исполнители').style(borderedStyle);
+    sheet.column(7).setWidth(40);
+    sheet.cell(1, 8).string('Статус').style(borderedStyle);
+    sheet.column(8).setWidth(15);
+    sheet.cell(1, 9).string('Телефон').style(borderedStyle);
+    sheet.column(9).setWidth(15);
+
+    return new Promise<string>((resolve, reject) => {
+      wb.write(`${reportId}.xlsx`, (err, stats) => {
+        if (err) {
+          reject(null);
+        }
+        const url = path.resolve(`./${reportId}.xlsx`);
+        resolve(url);
+      });
     });
   }
 }

@@ -16,7 +16,7 @@ import * as moment from 'moment';
 export class OperativeSituationController {
     constructor(private readonly operativeSituationService: OperativeSituationService) {}
 
-    @Get('')
+    @Get()
     async getReportsByDate(@Query('companyId') companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
         const result = await this.operativeSituationService.getReportsByDate(companyId, moment().format('DD.MM.YYYY'));
         return result;
@@ -36,7 +36,10 @@ export class OperativeSituationController {
         return result;
     }
 
-    @Post('')
+    @Get('/export')
+    async exportReport() {}
+
+    @Post()
     async addReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
         const result = await this.operativeSituationService.addReport(report);
         return result;
