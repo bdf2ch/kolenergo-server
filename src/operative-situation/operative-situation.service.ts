@@ -438,25 +438,42 @@ export class OperativeSituationService {
         vertical: 'top',
       },
     });
-    sheet.row(1).setHeight(20);
-    sheet.cell(1, 1).string('#').style(borderedStyle);
+    const titleStyle = wb.createStyle({
+      alignment: {
+        horizontal: 'left',
+        vertical: 'center',
+      },
+      font: {
+        size: '18',
+      },
+    });
+
+    sheet.row(1).setHeight(30);
+    sheet.column(1).setWidth(3);
+    sheet.cell(1, 2).string('Оперативная обстановка по состоянию на 06:00 05.03.2019').style(titleStyle);
+
+    sheet.row(3).setHeight(35);
+    sheet.cell(3, 2).string('#').style(borderedStyle);
     sheet.column(1).setWidth(5);
-    sheet.cell(1, 2).string('Дата подачи').style(borderedStyle);
-    sheet.column(2).setWidth(15);
-    sheet.cell(1, 3).string('Инициатор / Заявитель').style(borderedStyle);
-    sheet.column(3).setWidth(40);
-    sheet.cell(1, 4).string('Срок исполн.').style(borderedStyle);
-    sheet.column(4).setWidth(15);
-    sheet.cell(1, 5).string('Кабинет').style(borderedStyle);
+    sheet.cell(3, 3).string('Дата подачи').style(borderedStyle);
+    sheet.column(2).setWidth(25);
+    sheet.cell(3, 4).string('Инициатор / Заявитель').style(borderedStyle);
+    sheet.column(3).setWidth(10);
+    sheet.cell(3, 5).string('').style(borderedStyle);
+    sheet.column(4).setWidth(10);
+    sheet.cell(3, 6).string('').style(borderedStyle);
     sheet.column(5).setWidth(10);
-    sheet.cell(1, 6).string('Содержание').style(borderedStyle);
-    sheet.column(6).setWidth(35);
-    sheet.cell(1, 7).string('Исполнители').style(borderedStyle);
+    sheet.cell(3, 7).string('').style(borderedStyle);
+    sheet.column(6).setWidth(10);
+    sheet.cell(3, 8).string('').style(borderedStyle);
     sheet.column(7).setWidth(40);
-    sheet.cell(1, 8).string('Статус').style(borderedStyle);
+    sheet.cell(3, 9).string('Статус').style(borderedStyle);
     sheet.column(8).setWidth(15);
-    sheet.cell(1, 9).string('Телефон').style(borderedStyle);
+    sheet.cell(3, 10).string('Телефон').style(borderedStyle);
     sheet.column(9).setWidth(15);
+    sheet.row(4).setHeight(35);
+
+    let row = 4;
 
     return new Promise<string>((resolve, reject) => {
       wb.write(`${reportId}.xlsx`, (err, stats) => {

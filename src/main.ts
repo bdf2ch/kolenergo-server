@@ -1,13 +1,12 @@
-import * as process from 'process';
-import * as path from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as express from 'express';
+import * as process from 'process';
 import * as cors from 'cors';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
+import * as compression from 'compression';
 
 process
     .on('uncaughtException', (err) => {
@@ -26,6 +25,7 @@ process
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(
+      compression({level: 9, filter: shouldCompress}),
       cors({
           origin: true,
           credentials: true,
@@ -46,3 +46,7 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
+
+function shouldCompress(req, res) {
+  return true;
+};

@@ -2,8 +2,8 @@
 const cron = require('node-cron');
 const http = require('http');
 
-cron.schedule('* * * * *', () => {
-// cron.schedule('*/59 * * * *', () => {
+// cron.schedule('* * * * *', () => {
+cron.schedule('*/59 * * * *', () => {
     console.log('running a task every minute');
 
     const options = {
@@ -35,8 +35,8 @@ cron.schedule('* * * * *', () => {
 });
 
 
-cron.schedule('* * * * *', () => {
-// cron.schedule('*/59 * * * *', () => {
+// cron.schedule('* * * * *', () => {
+cron.schedule('*/59 * * * *', () => {
     console.log('weather summary every minute');
 
     const options = {
