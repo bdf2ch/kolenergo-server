@@ -250,16 +250,16 @@ export class OperativeSituationService {
           });
           response.on('end', async () => {
             const weather = JSON.parse(data);
-            minTemperature = weather['list'][0]['main']['temp_min'];
-            maxTemperature = weather['list'][0]['main']['temp_max'];
-            minWind = weather['list'][0]['wind']['speed'];
-            maxWind = weather['list'][0]['wind']['speed'];
-            minHumidity = weather['list'][0]['main']['humidity'];
-            maxHumidity = weather['list'][0]['main']['humidity'];
-            minPressure = weather['list'][0]['main']['pressure'];
-            maxPressure = weather['list'][0]['main']['pressure'];
+            minTemperature = weather.list[0].main.temp_min;
+            maxTemperature = weather.list[0].main.temp_max;
+            minWind = weather.list[0].wind.speed;
+            maxWind = weather.list[0].wind.speed;
+            minHumidity = weather.list[0].main.humidity;
+            maxHumidity = weather.list[0].main.humidity;
+            minPressure = weather.list[0].main.pressure;
+            maxPressure = weather.list[0].main.pressure;
             let date = null;
-            weather['list'].forEach((city: any) => {
+            weather.list.forEach((city: any) => {
               /*
               console.log('city', city['name']);
               console.log('min_temp', city['main']['temp_min']);
@@ -268,23 +268,23 @@ export class OperativeSituationService {
               console.log('description', city['weather']);
               console.log('description', city['weather'][0]['description']);
               */
-              date = moment.unix(city['dt']);
-              minTemperature = city['main']['temp_min'] < minTemperature ? city['main']['temp_min'] : minTemperature;
-              maxTemperature = city['main']['temp_max'] > maxTemperature ? city['main']['temp_max'] : maxTemperature;
-              minWind = city['wind']['speed'] < minWind ? city['wind']['speed'] : minWind;
-              maxWind = city['wind']['speed'] > maxWind ? city['wind']['speed'] : maxWind;
-              minHumidity = city['main']['humidity'] < minHumidity ? city['main']['humidity'] : minHumidity;
-              maxHumidity = city['main']['humidity'] > maxHumidity ? city['main']['humidity'] : maxHumidity;
-              minPressure = city['main']['pressure'] < minPressure ? city['main']['pressure'] : minPressure;
-              maxPressure = city['main']['pressure'] > maxPressure ? city['main']['pressure'] : maxPressure;
-              if (precipitations.indexOf(city['weather'][0]['description']) === -1) {
-                  precipitations.push(city['weather'][0]['description']);
+              date = moment.unix(city.dt);
+              minTemperature = city.main.temp_min < minTemperature ? city.main.temp_min : minTemperature;
+              maxTemperature = city.main.temp_max > maxTemperature ? city.main.temp_max : maxTemperature;
+              minWind = city.wind.speed < minWind ? city.wind.speed : minWind;
+              maxWind = city.wind.speed > maxWind ? city.wind.speed : maxWind;
+              minHumidity = city.main.humidity < minHumidity ? city.main.humidity : minHumidity;
+              maxHumidity = city.main.humidity > maxHumidity ? city.main.humidity : maxHumidity;
+              minPressure = city.main.pressure < minPressure ? city.main.pressure : minPressure;
+              maxPressure = city.main.pressure > maxPressure ? city.main.pressure : maxPressure;
+              if (precipitations.indexOf(city.weather[0].description) === -1) {
+                  precipitations.push(city.weather[0].description);
               }
-              if (weatherGroups.indexOf(city['weather'][0]['main']) === -1) {
-                  weatherGroups.push(city['weather'][0]['main']);
+              if (weatherGroups.indexOf(city.weather[0].main) === -1) {
+                  weatherGroups.push(city.weather[0].main);
               }
-              if (icons.indexOf(city['weather'][0]['icon']) === -1) {
-                  icons.push(city['weather'][0]['icon']);
+              if (icons.indexOf(city.weather[0].icon) === -1) {
+                  icons.push(city.weather[0].icon);
               }
             });
             const result = await this.postgresService.query(
@@ -431,6 +431,14 @@ export class OperativeSituationService {
         right: border,
         bottom: border,
       },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 8,
+      },
     });
     const contentStyle = wb.createStyle({
       alignment: {
@@ -444,36 +452,75 @@ export class OperativeSituationService {
         vertical: 'center',
       },
       font: {
-        size: '18',
+        size: 18,
       },
     });
 
-    sheet.row(1).setHeight(30);
     sheet.column(1).setWidth(3);
+    sheet.column(2).setWidth(20);
+    sheet.column(3).setWidth(7);
+    sheet.column(4).setWidth(7);
+    sheet.column(5).setWidth(7);
+    sheet.column(7).setWidth(7);
+    sheet.column(6).setWidth(7);
+    sheet.column(8).setWidth(7);
+    sheet.column(9).setWidth(7);
+    sheet.column(10).setWidth(7);
+    sheet.column(11).setWidth(7);
+    sheet.column(12).setWidth(7);
+    sheet.column(13).setWidth(7);
+    sheet.column(14).setWidth(7);
+    sheet.column(15).setWidth(7);
+    sheet.column(16).setWidth(7);
+    sheet.column(17).setWidth(7);
+    sheet.column(18).setWidth(7);
+    sheet.column(19).setWidth(7);
+    sheet.column(20).setWidth(7);
+    sheet.column(21).setWidth(7);
+    sheet.column(22).setWidth(7);
+    sheet.column(23).setWidth(7);
+    sheet.column(24).setWidth(7);
+    sheet.column(25).setWidth(7);
+
+    sheet.row(1).setHeight(30);
     sheet.cell(1, 2).string('Оперативная обстановка по состоянию на 06:00 05.03.2019').style(titleStyle);
 
     sheet.row(3).setHeight(35);
-    sheet.cell(3, 2).string('#').style(borderedStyle);
-    sheet.column(1).setWidth(5);
-    sheet.cell(3, 3).string('Дата подачи').style(borderedStyle);
-    sheet.column(2).setWidth(25);
-    sheet.cell(3, 4).string('Инициатор / Заявитель').style(borderedStyle);
-    sheet.column(3).setWidth(10);
-    sheet.cell(3, 5).string('').style(borderedStyle);
-    sheet.column(4).setWidth(10);
-    sheet.cell(3, 6).string('').style(borderedStyle);
-    sheet.column(5).setWidth(10);
-    sheet.cell(3, 7).string('').style(borderedStyle);
-    sheet.column(6).setWidth(10);
-    sheet.cell(3, 8).string('').style(borderedStyle);
-    sheet.column(7).setWidth(40);
-    sheet.cell(3, 9).string('Статус').style(borderedStyle);
-    sheet.column(8).setWidth(15);
-    sheet.cell(3, 10).string('Телефон').style(borderedStyle);
-    sheet.column(9).setWidth(15);
-    sheet.row(4).setHeight(35);
+    sheet.cell(3, 2, 4, 2, true).string('Филиал').style(borderedStyle);
+    sheet.cell(3, 3, 3, 6, true).string('Отключенное оборудование по сети 35-150 кВ').style(borderedStyle);
+    sheet.cell(3, 7, 3, 10, true).string('Последствия для потребителей по сети 35-150 кВ').style(borderedStyle);
+    sheet.cell(3, 11, 3, 12, true).string('Распределительная сеть').style(borderedStyle);
+    sheet.cell(3, 13, 3, 15, true).string('Последствия для потребителей по распределительной сети').style(borderedStyle);
+    sheet.cell(3, 16, 3, 19, true).string('Последствия для потребителей суммарно по основной и распределительной сети').style(borderedStyle);
+    sheet.cell(3, 20, 3, 22, true).string('Задействованные РИСЭ').style(borderedStyle);
+    sheet.cell(3, 23, 3, 25, true).string('Задействованные силы и средства').style(borderedStyle);
 
-    let row = 4;
+    sheet.row(4).setHeight(35);
+    sheet.cell(4, 3).string('ЛЭП 110-150 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 4).string('ЛЭП 35 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 5).string('ПС 110 -150 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 6).string('ПС 35 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 7).string('ТП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 8).string('Население, чел').style(borderedStyle);
+    sheet.cell(4, 9).string('Нагрузка, МВт').style(borderedStyle);
+    sheet.cell(4, 10).string('СЗО, шт').style(borderedStyle);
+    sheet.cell(4, 11).string('ЛЭП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 12).string('ТП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 13).string('Население, чел').style(borderedStyle);
+    sheet.cell(4, 14).string('Нагрузка, МВт').style(borderedStyle);
+    sheet.cell(4, 15).string('СЗО, шт').style(borderedStyle);
+    sheet.cell(4, 16).string('ТП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(4, 17).string('Население, чел').style(borderedStyle);
+    sheet.cell(4, 18).string('Нагрузка, МВт').style(borderedStyle);
+    sheet.cell(4, 19).string('СЗО, шт').style(borderedStyle);
+    sheet.cell(4, 20).string('Кол-во, шт').style(borderedStyle);
+    sheet.cell(4, 21).string(' P∑, кВт').style(borderedStyle);
+    sheet.cell(4, 22).string('Запитано от РИСЭ, чел.').style(borderedStyle);
+    sheet.cell(4, 23).string('Бригад, шт.').style(borderedStyle);
+    sheet.cell(4, 24).string('Человек').style(borderedStyle);
+    sheet.cell(4, 25).string('Ед. техн., шт.').style(borderedStyle);
+
+    const row = 4;
 
     return new Promise<string>((resolve, reject) => {
       wb.write(`${reportId}.xlsx`, (err, stats) => {
