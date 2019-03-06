@@ -9,8 +9,9 @@ export class ExportReportMiddleware implements NestMiddleware {
 
   async resolve(...args: any[]): AsyncExpressMiddleware {
     return async (req, res: Response, next) => {
-      const reportId = req.params.id;
-      const url = await this.operativeSituationService.exportReport(reportId);
+      const date = req.query.date;
+      const period = req.query.period;
+      const url = await this.operativeSituationService.exportReport(date, period);
       res.download(url);
     };
   }

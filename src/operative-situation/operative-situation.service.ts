@@ -64,6 +64,19 @@ export class OperativeSituationService {
   }
 
   /**
+   * Получение отчетов об оперативной обстановке по дате и периоду
+   */
+  async getReportsByDateAndPeriod(date: string, period: string): Promise<IServerResponse<IOperativeSituationReport[]>> {
+    const result = await this.postgresService.query(
+      'operative-situation-reports-get-by-date-and-period',
+      `SELECT operative_situation_reports_get_by_date_and_period($1, $2)`,
+      [date, period],
+      'operative_situation_reports_get_by_date_and_period',
+    );
+    return result;
+  }
+
+  /**
    * Добавление отчета обоперативной обстановке
    * @param report - Добавляемый отчет об оперативной обстановке
    */
@@ -417,9 +430,10 @@ export class OperativeSituationService {
     });
   }
 
-  exportReport(reportId: number): Promise<string> {
+  async exportReport(date: string, period: string): Promise<string> {
     const wb = new excel.Workbook();
     const sheet = wb.addWorksheet('Оперативная обстановка');
+    let row = 1;
     const border = {
       style: 'thin',
       color: 'black',
@@ -482,52 +496,79 @@ export class OperativeSituationService {
     sheet.column(24).setWidth(7);
     sheet.column(25).setWidth(7);
 
-    sheet.row(1).setHeight(30);
-    sheet.cell(1, 2).string('Оперативная обстановка по состоянию на 06:00 05.03.2019').style(titleStyle);
+    row++;
+    sheet.row(row).setHeight(30);
+    sheet.cell(row, 2).string(`Оперативная обстановка по состоянию на ${period} ${date}`).style(titleStyle);
 
-    sheet.row(3).setHeight(35);
-    sheet.cell(3, 2, 4, 2, true).string('Филиал').style(borderedStyle);
-    sheet.cell(3, 3, 3, 6, true).string('Отключенное оборудование по сети 35-150 кВ').style(borderedStyle);
-    sheet.cell(3, 7, 3, 10, true).string('Последствия для потребителей по сети 35-150 кВ').style(borderedStyle);
-    sheet.cell(3, 11, 3, 12, true).string('Распределительная сеть').style(borderedStyle);
-    sheet.cell(3, 13, 3, 15, true).string('Последствия для потребителей по распределительной сети').style(borderedStyle);
-    sheet.cell(3, 16, 3, 19, true).string('Последствия для потребителей суммарно по основной и распределительной сети').style(borderedStyle);
-    sheet.cell(3, 20, 3, 22, true).string('Задействованные РИСЭ').style(borderedStyle);
-    sheet.cell(3, 23, 3, 25, true).string('Задействованные силы и средства').style(borderedStyle);
+    row++;
+    sheet.row(row).setHeight(35);
+    sheet.cell(row, 2, row + 1, 2, true).string('Филиал').style(borderedStyle);
+    sheet.cell(row, 3, row, 6, true).string('Отключенное оборудование по сети 35-150 кВ').style(borderedStyle);
+    sheet.cell(row, 7, row, 10, true).string('Последствия для потребителей по сети 35-150 кВ').style(borderedStyle);
+    sheet.cell(row, 11, row, 12, true).string('Распределительная сеть').style(borderedStyle);
+    sheet.cell(row, 13, row, 15, true).string('Последствия для потребителей по распределительной сети').style(borderedStyle);
+    sheet.cell(row, 16, row, 19, true).string('Последствия для потребителей суммарно по основной и распределительной сети').style(borderedStyle);
+    sheet.cell(row, 20, row, 22, true).string('Задействованные РИСЭ').style(borderedStyle);
+    sheet.cell(row, 23, row, 25, true).string('Задействованные силы и средства').style(borderedStyle);
 
-    sheet.row(4).setHeight(35);
-    sheet.cell(4, 3).string('ЛЭП 110-150 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 4).string('ЛЭП 35 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 5).string('ПС 110 -150 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 6).string('ПС 35 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 7).string('ТП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 8).string('Население, чел').style(borderedStyle);
-    sheet.cell(4, 9).string('Нагрузка, МВт').style(borderedStyle);
-    sheet.cell(4, 10).string('СЗО, шт').style(borderedStyle);
-    sheet.cell(4, 11).string('ЛЭП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 12).string('ТП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 13).string('Население, чел').style(borderedStyle);
-    sheet.cell(4, 14).string('Нагрузка, МВт').style(borderedStyle);
-    sheet.cell(4, 15).string('СЗО, шт').style(borderedStyle);
-    sheet.cell(4, 16).string('ТП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(4, 17).string('Население, чел').style(borderedStyle);
-    sheet.cell(4, 18).string('Нагрузка, МВт').style(borderedStyle);
-    sheet.cell(4, 19).string('СЗО, шт').style(borderedStyle);
-    sheet.cell(4, 20).string('Кол-во, шт').style(borderedStyle);
-    sheet.cell(4, 21).string(' P∑, кВт').style(borderedStyle);
-    sheet.cell(4, 22).string('Запитано от РИСЭ, чел.').style(borderedStyle);
-    sheet.cell(4, 23).string('Бригад, шт.').style(borderedStyle);
-    sheet.cell(4, 24).string('Человек').style(borderedStyle);
-    sheet.cell(4, 25).string('Ед. техн., шт.').style(borderedStyle);
+    row++;
+    sheet.row(row).setHeight(35);
+    sheet.cell(row, 3).string('ЛЭП 110-150 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 4).string('ЛЭП 35 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 5).string('ПС 110 - 150 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 6).string('ПС 35 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 7).string('ТП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 8).string('Население, чел').style(borderedStyle);
+    sheet.cell(row, 9).string('Нагрузка, МВт').style(borderedStyle);
+    sheet.cell(row, 10).string('СЗО, шт').style(borderedStyle);
+    sheet.cell(row, 11).string('ЛЭП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 12).string('ТП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 13).string('Население, чел').style(borderedStyle);
+    sheet.cell(row, 14).string('Нагрузка, МВт').style(borderedStyle);
+    sheet.cell(row, 15).string('СЗО, шт').style(borderedStyle);
+    sheet.cell(row, 16).string('ТП 6-20 кВ, шт.').style(borderedStyle);
+    sheet.cell(row, 17).string('Население, чел').style(borderedStyle);
+    sheet.cell(row, 18).string('Нагрузка, МВт').style(borderedStyle);
+    sheet.cell(row, 19).string('СЗО, шт').style(borderedStyle);
+    sheet.cell(row, 20).string('Кол-во, шт').style(borderedStyle);
+    sheet.cell(row, 21).string(' P∑, кВт').style(borderedStyle);
+    sheet.cell(row, 22).string('Запитано от РИСЭ, чел.').style(borderedStyle);
+    sheet.cell(row, 23).string('Бригад, шт.').style(borderedStyle);
+    sheet.cell(row, 24).string('Человек').style(borderedStyle);
+    sheet.cell(row, 25).string('Ед. техн., шт.').style(borderedStyle);
 
-    const row = 4;
+    const reports = await this.getReportsByDateAndPeriod(date, period);
+    reports.data.forEach((report: IOperativeSituationReport) => {
+      row++;
+      sheet.cell(row, 2).string(report.company.shortTitle).style(borderedStyle);
+      sheet.cell(row, 3).number(report.lep_110_150_count).style(borderedStyle);
+      sheet.cell(row, 4).number(report.lep_35_count).style(borderedStyle);
+      sheet.cell(row, 5).number(report.ps_110_150_count).style(borderedStyle);
+      sheet.cell(row, 6).number(report.ps_35_count).style(borderedStyle);
+      sheet.cell(row, 7).number(report.tp_6_20_count).style(borderedStyle);
+      sheet.cell(row, 8).number(report.population_count_effect_35_150).style(borderedStyle);
+      sheet.cell(row, 9).number(report.power_effect_35_150).style(borderedStyle);
+      sheet.cell(row, 10).number(report.szo_count_effect_35_150).style(borderedStyle);
+      sheet.cell(row, 11).number(report.lep_6_20_count).style(borderedStyle);
+      sheet.cell(row, 12).number(report.tp_6_20_count).style(borderedStyle);
+      sheet.cell(row, 13).number(report.population_count_effect_raspr).style(borderedStyle);
+      sheet.cell(row, 14).number(report.power_effect_raspr).style(borderedStyle);
+      sheet.cell(row, 15).number(report.szo_count_effect_raspr).style(borderedStyle);
+
+      sheet.cell(row, 20).number(report.resourcesRiseCount).style(borderedStyle);
+      sheet.cell(row, 21).number(report.resourcesRiseSumPower).style(borderedStyle);
+      sheet.cell(row, 22).number(report.resourcesRisePeople).style(borderedStyle);
+      sheet.cell(row, 23).number(report.resourcesBrigades).style(borderedStyle);
+      sheet.cell(row, 24).number(report.resourcesPeople).style(borderedStyle);
+      sheet.cell(row, 25).number(report.resourcesTechnics).style(borderedStyle);
+    });
 
     return new Promise<string>((resolve, reject) => {
-      wb.write(`${reportId}.xlsx`, (err, stats) => {
+      wb.write(`${date} ${period}.xlsx`, (err, stats) => {
         if (err) {
           reject(null);
         }
-        const url = path.resolve(`./${reportId}.xlsx`);
+        const url = path.resolve(`./${date} ${period}.xlsx`);
         resolve(url);
       });
     });
