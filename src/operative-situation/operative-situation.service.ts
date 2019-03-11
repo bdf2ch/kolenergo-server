@@ -438,7 +438,45 @@ export class OperativeSituationService {
       style: 'thin',
       color: 'black',
     };
-    const borderedStyle = wb.createStyle({
+    const contentStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 10,
+      },
+    });
+    const summaryStyle = wb.createStyle({
+      fill: {
+        type: 'pattern',
+        patternType: 'solid',
+        fgColor: 'e0f2f1',
+      },
+      font: {
+        bold: true,
+        size: 9,
+      },
+    });
+    const regularStyle = wb.createStyle({
+      font: {
+        bold: false,
+        size: 10,
+      },
+    });
+    const headerStyle = wb.createStyle({
+      fill: {
+        type: 'pattern',
+        patternType: 'solid',
+        fgColor: 'f5f5f5',
+      },
       border: {
         left: border,
         top: border,
@@ -452,12 +490,6 @@ export class OperativeSituationService {
       },
       font: {
         size: 8,
-      },
-    });
-    const contentStyle = wb.createStyle({
-      alignment: {
-        horizontal: 'left',
-        vertical: 'top',
       },
     });
     const titleStyle = wb.createStyle({
@@ -495,72 +527,288 @@ export class OperativeSituationService {
     sheet.column(23).setWidth(7);
     sheet.column(24).setWidth(7);
     sheet.column(25).setWidth(7);
+    sheet.column(26).setWidth(7);
+    sheet.column(27).setWidth(7);
+    sheet.column(28).setWidth(7);
 
     row++;
     sheet.row(row).setHeight(30);
     sheet.cell(row, 2).string(`Оперативная обстановка по состоянию на ${period} ${date}`).style(titleStyle);
 
     row++;
-    sheet.row(row).setHeight(35);
-    sheet.cell(row, 2, row + 1, 2, true).string('Филиал').style(borderedStyle);
-    sheet.cell(row, 3, row, 6, true).string('Отключенное оборудование по сети 35-150 кВ').style(borderedStyle);
-    sheet.cell(row, 7, row, 10, true).string('Последствия для потребителей по сети 35-150 кВ').style(borderedStyle);
-    sheet.cell(row, 11, row, 12, true).string('Распределительная сеть').style(borderedStyle);
-    sheet.cell(row, 13, row, 15, true).string('Последствия для потребителей по распределительной сети').style(borderedStyle);
-    sheet.cell(row, 16, row, 19, true).string('Последствия для потребителей суммарно по основной и распределительной сети').style(borderedStyle);
-    sheet.cell(row, 20, row, 22, true).string('Задействованные РИСЭ').style(borderedStyle);
-    sheet.cell(row, 23, row, 25, true).string('Задействованные силы и средства').style(borderedStyle);
+    sheet.row(row).setHeight(45);
+    sheet.cell(row, 2, row + 1, 2, true).string('Филиал').style(headerStyle);
+    sheet.cell(row, 3, row, 6, true).string('Отключенное оборудование по сети 35-150 кВ').style(headerStyle);
+    sheet.cell(row, 7, row, 10, true).string('Последствия для потребителей по сети 35-150 кВ').style(headerStyle);
+    sheet.cell(row, 11, row, 12, true).string('Распределительная сеть').style(headerStyle);
+    sheet.cell(row, 13, row, 15, true).string('Последствия для потребителей по распределительной сети').style(headerStyle);
+    sheet.cell(row, 16, row, 19, true).string('Последствия для потребителей суммарно по основной и распределительной сети').style(headerStyle);
+    sheet.cell(row, 20, row, 22, true).string('Задействованные РИСЭ').style(headerStyle);
+    sheet.cell(row, 23, row, 25, true).string('Задействованные силы и средства').style(headerStyle);
 
     row++;
-    sheet.row(row).setHeight(35);
-    sheet.cell(row, 3).string('ЛЭП 110-150 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 4).string('ЛЭП 35 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 5).string('ПС 110 - 150 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 6).string('ПС 35 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 7).string('ТП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 8).string('Население, чел').style(borderedStyle);
-    sheet.cell(row, 9).string('Нагрузка, МВт').style(borderedStyle);
-    sheet.cell(row, 10).string('СЗО, шт').style(borderedStyle);
-    sheet.cell(row, 11).string('ЛЭП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 12).string('ТП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 13).string('Население, чел').style(borderedStyle);
-    sheet.cell(row, 14).string('Нагрузка, МВт').style(borderedStyle);
-    sheet.cell(row, 15).string('СЗО, шт').style(borderedStyle);
-    sheet.cell(row, 16).string('ТП 6-20 кВ, шт.').style(borderedStyle);
-    sheet.cell(row, 17).string('Население, чел').style(borderedStyle);
-    sheet.cell(row, 18).string('Нагрузка, МВт').style(borderedStyle);
-    sheet.cell(row, 19).string('СЗО, шт').style(borderedStyle);
-    sheet.cell(row, 20).string('Кол-во, шт').style(borderedStyle);
-    sheet.cell(row, 21).string(' P∑, кВт').style(borderedStyle);
-    sheet.cell(row, 22).string('Запитано от РИСЭ, чел.').style(borderedStyle);
-    sheet.cell(row, 23).string('Бригад, шт.').style(borderedStyle);
-    sheet.cell(row, 24).string('Человек').style(borderedStyle);
-    sheet.cell(row, 25).string('Ед. техн., шт.').style(borderedStyle);
+    sheet.row(row).setHeight(45);
+    sheet.cell(row, 3).string('ЛЭП 110-150 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 4).string('ЛЭП 35 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 5).string('ПС 110 - 150 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 6).string('ПС 35 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 7).string('ТП 6-20 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 8).string('Население, чел').style(headerStyle);
+    sheet.cell(row, 9).string('Нагрузка, МВт').style(headerStyle);
+    sheet.cell(row, 10).string('СЗО, шт').style(headerStyle);
+    sheet.cell(row, 11).string('ЛЭП 6-20 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 12).string('ТП 6-20 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 13).string('Население, чел').style(headerStyle);
+    sheet.cell(row, 14).string('Нагрузка, МВт').style(headerStyle);
+    sheet.cell(row, 15).string('СЗО, шт').style(headerStyle);
+    sheet.cell(row, 16).string('ТП 6-20 кВ, шт.').style(headerStyle);
+    sheet.cell(row, 17).string('Население, чел').style(headerStyle);
+    sheet.cell(row, 18).string('Нагрузка, МВт').style(headerStyle);
+    sheet.cell(row, 19).string('СЗО, шт').style(headerStyle);
+    sheet.cell(row, 20).string('Кол-во, шт').style(headerStyle);
+    sheet.cell(row, 21).string(' P∑, кВт').style(headerStyle);
+    sheet.cell(row, 22).string('Запитано от РИСЭ, чел.').style(headerStyle);
+    sheet.cell(row, 23).string('Бригад, шт.').style(headerStyle);
+    sheet.cell(row, 24).string('Человек').style(headerStyle);
+    sheet.cell(row, 25).string('Ед. техн., шт.').style(headerStyle);
 
     const reports = await this.getReportsByDateAndPeriod(date, period);
+    let lep_110_150_count_total = 0;
+    let lep_35_count_total = 0;
+    let ps_110_150_count_total = 0;
+    let ps_35_count_total = 0;
+    let tp_6_20_count_effect_35_150_total = 0;
+    let population_count_effect_35_150_total = 0;
+    let power_effect_35_150_total = 0;
+    let szo_count_effect_35_150_total = 0;
+    let lep_6_20_count_total = 0;
+    let tp_6_20_count_total = 0;
+    let population_count_effect_raspr_total = 0;
+    let power_effect_raspr_total = 0;
+    let szo_count_effect_raspr_total = 0;
+    let effect_tp_6_20_total = 0;
+    let effect_population_total = 0;
+    let effect_power_total = 0;
+    let effect_szo_total = 0;
+    let resources_rise_count_total = 0;
+    let resources_rise_sum_power_total = 0;
+    let resources_rise_people_total = 0;
+    let resources_brigades_total = 0;
+    let resources_people_total = 0;
+    let resources_technics_total = 0;
+
     reports.data.forEach((report: IOperativeSituationReport) => {
       row++;
-      sheet.cell(row, 2).string(report.company.shortTitle).style(borderedStyle);
-      sheet.cell(row, 3).number(report.lep_110_150_count).style(borderedStyle);
-      sheet.cell(row, 4).number(report.lep_35_count).style(borderedStyle);
-      sheet.cell(row, 5).number(report.ps_110_150_count).style(borderedStyle);
-      sheet.cell(row, 6).number(report.ps_35_count).style(borderedStyle);
-      sheet.cell(row, 7).number(report.tp_6_20_count).style(borderedStyle);
-      sheet.cell(row, 8).number(report.population_count_effect_35_150).style(borderedStyle);
-      sheet.cell(row, 9).number(report.power_effect_35_150).style(borderedStyle);
-      sheet.cell(row, 10).number(report.szo_count_effect_35_150).style(borderedStyle);
-      sheet.cell(row, 11).number(report.lep_6_20_count).style(borderedStyle);
-      sheet.cell(row, 12).number(report.tp_6_20_count).style(borderedStyle);
-      sheet.cell(row, 13).number(report.population_count_effect_raspr).style(borderedStyle);
-      sheet.cell(row, 14).number(report.power_effect_raspr).style(borderedStyle);
-      sheet.cell(row, 15).number(report.szo_count_effect_raspr).style(borderedStyle);
+      sheet.row(row).setHeight(25);
+      sheet.cell(row, 2).string(report.company.shortTitle).style(contentStyle);
+      sheet.cell(row, 3).number(report.lep_110_150_count).style(contentStyle);
+      lep_110_150_count_total += report.lep_110_150_count;
+      sheet.cell(row, 4).number(report.lep_35_count).style(contentStyle);
+      lep_35_count_total += report.lep_35_count;
+      sheet.cell(row, 5).number(report.ps_110_150_count).style(contentStyle);
+      ps_110_150_count_total += report.ps_110_150_count;
+      sheet.cell(row, 6).number(report.ps_35_count).style(contentStyle);
+      ps_35_count_total += report.ps_35_count;
+      sheet.cell(row, 7).number(report.tp_6_20_count).style(contentStyle);
+      tp_6_20_count_effect_35_150_total = report.tp_6_20_count_effect_35_150;
+      sheet.cell(row, 8).number(report.population_count_effect_35_150).style(contentStyle);
+      population_count_effect_35_150_total += report.population_count_effect_35_150;
+      sheet.cell(row, 9).number(report.power_effect_35_150).style(contentStyle);
+      power_effect_35_150_total += report.power_effect_35_150;
+      sheet.cell(row, 10).number(report.szo_count_effect_35_150).style(contentStyle);
+      szo_count_effect_35_150_total += report.szo_count_effect_35_150;
+      sheet.cell(row, 11).number(report.lep_6_20_count).style(contentStyle);
+      lep_6_20_count_total += report.lep_6_20_count;
+      sheet.cell(row, 12).number(report.tp_6_20_count).style(contentStyle);
+      tp_6_20_count_total += report.tp_6_20_count;
+      sheet.cell(row, 13).number(report.population_count_effect_raspr).style(contentStyle);
+      population_count_effect_raspr_total += report.population_count_effect_raspr;
+      sheet.cell(row, 14).number(report.power_effect_raspr).style(contentStyle);
+      power_effect_raspr_total += report.power_effect_raspr;
+      sheet.cell(row, 15).number(report.szo_count_effect_raspr).style(contentStyle);
+      szo_count_effect_raspr_total += report.szo_count_effect_raspr;
+      sheet.cell(row, 16)
+        .number(report.tp_6_20_count_effect_35_150 + report.tp_6_20_count)
+        .style(contentStyle)
+        .style(summaryStyle)
+        .style(regularStyle);
+      effect_tp_6_20_total += report.tp_6_20_count_effect_35_150 + report.tp_6_20_count;
+      sheet.cell(row, 17)
+        .number(report.population_count_effect_35_150 + report.population_count_effect_raspr)
+        .style(contentStyle)
+        .style(summaryStyle)
+        .style(regularStyle);
+      effect_population_total += report.population_count_effect_35_150 + report.population_count_effect_raspr;
+      sheet.cell(row, 18).number(report.power_effect_35_150 + report.power_effect_raspr).style(contentStyle).style(summaryStyle).style(regularStyle);
+      effect_power_total += report.power_effect_35_150 + report.power_effect_raspr;
+      sheet.cell(row, 19)
+        .number(report.szo_count_effect_35_150 + report.szo_count_effect_raspr)
+        .style(contentStyle)
+        .style(summaryStyle)
+        .style(regularStyle);
+      effect_szo_total += report.szo_count_effect_35_150 + report.szo_count_effect_raspr;
+      sheet.cell(row, 20).number(report.resourcesRiseCount).style(contentStyle);
+      resources_rise_count_total += report.resourcesRiseCount;
+      sheet.cell(row, 21).number(report.resourcesRiseSumPower).style(contentStyle);
+      resources_rise_sum_power_total += report.resourcesRiseSumPower;
+      sheet.cell(row, 22).number(report.resourcesRisePeople).style(contentStyle);
+      resources_rise_people_total += report.resourcesRisePeople;
+      sheet.cell(row, 23).number(report.resourcesBrigades).style(contentStyle);
+      resources_brigades_total += report.resourcesBrigades;
+      sheet.cell(row, 24).number(report.resourcesPeople).style(contentStyle);
+      resources_people_total += report.resourcesPeople;
+      sheet.cell(row, 25).number(report.resourcesTechnics).style(contentStyle);
+      resources_technics_total += report.resourcesTechnics;
+    });
+    row++;
+    sheet.row(row).setHeight(25);
+    sheet.cell(row, 2).string('МРСК Северо-Запада').style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 3).number(lep_110_150_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 4).number(lep_35_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 5).number(ps_110_150_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 6).number(ps_35_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 7).number(tp_6_20_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 8).number(population_count_effect_35_150_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 9).number(power_effect_35_150_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 10).number(szo_count_effect_35_150_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 11).number(lep_6_20_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 12).number(tp_6_20_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 13).number(population_count_effect_raspr_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 14).number(power_effect_raspr_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 15).number(szo_count_effect_raspr_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 16).number(effect_tp_6_20_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 17).number(effect_population_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 18).number(effect_power_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 19).number(effect_szo_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 20).number(resources_rise_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 21).number(resources_rise_sum_power_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 22).number(resources_rise_people_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 23).number(resources_brigades_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 24).number(resources_people_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 25).number(resources_technics_total).style(contentStyle).style(summaryStyle);
 
-      sheet.cell(row, 20).number(report.resourcesRiseCount).style(borderedStyle);
-      sheet.cell(row, 21).number(report.resourcesRiseSumPower).style(borderedStyle);
-      sheet.cell(row, 22).number(report.resourcesRisePeople).style(borderedStyle);
-      sheet.cell(row, 23).number(report.resourcesBrigades).style(borderedStyle);
-      sheet.cell(row, 24).number(report.resourcesPeople).style(borderedStyle);
-      sheet.cell(row, 25).number(report.resourcesTechnics).style(borderedStyle);
+    row += 2;
+    sheet.row(row).setHeight(45);
+    let violations_6_total = 0;
+    let violations_35_uapv_total = 0;
+    let violations_35_napv_total = 0;
+    let violations_35_power_off_total = 0;
+    let violations_lep_rs_total = 0;
+    let violations_tn_cancel_total = 0;
+    let violations_04_from_6_total = 0;
+    let violations_04_power_off_total = 0;
+    let violations_04_greater_3_total = 0;
+    let violations_population_04_srez_total = 0;
+    let violations_population_04_greater_3_total = 0;
+
+    sheet.cell(row, 2, row + 1, 2, true).string('Филиал').style(headerStyle);
+    sheet.cell(row, 3, row + 1, 3, true).string('Всего 6 кВ и выше').style(headerStyle);
+    sheet.cell(row, 4, row, 7, true).string('Основная сеть 35 кВ и выше').style(headerStyle);
+    sheet.cell(row, 8, row + 1, 8, true).string('ЛЭП р/с').style(headerStyle);
+    sheet.cell(row, 9, row + 1, 9, true).string('ТН с погаш.').style(headerStyle);
+    sheet.cell(row, 10, row, 12, true).string('Сеть 0,4 кВ').style(headerStyle);
+    sheet.cell(row, 13, row, 14, true).string('Население, чел.').style(headerStyle);
+    row++;
+    sheet.row(row).setHeight(45);
+    sheet.cell(row, 4).string('УАПВ').style(headerStyle);
+    sheet.cell(row, 5).string('НАПВ').style(headerStyle);
+    sheet.cell(row, 6).string('С обесточ.').style(headerStyle);
+    sheet.cell(row, 7).string('Итого').style(headerStyle);
+    sheet.cell(row, 10).string('С 6-00').style(headerStyle);
+    sheet.cell(row, 11).string('Отключены на срез').style(headerStyle);
+    sheet.cell(row, 12).string('Более 3 часов').style(headerStyle);
+    sheet.cell(row, 13).string('По сети 0,4 кВ на срез').style(headerStyle);
+    sheet.cell(row, 14).string('По сети 0,4 кВ (более 3 часов)').style(headerStyle);
+    reports.data.forEach((report: IOperativeSituationReport) => {
+      row++;
+      sheet.row(row).setHeight(25);
+      sheet.cell(row, 2).string(report.company.shortTitle).style(contentStyle);
+      sheet.cell(row, 3).number(report.violations_6).style(contentStyle);
+      violations_6_total += report.violations_6;
+      sheet.cell(row, 4).number(report.violations_35_uapv).style(contentStyle);
+      violations_35_uapv_total += report.violations_35_uapv;
+      sheet.cell(row, 5).number(report.violations_35_napv).style(contentStyle);
+      violations_35_napv_total += report.violations_35_napv;
+      sheet.cell(row, 6).number(report.violations_35_power_off).style(contentStyle);
+      violations_35_power_off_total += report.violations_35_power_off;
+
+      sheet.cell(row, 7).number(report.violations_35_uapv + report.violations_35_napv).style(contentStyle);
+
+      sheet.cell(row, 8).number(report.violations_lep_rs).style(contentStyle);
+      violations_lep_rs_total += report.violations_lep_rs;
+      sheet.cell(row, 9).number(report.violations_tn_cancel).style(contentStyle);
+      violations_tn_cancel_total += report.violations_tn_cancel;
+      sheet.cell(row, 10).number(report.violations_04_from_6).style(contentStyle);
+      violations_04_from_6_total += report.violations_04_from_6;
+      sheet.cell(row, 11).number(report.violations_04_power_off).style(contentStyle);
+      violations_04_power_off_total += report.violations_04_power_off;
+      sheet.cell(row, 12).number(report.violations_04_greater_3).style(contentStyle);
+      violations_04_greater_3_total += report.violations_04_greater_3;
+      sheet.cell(row, 13).number(report.violations_population_04_srez).style(contentStyle);
+      violations_population_04_srez_total += report.violations_population_04_srez;
+      sheet.cell(row, 14).number(report.violations_population_04_greater_3).style(contentStyle);
+      violations_population_04_greater_3_total += report.violations_population_04_greater_3;
+    });
+
+    row = row - reports.data.length - 1;
+    sheet.cell(row, 16, row, 19, true).string('Потребление').style(headerStyle);
+    row++;
+    sheet.cell(row, 16, row, 17, true).string('Филиал').style(headerStyle);
+    sheet.cell(row, 18, row, 19, true).string('Максимум потребления за прошедшие сутки').style(headerStyle);
+    let consumption_total = 0;
+    reports.data.forEach((report: IOperativeSituationReport) => {
+      row++;
+      sheet.row(row).setHeight(25);
+      sheet.cell(row, 16, row, 17, true).string(report.company.shortTitle).style(contentStyle);
+      sheet.cell(row, 18, row, 19, true).number(report.consumption ? report.consumption.consumption : 0).style(contentStyle);
+      consumption_total += report.consumption ? report.consumption.consumption : 0;
+    });
+    row++;
+    sheet.row(row).setHeight(25);
+    sheet.cell(row, 16, row, 17, true).string('МРСК Северо-Запада').style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 18, row, 19, true).number(consumption_total).style(contentStyle).style(summaryStyle);
+
+    row = row - reports.data.length - 2;
+    sheet.cell(row, 21, row, 27, true).string('Погодные условия').style(headerStyle);
+    sheet.cell(row, 28).string('Режимы').style(headerStyle);
+    row++;
+    sheet.cell(row, 21, row, 22, true).string('Филиал').style(headerStyle);
+    sheet.cell(row, 23).string('t min').style(headerStyle);
+    sheet.cell(row, 24).string('t max').style(headerStyle);
+    sheet.cell(row, 25).string('Ветер, м/с').style(headerStyle);
+    sheet.cell(row, 26, row, 27, true).string('Осадки').style(headerStyle);
+    sheet.cell(row, 28).string('РПГ / ОРР').style(headerStyle);
+    reports.data.forEach((report: IOperativeSituationReport) => {
+      row++;
+      sheet.row(row).setHeight(25);
+      sheet.cell(row, 21, row, 22, true).string(report.company.shortTitle).style(contentStyle);
+      if (report.weatherSummary) {
+        let minTemperature = 0;
+        let maxTemperature = 0;
+        let minWindSpeed = 0;
+        let maxWindSpeed = 0;
+        const precipitations = [];
+        report.weatherSummary.locations.forEach((location: ILocation) => {
+          minTemperature = location.weather.temperature < minTemperature ? location.weather.temperature : minTemperature;
+          maxTemperature = location.weather.temperature > maxTemperature ? location.weather.temperature : maxTemperature;
+          minWindSpeed = location.weather.wind < minWindSpeed ? location.weather.wind : minWindSpeed;
+          maxWindSpeed = location.weather.wind > maxWindSpeed ? location.weather.wind : maxWindSpeed;
+          if (location.weather.precipitations !== 'ясно' &&  precipitations.indexOf(location.weather.precipitations) === -1) {
+            precipitations.push(location.weather.precipitations);
+          }
+          sheet.cell(row, 23).number(minTemperature).style(contentStyle);
+          sheet.cell(row, 24).number(maxTemperature).style(contentStyle);
+          sheet.cell(row, 25).string(`${minWindSpeed}-${maxWindSpeed}`).style(contentStyle);
+          sheet.cell(row, 26, row, 27, true).string(precipitations.length > 0 ? precipitations.join(', ') : 'Нет').style(contentStyle);
+          sheet.cell(row, 28).string(report.weatherORR ? 'ОРР' : report.weatherRPG ? 'РПГ' : 'Нет').style(contentStyle);
+        });
+      } else {
+        sheet.cell(row, 23).number(report.weatherMin).style(contentStyle);
+        sheet.cell(row, 24).number(report.weatherMax).style(contentStyle);
+        sheet.cell(row, 25).string(report.weatherWind).style(contentStyle);
+        sheet.cell(row, 26, row, 27, true).string(report.weatherPrecipitations).style(contentStyle);
+        sheet.cell(row, 28).string(report.weatherORR ? 'ОРР' : report.weatherRPG ? 'РПГ' : 'Нет').style(contentStyle);
+      }
     });
 
     return new Promise<string>((resolve, reject) => {
