@@ -733,7 +733,7 @@ export class OperativeSituationService {
       sheet.cell(row, 6).number(report.violations_35_power_off).style(contentStyle);
       violations_35_power_off_total += report.violations_35_power_off;
       sheet.cell(row, 7).number(report.violations_35_uapv + report.violations_35_napv).style(contentStyle);
-      uapv_and_napv_total += report.violations_35_uapv = report.violations_35_napv;
+      uapv_and_napv_total += report.violations_35_uapv + report.violations_35_napv;
       sheet.cell(row, 8).number(report.violations_lep_rs).style(contentStyle);
       violations_lep_rs_total += report.violations_lep_rs;
       sheet.cell(row, 9).number(report.violations_tn_cancel).style(contentStyle);
