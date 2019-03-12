@@ -87,7 +87,7 @@ export class OperativeSituationService {
       `SELECT operative_situation_reports_add(
                   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
                   $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
-                  $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40
+                  $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41
                 )`,
       [
         report.company.id,
@@ -693,6 +693,7 @@ export class OperativeSituationService {
     let violations_35_uapv_total = 0;
     let violations_35_napv_total = 0;
     let violations_35_power_off_total = 0;
+    let uapv_and_napv_total = 0;
     let violations_lep_rs_total = 0;
     let violations_tn_cancel_total = 0;
     let violations_04_from_6_total = 0;
@@ -731,9 +732,8 @@ export class OperativeSituationService {
       violations_35_napv_total += report.violations_35_napv;
       sheet.cell(row, 6).number(report.violations_35_power_off).style(contentStyle);
       violations_35_power_off_total += report.violations_35_power_off;
-
       sheet.cell(row, 7).number(report.violations_35_uapv + report.violations_35_napv).style(contentStyle);
-
+      uapv_and_napv_total += report.violations_35_uapv = report.violations_35_napv;
       sheet.cell(row, 8).number(report.violations_lep_rs).style(contentStyle);
       violations_lep_rs_total += report.violations_lep_rs;
       sheet.cell(row, 9).number(report.violations_tn_cancel).style(contentStyle);
@@ -749,8 +749,23 @@ export class OperativeSituationService {
       sheet.cell(row, 14).number(report.violations_population_04_greater_3).style(contentStyle);
       violations_population_04_greater_3_total += report.violations_population_04_greater_3;
     });
+    row++;
+    sheet.row(row).setHeight(25);
+    sheet.cell(row, 2).string('МРСК Северо-Запада').style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 3).number(violations_6_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 4).number(violations_35_uapv_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 5).number(violations_35_napv_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 6).number(violations_35_power_off_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 7).number(uapv_and_napv_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 8).number(violations_lep_rs_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 9).number(violations_tn_cancel_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 10).number(violations_04_from_6_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 11).number(violations_04_power_off_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 12).number(violations_04_greater_3_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 13).number(violations_population_04_srez_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 14).number(violations_population_04_greater_3_total).style(contentStyle).style(summaryStyle);
 
-    row = row - reports.data.length - 1;
+    row = row - reports.data.length - 2;
     sheet.cell(row, 16, row, 19, true).string('Потребление').style(headerStyle);
     row++;
     sheet.cell(row, 16, row, 17, true).string('Филиал').style(headerStyle);
@@ -783,10 +798,10 @@ export class OperativeSituationService {
       sheet.row(row).setHeight(25);
       sheet.cell(row, 21, row, 22, true).string(report.company.shortTitle).style(contentStyle);
       if (report.weatherSummary) {
-        let minTemperature = 0;
-        let maxTemperature = 0;
-        let minWindSpeed = 0;
-        let maxWindSpeed = 0;
+        let minTemperature = report.weatherSummary.locations[0].weather.temperature;
+        let maxTemperature = report.weatherSummary.locations[0].weather.temperature;
+        let minWindSpeed = report.weatherSummary.locations[0].weather.wind;
+        let maxWindSpeed = report.weatherSummary.locations[0].weather.wind;
         const precipitations = [];
         report.weatherSummary.locations.forEach((location: ILocation) => {
           minTemperature = location.weather.temperature < minTemperature ? location.weather.temperature : minTemperature;
