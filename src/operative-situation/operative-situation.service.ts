@@ -77,6 +77,19 @@ export class OperativeSituationService {
   }
 
   /**
+   * Получение последней погодной сводки по идентификатору организации
+   */
+  async getWeatherSummaryByCompanyId(companyId: number): Promise<IServerResponse<IWeatherSummary>> {
+    const result = await this.postgresService.query(
+      'operative-situation-reports-get-weather-summary-by-company',
+      `SELECT operative_situation_reports_weather_summary_get_by_company_id($1)`,
+      [companyId],
+      'operative_situation_reports_weather_summary_get_by_company_id',
+    );
+    return result;
+  }
+
+  /**
    * Добавление отчета обоперативной обстановке
    * @param report - Добавляемый отчет об оперативной обстановке
    */

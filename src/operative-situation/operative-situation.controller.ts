@@ -57,6 +57,15 @@ export class OperativeSituationController {
       return result;
     }
 
+    @Get('/weatherSummary')
+    async getWeatherSummary(@Query('companyId') companyId: number): Promise<IServerResponse<IWeatherSummary>> {
+        if (companyId) {
+            const result = await this.operativeSituationService.getWeatherSummaryByCompanyId(companyId);
+            return result;
+        }
+        return null;
+    }
+
     @Post('/weatherSummary')
     async addWeatherSummary(@Body() weather: IWeatherSummary): Promise<IServerResponse<IWeatherSummary[]>> {
         const result = this.operativeSituationService.addWeatherSummary();
