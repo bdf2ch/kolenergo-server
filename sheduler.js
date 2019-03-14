@@ -4,7 +4,7 @@ const http = require('http');
 
 // cron.schedule('* * * * *', () => {
 cron.schedule('*/59 * * * *', () => {
-    console.log('running a task every minute');
+    console.log('weather for companies');
 
     const options = {
         hostname: 'localhost',
@@ -36,8 +36,8 @@ cron.schedule('*/59 * * * *', () => {
 
 
 // cron.schedule('* * * * *', () => {
-cron.schedule('*/41 * * * *', () => {
-    console.log('weather summary every minute');
+cron.schedule('*/59 * * * *', () => {
+    console.log('weather summary for locations');
 
     const options = {
         hostname: 'localhost',
