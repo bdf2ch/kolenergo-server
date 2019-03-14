@@ -421,8 +421,17 @@ export class OperativeSituationService {
    */
   private getLocationWeather(apiKey: string, loc: ILocation): Promise<IWeatherSummaryResponse> {
     return new Promise((resolve, reject) => {
+      const options = {
+        host: 'http://kolu-proxy2.nw.mrsksevzap.ru',
+        port: 8080,
+        path: `https://api.openweathermap.org/data/2.5/weather?lat=${loc.coordinates.x}&lon=${loc.coordinates.y}&units=metric&lang=ru&appid=${apiKey}`,
+        headers: {
+          Host: 'api.openweathermap.org',
+        },
+      };
       https.get(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${loc.coordinates.x}&lon=${loc.coordinates.y}&units=metric&lang=ru&appid=${apiKey}`,
+        // `https://api.openweathermap.org/data/2.5/weather?lat=${loc.coordinates.x}&lon=${loc.coordinates.y}&units=metric&lang=ru&appid=${apiKey}`,
+        options,
         (response: any) => {
           let data = '';
           response.on('data', (chunk) => {
