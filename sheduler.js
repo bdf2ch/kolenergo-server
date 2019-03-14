@@ -36,7 +36,7 @@ cron.schedule('*/59 * * * *', () => {
 
 
 // cron.schedule('* * * * *', () => {
-cron.schedule('*/59 * * * *', () => {
+cron.schedule('*/41 * * * *', () => {
     console.log('weather summary every minute');
 
     const options = {

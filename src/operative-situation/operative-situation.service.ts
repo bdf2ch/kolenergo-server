@@ -13,6 +13,7 @@ import moment = require('moment');
 import * as https from 'https';
 import * as path from 'path';
 import * as excel from 'excel4node';
+import rpn = require('request-promise-native');
 
 @Component()
 export class OperativeSituationService {
@@ -370,6 +371,7 @@ export class OperativeSituationService {
       );
       locations.forEach(async (loc: ILocation, index: number) => {
         const weather = await this.getLocationWeather(apiKey, loc);
+        console.log(weather);
         const locationWeather = await this.postgresService.query(
           'add-location-weather',
           'SELECT operative_situation_reports_locations_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
@@ -420,6 +422,31 @@ export class OperativeSituationService {
    * @param loc - Местоположение
    */
   private getLocationWeather(apiKey: string, loc: ILocation): Promise<IWeatherSummaryResponse> {
+    const options = {
+      uri: `https://api.openweathermap.org/data/2.5/weather`,
+      qs: {
+        lat: loc.coordinates.x, // -> uri + '?access_token=xxxxx%20xxxxx'
+        lon: loc.coordinates.y,
+        units: 'metric',
+        lang: 'ru',
+        appid: apiKey,
+      },
+      json: true, // Automatically parses the JSON string in the response
+      proxy: 'http://kolu-proxy2.nw.mrsksevzap.ru:8080',
+    };
+
+    return rpn(options);
+    /*
+      .then(function(response) {
+        console.log('RESPONSE', response);
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+      */
+
+
+    /*
     return new Promise((resolve, reject) => {
       const options = {
         host: 'http://kolu-proxy2.nw.mrsksevzap.ru',
@@ -450,6 +477,8 @@ export class OperativeSituationService {
             reject(e);
         });
     });
+    */
+
   }
 
   async exportReport(date: string, period: string): Promise<string> {
