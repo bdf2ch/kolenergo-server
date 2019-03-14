@@ -267,77 +267,70 @@ export class OperativeSituationService {
       '',
     );
 
-    regions.forEach((reg: IOperativeSituationRegion) => {
-      const request = https.get(
-        `https://api.openweathermap.org/data/2.5/box/city?bbox=${reg.leftBottomPosition.y},${reg.leftBottomPosition.x},${reg.rightTopPosition.y},${reg.rightTopPosition.x},${reg.zoom}&units=metric&lang=ru&appid=${apiKey}`,
-        (response: any) => {
-          let data = '';
-          response.on('data', (chunk) => {
-            data += chunk;
-          });
-          response.on('end', async () => {
-            const weather = JSON.parse(data);
-            minTemperature = weather.list[0].main.temp_min;
-            maxTemperature = weather.list[0].main.temp_max;
-            minWind = weather.list[0].wind.speed;
-            maxWind = weather.list[0].wind.speed;
-            minHumidity = weather.list[0].main.humidity;
-            maxHumidity = weather.list[0].main.humidity;
-            minPressure = weather.list[0].main.pressure;
-            maxPressure = weather.list[0].main.pressure;
-            let date = null;
-            weather.list.forEach((city: any) => {
-              /*
-              console.log('city', city['name']);
-              console.log('min_temp', city['main']['temp_min']);
-              console.log('max_temp', city['main']['temp_max']);
-              console.log('wind', city['wind']['speed']);
-              console.log('description', city['weather']);
-              console.log('description', city['weather'][0]['description']);
-              */
-              date = moment.unix(city.dt);
-              minTemperature = city.main.temp_min < minTemperature ? city.main.temp_min : minTemperature;
-              maxTemperature = city.main.temp_max > maxTemperature ? city.main.temp_max : maxTemperature;
-              minWind = city.wind.speed < minWind ? city.wind.speed : minWind;
-              maxWind = city.wind.speed > maxWind ? city.wind.speed : maxWind;
-              minHumidity = city.main.humidity < minHumidity ? city.main.humidity : minHumidity;
-              maxHumidity = city.main.humidity > maxHumidity ? city.main.humidity : maxHumidity;
-              minPressure = city.main.pressure < minPressure ? city.main.pressure : minPressure;
-              maxPressure = city.main.pressure > maxPressure ? city.main.pressure : maxPressure;
-              if (precipitations.indexOf(city.weather[0].description) === -1) {
-                  precipitations.push(city.weather[0].description);
-              }
-              if (weatherGroups.indexOf(city.weather[0].main) === -1) {
-                  weatherGroups.push(city.weather[0].main);
-              }
-              if (icons.indexOf(city.weather[0].icon) === -1) {
-                  icons.push(city.weather[0].icon);
-              }
-            });
-            const result = await this.postgresService.query(
-              'add-weather',
-              'SELECT operative_situation_reports_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
-              [
-                reg.companyId,
-                reg.id,
-                date.format('DD.MM.YYYY'),
-                date.format('HH:mm'),
-                Math.ceil(minTemperature),
-                Math.ceil(maxTemperature),
-                  Math.ceil(minHumidity),
-                  Math.ceil(maxHumidity),
-                `${Math.round(minWind)}-${Math.round(maxWind)}`,
-                precipitations,
-                  minPressure,
-                  maxPressure,
-                  weatherGroups,
-                  icons,
-              ],
-              'operative_situation_reports_weather_add',
-            );
-            return result;
-          });
-        });
+    regions.forEach(async (reg: IOperativeSituationRegion) => {
+      const options = {
+        uri: `https://api.openweathermap.org/data/2.5/box/city`,
+        qs: {
+          bbox: `${reg.leftBottomPosition.y},${reg.leftBottomPosition.x},${reg.rightTopPosition.y},${reg.rightTopPosition.x},${reg.zoom}`,
+          units: 'metric',
+          lang: 'ru',
+          appid: apiKey,
+        },
+        json: true,
+        proxy: 'http://kolu-proxy2.nw.mrsksevzap.ru:8080',
+      };
+      const weather = await rpn(options);
+      minTemperature = weather.list[0].main.temp_min;
+      maxTemperature = weather.list[0].main.temp_max;
+      minWind = weather.list[0].wind.speed;
+      maxWind = weather.list[0].wind.speed;
+      minHumidity = weather.list[0].main.humidity;
+      maxHumidity = weather.list[0].main.humidity;
+      minPressure = weather.list[0].main.pressure;
+      maxPressure = weather.list[0].main.pressure;
+      let date = null;
+      weather.list.forEach((city: any) => {
+        date = moment.unix(city.dt);
+        minTemperature = city.main.temp_min < minTemperature ? city.main.temp_min : minTemperature;
+        maxTemperature = city.main.temp_max > maxTemperature ? city.main.temp_max : maxTemperature;
+        minWind = city.wind.speed < minWind ? city.wind.speed : minWind;
+        maxWind = city.wind.speed > maxWind ? city.wind.speed : maxWind;
+        minHumidity = city.main.humidity < minHumidity ? city.main.humidity : minHumidity;
+        maxHumidity = city.main.humidity > maxHumidity ? city.main.humidity : maxHumidity;
+        minPressure = city.main.pressure < minPressure ? city.main.pressure : minPressure;
+        maxPressure = city.main.pressure > maxPressure ? city.main.pressure : maxPressure;
+        if (precipitations.indexOf(city.weather[0].description) === -1) {
+          precipitations.push(city.weather[0].description);
+        }
+        if (weatherGroups.indexOf(city.weather[0].main) === -1) {
+          weatherGroups.push(city.weather[0].main);
+        }
+        if (icons.indexOf(city.weather[0].icon) === -1) {
+          icons.push(city.weather[0].icon);
+        }
+      });
+      const result = await this.postgresService.query(
+        'add-weather',
+        'SELECT operative_situation_reports_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
+        [
+          reg.companyId,
+          reg.id,
+          date.format('DD.MM.YYYY'),
+          date.format('HH:mm'),
+          Math.ceil(minTemperature),
+          Math.ceil(maxTemperature),
+          Math.ceil(minHumidity),
+          Math.ceil(maxHumidity),
+          `${Math.round(minWind)}-${Math.round(maxWind)}`,
+          precipitations,
+          minPressure,
+          maxPressure,
+          weatherGroups,
+          icons,
+        ],
+        'operative_situation_reports_weather_add',
+      );
+      return result;
     });
   }
 
