@@ -1,6 +1,6 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../../common/database/postgres.service';
-import { IServerResponse, IPermission, IRole, IApplication } from '@kolenergo/cpa';
+import { IServerResponse, IPermission, IRole, IApplication, IUser } from '@kolenergo/cpa';
 import { IAhoServerResponse } from '@kolenergo/aho';
 
 @Component()
@@ -18,6 +18,22 @@ export class ApplicationsService {
       `SELECT applications_get_all()`,
       [],
       'applications_get_all',
+    );
+    return result ? result : null;
+  }
+
+  /**
+   * Получение списка пользователей, имеющих доступ к приложению
+   * @param appCode - Код приложения
+   */
+  async getApplicationAllowedUsers(appCode: string): Promise<IServerResponse<IUser[]>> {
+    const result = await this.postgresService.query(
+      'get-application-allowed-users',
+      'SELECT applications_get_allowed_users($1)',
+      [
+        appCode,
+      ],
+      'applications_get_allowed_users',
     );
     return result ? result : null;
   }
