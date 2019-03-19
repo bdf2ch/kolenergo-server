@@ -7,10 +7,12 @@ import { AuthenticationController } from './authentication.controller';
 import { LogInMiddleware } from './middleware/login.middleware';
 import { LogOutMiddleware } from './middleware/logout.middleware';
 import { CheckMiddleware } from './middleware/check.middleware';
+import { ApplicationsModule } from '../../control-panel/applications/applications.module';
 
 @Module({
     imports: [
       UsersModule,
+      ApplicationsModule,
     ],
     components: [
         AuthenticationStrategy,

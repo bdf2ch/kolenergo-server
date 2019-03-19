@@ -4,10 +4,13 @@ import * as passport from 'passport';
 import { UsersService } from '../users/users.service';
 import { LDAPService } from './ldap.service';
 import { ILdapUser } from './interfaces/ldap-user.interface';
+import { ApplicationsService } from '../../control-panel/applications/applications.service';
+import { IServerResponse, IUser } from '@kolenergo/cpa';
 
 @Component()
 export class AuthenticationStrategy extends Strategy {
     constructor(private readonly usersService: UsersService,
+                private readonly applicationsService: ApplicationsService,
                 private readonly ldapService: LDAPService) {
         super(
           {
@@ -30,9 +33,11 @@ export class AuthenticationStrategy extends Strategy {
             console.log('company', ldapUser['dn'].split(',').reverse()[3].split('=')[1]);
             console.log('department', ldapUser['dn'].split(',').reverse()[5].split('=')[1]);
             if (ldapUser) {
-              const user = await this.usersService.getByAccount(ldapUser.sAMAccountName, req.body.appCode);
+              let user = await this.usersService.getByAccount(ldapUser.sAMAccountName, req.body.appCode);
+              const allowedUsers: IServerResponse<IUser[]> = await this.applicationsService.getApplicationAllowedUsers(req.body.appCode);
+              console.log(allowedUsers);
               console.log(user);
-              if (user) return done(null, user);
+              // if (user) return done(null, user);
               if (!user) {
                   const companyUid = ldapUser.dn
                     .split(',')
@@ -46,7 +51,7 @@ export class AuthenticationStrategy extends Strategy {
                   console.log('departmentUid', departmentUid);
                   if (req.body.addIfNotExists && req.body.addIfNotExists === true) {
                       const fio = ldapUser.cn.split(' ');
-                      const newUser = await this.usersService.add({
+                      user = await this.usersService.add({
                           divisionId: 0,
                           personalNumber: null,
                           firstName: fio[1] ? fio[1] : '',
@@ -58,15 +63,28 @@ export class AuthenticationStrategy extends Strategy {
                           activeDirectoryCompanyUid: companyUid,
                           activeDirectoryDepartmentUid: departmentUid,
                       });
-                      return done(null, newUser);
+                      // return done(null, newUser);
                   }
-                  return done(`Local user with account '${ldapUser.sAMAccountName}' not found`, false);
+                  // return done(`Local user with account '${ldapUser.sAMAccountName}' not found`, false);
               }
+
+              if (!user) {
+                  done(`User not found`, false);
+              }
+
+              if (allowedUsers.data.length > 0 ) {
+                const findUserById = (usr: IUser) => usr.id === user.id;
+                const allowedUser = allowedUsers.data.find(findUserById);
+                return allowedUser ? done(null, user) : done(`Access denied`, false);
+              } else {
+                  return done(null, user);
+              }
+
             } else {
-              done(`Active Directory user with account '${ldapUser.sAMAccountName}' not found`, false);
+              done(`User not found`, false);
             }
         } catch (err) {
-            return done(`Active Directory user with account '${username}' not found`, false, err);
+            return done(`User not found`, false, err);
         }
     }
 

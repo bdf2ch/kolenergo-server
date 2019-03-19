@@ -3,6 +3,7 @@ import { DataBaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { UsersModule } from './users/users.module';
+import { ApplicationsModule } from '../control-panel/applications/applications.module';
 
 @Module({
     imports: [
@@ -10,6 +11,7 @@ import { UsersModule } from './users/users.module';
         MailModule,
         AuthenticationModule,
         UsersModule,
+        ApplicationsModule,
     ],
     components: [],
     controllers: [],
@@ -18,6 +20,7 @@ import { UsersModule } from './users/users.module';
         MailModule,
         AuthenticationModule,
         UsersModule,
+        ApplicationsModule,
     ],
 })
 export class CommonModule {}
