@@ -378,7 +378,7 @@ export class OperativeSituationService {
             weather.main.pressure,
             Math.ceil(weather.wind.speed),
             weather.wind.deg,
-            weather.weather[0].description,
+            weather.weather[0].description !== 'light rain and snow' ? weather.weather[0].description : 'Легкий дождь со снегом',
             weather.weather[0].main,
             weather.weather[0].icon,
           ],
