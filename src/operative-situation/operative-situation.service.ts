@@ -421,7 +421,28 @@ export class OperativeSituationService {
 
   async exportReport(date: string, period: string): Promise<string> {
     const wb = new excel.Workbook();
-    const sheet = wb.addWorksheet('Оперативная обстановка');
+    const sheet = wb.addWorksheet('Оперативная обстановка', {
+      pageSetup: {
+        // 'blackAndWhite': Boolean,
+        // 'cellComments': xl.CellComment, // one of 'none', 'asDisplayed', 'atEnd'
+        // 'copies': Integer,
+        // 'draft': Boolean,
+        // 'errors': xl.PrintError, // One of 'displayed', 'blank', 'dash', 'NA'
+        // 'firstPageNumber': Integer,
+        // 'fitToHeight': Integer, // Number of vertical pages to fit to
+       //  fitToWidth: 2, // Number of horizontal pages to fit to
+        // 'horizontalDpi': Integer,
+        orientation: 'landscape', // One of 'default', 'portrait', 'landscape'
+        // 'pageOrder': xl.PageOrder, // One of 'downThenOver', 'overThenDown'
+        // 'paperHeight': xl.PositiveUniversalMeasure, // Value must a positive Float immediately followed by unit of measure from list mm, cm, in, pt, pc, pi. i.e. '10.5cm'
+        // 'paperSize': xl.PaperSize, // see lib/types/paperSize.js for all types and descriptions of types. setting paperSize overrides paperHeight and paperWidth settings
+        // 'paperWidth': xl.PositiveUniversalMeasure,
+        scale: 55,
+        // 'useFirstPageNumber': Boolean,
+        // 'usePrinterDefaults': Boolean,
+        // 'verticalDpi': Integer
+      },
+    });
     let row = 1;
     const border = {
       style: 'thin',
@@ -598,7 +619,7 @@ export class OperativeSituationService {
       ps_110_150_count_total += report.ps_110_150_count;
       sheet.cell(row, 6).number(report.ps_35_count).style(contentStyle);
       ps_35_count_total += report.ps_35_count;
-      sheet.cell(row, 7).number(report.tp_6_20_count).style(contentStyle);
+      sheet.cell(row, 7).number(report.tp_6_20_count_effect_35_150).style(contentStyle);
       tp_6_20_count_effect_35_150_total = report.tp_6_20_count_effect_35_150;
       sheet.cell(row, 8).number(report.population_count_effect_35_150).style(contentStyle);
       population_count_effect_35_150_total += report.population_count_effect_35_150;
@@ -725,9 +746,9 @@ export class OperativeSituationService {
       uapv_and_napv_total += report.violations_35_uapv + report.violations_35_napv;
       sheet.cell(row, 8).number(report.violations_lep_rs).style(contentStyle);
       violations_lep_rs_total += report.violations_lep_rs;
-      sheet.cell(row, 9).number(report.violations_tn_cancel).style(contentStyle);
+      sheet.cell(row, 9).number(report.violations_tn_cancel).style(contentStyle).style(summaryStyle);
       violations_tn_cancel_total += report.violations_tn_cancel;
-      sheet.cell(row, 10).number(report.violations_04_from_6).style(contentStyle);
+      sheet.cell(row, 10).number(report.violations_04_from_6).style(contentStyle).style(summaryStyle);
       violations_04_from_6_total += report.violations_04_from_6;
       sheet.cell(row, 11).number(report.violations_04_power_off).style(contentStyle);
       violations_04_power_off_total += report.violations_04_power_off;
@@ -816,11 +837,11 @@ export class OperativeSituationService {
     });
 
     return new Promise<string>((resolve, reject) => {
-      wb.write(`${date} ${period}.xlsx`, (err, stats) => {
+      wb.write(`${date} ${period.replace(':', '-')}.xlsx`, (err, stats) => {
         if (err) {
           reject(null);
         }
-        const url = path.resolve(`./${date} ${period}.xlsx`);
+        const url = path.resolve(`./${date} ${period.replace(':', '-')}.xlsx`);
         resolve(url);
       });
     });
