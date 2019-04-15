@@ -208,6 +208,22 @@ export class OperativeSituationService {
   }
 
   /**
+   * Удаление отчета об оперативной обстановке
+   * @param reportId - Идентификатор отчета
+   */
+  async deleteReport(reportId: number): Promise<IServerResponse<boolean>> {
+    const result = await this.postgresService.query(
+      'delete-operative-situation-report',
+      `SELECT operative_situation_reports_delete($1)`,
+      [
+        reportId,
+      ],
+      'operative_situation_reports_delete',
+    );
+    return result ? result : null;
+  }
+
+  /**
    * Добавление отчета о максимальном потреблении за прошедшие сутки
    * @param report - Добавляемый отчет об максимальном потреблении за прошедшие сутки
    */
@@ -423,24 +439,8 @@ export class OperativeSituationService {
     const wb = new excel.Workbook();
     const sheet = wb.addWorksheet('Оперативная обстановка', {
       pageSetup: {
-        // 'blackAndWhite': Boolean,
-        // 'cellComments': xl.CellComment, // one of 'none', 'asDisplayed', 'atEnd'
-        // 'copies': Integer,
-        // 'draft': Boolean,
-        // 'errors': xl.PrintError, // One of 'displayed', 'blank', 'dash', 'NA'
-        // 'firstPageNumber': Integer,
-        // 'fitToHeight': Integer, // Number of vertical pages to fit to
-       //  fitToWidth: 2, // Number of horizontal pages to fit to
-        // 'horizontalDpi': Integer,
-        orientation: 'landscape', // One of 'default', 'portrait', 'landscape'
-        // 'pageOrder': xl.PageOrder, // One of 'downThenOver', 'overThenDown'
-        // 'paperHeight': xl.PositiveUniversalMeasure, // Value must a positive Float immediately followed by unit of measure from list mm, cm, in, pt, pc, pi. i.e. '10.5cm'
-        // 'paperSize': xl.PaperSize, // see lib/types/paperSize.js for all types and descriptions of types. setting paperSize overrides paperHeight and paperWidth settings
-        // 'paperWidth': xl.PositiveUniversalMeasure,
+        orientation: 'landscape',
         scale: 55,
-        // 'useFirstPageNumber': Boolean,
-        // 'usePrinterDefaults': Boolean,
-        // 'verticalDpi': Integer
       },
     });
     let row = 1;

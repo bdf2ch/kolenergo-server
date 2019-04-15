@@ -83,4 +83,10 @@ export class OperativeSituationController {
         const result = await this.operativeSituationService.editConsumption(consumption);
         return result;
     }
+
+    @Delete('/:id')
+    async deleteReport(@Param('id') reportId: number): Promise<IServerResponse<boolean>> {
+        const result = await this.operativeSituationService.deleteReport(reportId);
+        return result;
+    }
 }
