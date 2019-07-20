@@ -13,6 +13,7 @@ import {
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
 import { IServerResponse, IUser, User } from '@kolenergo/cpa';
+import { IAhoRequestsInitialData2 } from '@kolenergo/aho2';
 
 @Component()
 export class AhoRequestsService {
@@ -43,6 +44,16 @@ export class AhoRequestsService {
             `SELECT aho_requests_get_initial_data($1, $2)`,
             [userId, itemsOnPage],
             'aho_requests_get_initial_data',
+        );
+        return result;
+    }
+
+    async getInitialData2(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoRequestsInitialData2>> {
+        const result = await this.postgresService.query(
+          'aho-requests-get-initial-data-2',
+          `SELECT aho.get_initial_data($1, $2)`,
+          [userId, itemsOnPage],
+          'get_initial_data',
         );
         return result;
     }

@@ -11,15 +11,15 @@ import * as compression from 'compression';
 process
     .on('uncaughtException', (err) => {
         console.error(err.stack);
-        console.log("Node NOT Exiting...");
+        console.log('Node NOT Exiting...');
     })
     .on('ECONNRESET', (err) => {
         console.error(err.stack);
-        console.log("Node NOT Exiting...");
+        console.log('Node NOT Exiting...');
     })
     .on('ETIMEDOUT', (err) => {
         console.error(err.stack);
-        console.log("Node NOT Exiting...");
+        console.log('Node NOT Exiting...');
     });
 
 async function bootstrap() {
@@ -49,4 +49,4 @@ bootstrap();
 
 function shouldCompress(req, res) {
   return true;
-};
+}

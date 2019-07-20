@@ -1,6 +1,7 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../database/postgres.service';
-import { IUser, IAddUser, IEditUser, IDeleteUser } from '@kolenergo/cpa';
+import { IServerResponse, IUser } from '@kolenergo/core';
+import { IAddUser, IEditUser, IDeleteUser } from '@kolenergo/cpa';
 
 @Component()
 export class UsersService {
@@ -24,19 +25,26 @@ export class UsersService {
   }
 
   /**
-   * Поиск пользователя по идентификатору
-   * @param {Number} id - Идентфиикатор пользователя
-   * @param {String} appCode - Код приложения
-   * @returns {Promise<IUser | null>}
+   * Получение данных о пользователе по идентификатору пользователя
+   * @param userId - Идентификатор пользователя
+   * @param withCompany - Включать ли в ответ данные об организации пользователя
+   * @param withDepartment - Включать ли в ответ данные о подразделении орагнизации пользователя
+   * @param applicationCode - Код приложения (для включения в ответ данных о ролях и правах пользователя в приложении)
+   * @private
    */
-  async getById(id: number, appCode?: string | null): Promise<IUser | null> {
+  async getById(userId: number, withCompany: boolean, withDepartment: boolean, applicationCode: string): Promise<IServerResponse<IUser>> {
     const result = await this.postgresService.query(
       'get-user-by-id',
-      `SELECT users_get_by_id($1, $2)`,
-      [id, appCode],
+      'SELECT users_get_by_id($1, $2, $3, $4)',
+      [
+        userId,
+        withCompany ? withCompany : false,
+        withDepartment ? withDepartment : false,
+        applicationCode ? applicationCode : '',
+      ],
       'users_get_by_id',
     );
-    return result ? result : null;
+    return result;
   }
 
   /**
@@ -68,6 +76,26 @@ export class UsersService {
       'users_get_by_application_code',
     );
     return result ? result : [];
+  }
+
+  /**
+   * Поиск пользователей
+   * @param query - Условие поиска
+   * @param withCompany - Включать ли в ответ данные об организации пользователя
+   * @param withDepartment - Включать ли в ответ данные о подразделении организации пользователя
+   */
+  async search(query: string, withCompany: boolean, withDepartment: boolean): Promise<IServerResponse<IUser[]>> {
+    const result = this.postgresService.query(
+      'search-users',
+      'SELECT users_search($1, $2, $3)',
+      [
+        query,
+        withCompany ? withCompany : false,
+        withDepartment ? withDepartment : false,
+      ],
+      'users_search',
+    );
+    return result;
   }
 
   /**

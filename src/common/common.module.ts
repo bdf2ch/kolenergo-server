@@ -4,6 +4,7 @@ import { MailModule } from './mail/mail.module';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { UsersModule } from './users/users.module';
 import { ApplicationsModule } from '../control-panel/applications/applications.module';
+import { CompaniesModule } from './companies/companies.module';
 
 @Module({
     imports: [
@@ -12,6 +13,7 @@ import { ApplicationsModule } from '../control-panel/applications/applications.m
         AuthenticationModule,
         UsersModule,
         ApplicationsModule,
+        CompaniesModule,
     ],
     components: [],
     controllers: [],
@@ -21,6 +23,7 @@ import { ApplicationsModule } from '../control-panel/applications/applications.m
         AuthenticationModule,
         UsersModule,
         ApplicationsModule,
+        CompaniesModule,
     ],
 })
 export class CommonModule {}

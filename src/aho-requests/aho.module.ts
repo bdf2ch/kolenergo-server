@@ -2,19 +2,29 @@ import { MiddlewaresConsumer, Module, RequestMethod } from '@nestjs/common';
 import { DataBaseModule } from '../common/database/database.module';
 import { MailModule } from '../common/mail/mail.module';
 import { AhoRequestsService } from './aho-requests.service';
+import { AhoRequestsServiceNew } from './aho-requests_.service';
 import { AhoRequestsController } from './aho-requests.controller';
 import { ExportNeedsMiddleware } from './middleware/export-needs.middleware';
 import { ExportRequestsMiddleware } from './middleware/export-requests.middleware';
 import { ExportRequestMiddleware } from './middleware/export-request.middleware';
+import { AhoRequestsControllerNew } from './aho-requests_.controller';
 
 @Module({
     imports: [
         DataBaseModule,
         MailModule,
     ],
-    components: [AhoRequestsService],
-    controllers: [AhoRequestsController],
-    exports: [AhoRequestsService],
+    components: [
+      AhoRequestsService,
+        AhoRequestsServiceNew,
+    ],
+    controllers: [
+      // AhoRequestsController,
+        AhoRequestsControllerNew,
+    ],
+    exports: [
+      AhoRequestsService,
+    ],
 })
 export class AhoRequestsModule {
     configure(consumer: MiddlewaresConsumer): MiddlewaresConsumer | void {
