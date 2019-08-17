@@ -4,7 +4,7 @@ import { IEventShedulerInitialData, IEventRequest, ECalendarModes } from '@kolen
 import { EventShedulerService } from './event-sheduler.service';
 import * as moment from 'moment';
 
-@Controller('esa')
+@Controller('events')
 export class EventShedulerController {
   constructor(private readonly eventShedulerService: EventShedulerService) {}
 

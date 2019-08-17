@@ -19,7 +19,8 @@
       "@kolenergo/cpa": ["../../kolenergo-workspace/src/control-panel-app/exports.ts"],
       "@kolenergo/core": ["../../kolenergo/projects/kolenergo-core/src/public-api.ts"],
       "@kolenergo/aho2": ["../../kolenergo/projects/aho-requests/src/exports.ts"],
-      "@kolenergo/esa": ["../../kolenergo/projects/event-sheduler/src/exports.ts"]
+      "@kolenergo/esa": ["../../kolenergo/projects/event-sheduler/src/exports.ts"],
+      "@kolenergo/portal": ["../../kolenergo/projects/portal/src/exports.ts"]
     }
   },
   "include": [

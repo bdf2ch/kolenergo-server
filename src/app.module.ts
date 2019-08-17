@@ -6,6 +6,7 @@ import { OperativeSituationModule } from './operative-situation/operative-situat
 import { ControlPanelModule } from './control-panel/control-panel.module';
 import { EventShedulerModule } from './event-sheduler/event-sheduler.module';
 import { AppController } from './app.controller';
+import { PortalModule } from './portal/portal.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AppController } from './app.controller';
       OperativeSituationModule,
       EventShedulerModule,
       ControlPanelModule,
+      PortalModule,
   ],
   controllers: [
     AppController,
