@@ -20,7 +20,8 @@
       "@kolenergo/core": ["../../kolenergo/projects/kolenergo-core/src/public-api.ts"],
       "@kolenergo/aho2": ["../../kolenergo/projects/aho-requests/src/exports.ts"],
       "@kolenergo/esa": ["../../kolenergo/projects/event-sheduler/src/exports.ts"],
-      "@kolenergo/portal": ["../../kolenergo/projects/portal/src/exports.ts"]
+      "@kolenergo/portal": ["../../kolenergo/projects/portal/src/exports.ts"],
+      "@kolenergo/press": ["../../kolenergo/projects/press-reports/src/exports.ts"]
     }
   },
   "include": [

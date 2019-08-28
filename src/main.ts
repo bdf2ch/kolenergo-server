@@ -7,6 +7,7 @@ import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as compression from 'compression';
+import { static } from 'express';
 
 process
     .on('uncaughtException', (err) => {
@@ -26,10 +27,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(
       compression({level: 9, filter: shouldCompress}),
-      cors({
-          origin: true,
-          credentials: true,
-      }),
+      cors({ origin: true, credentials: true }),
       cookieParser(),
       bodyParser.json(),
       session({
@@ -42,6 +40,7 @@ async function bootstrap() {
       }),
       passport.initialize(),
       passport.session(),
+      static('./static'),
   );
   await app.listen(3000);
 }

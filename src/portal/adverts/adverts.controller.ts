@@ -12,9 +12,15 @@ export class AdvertsController {
   async getAdvertsPage(
     @Query('page') page: number,
     @Query('advertsOnPage') advertsOnPage: number,
+    @Query('search') search: string,
   ): Promise<IServerResponse<IAdvert[]>> {
-    const result = await this.advertsService.getAdvertsPage(page, advertsOnPage);
-    return result;
+    if (search) {
+      const result = await this.advertsService.searchAdvert(search);
+      return result;
+    } else if (page && advertsOnPage) {
+      const result = await this.advertsService.getAdvertsPage(page, advertsOnPage);
+      return result;
+    }
   }
 
   @Get('/:id')

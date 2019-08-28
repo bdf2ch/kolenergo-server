@@ -7,6 +7,7 @@ export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {
   }
 
+  /*
   @Get('/')
   async getApplications(): Promise<IServerResponse<IApplication[]>> {
     const result = await this.applicationsService.getApplications();
@@ -36,4 +37,5 @@ export class ApplicationsController {
     const result = await this.applicationsService.editPermission(permission);
     return result;
   }
+  */
 }

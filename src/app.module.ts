@@ -6,16 +6,18 @@ import { OperativeSituationModule } from './operative-situation/operative-situat
 import { ControlPanelModule } from './control-panel/control-panel.module';
 import { EventShedulerModule } from './event-sheduler/event-sheduler.module';
 import { AppController } from './app.controller';
+import { PressReportsModule } from './press-reports/press-reports.module';
 import { PortalModule } from './portal/portal.module';
 
 @Module({
   imports: [
       CommonModule,
       AhoRequestsModule,
-      PhoneBookModule,
+      // PhoneBookModule,
       OperativeSituationModule,
       EventShedulerModule,
       ControlPanelModule,
+      PressReportsModule,
       PortalModule,
   ],
   controllers: [
