@@ -19,8 +19,8 @@ import { AhoRequestsControllerNew } from './aho-requests_.controller';
         AhoRequestsServiceNew,
     ],
     controllers: [
-      // AhoRequestsController,
-        AhoRequestsControllerNew,
+      AhoRequestsController,
+        // AhoRequestsControllerNew,
     ],
     exports: [
       AhoRequestsService,

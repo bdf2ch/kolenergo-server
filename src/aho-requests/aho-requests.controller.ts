@@ -1,13 +1,13 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch} from '@nestjs/common';
 import { AhoRequestsService } from './aho-requests.service';
 import {
-    IAhoRequestType,
-    IAhoRequest,
-    IAddAhoRequest,
-    IAhoRequestStatus,
-    IAhoRequestTaskContent,
-    IAhoRequestComment,
-    IAhoRequestNeed, AhoRequestRejectReason, AhoRequest, IAhoRequestsInitialData,
+  IAhoRequestType,
+  IAhoRequest,
+  IAddAhoRequest,
+  IAhoRequestStatus,
+  IAhoRequestTaskContent,
+  IAhoRequestComment,
+  IAhoRequestNeed, AhoRequestRejectReason, AhoRequest, IAhoRequestsInitialData, IAhoServerResponse,
 } from '@kolenergo/aho';
 import { IServerResponse, IUser } from '@kolenergo/cpa';
 
@@ -72,7 +72,7 @@ export class AhoRequestsController {
     @Query('page') page,
     @Query('itemsOnPage') itemsOnPage,
     @Query('search') search,
-  ): Promise<IAhoRequest[]> {
+  ): Promise<IServerResponse<IAhoServerResponse>> {
     if (search && search !== null) {
       const result = await this.ahoRequestsService.searchRequests(userId, search);
       return result;
