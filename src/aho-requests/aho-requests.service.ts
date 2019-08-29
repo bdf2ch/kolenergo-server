@@ -38,7 +38,7 @@ export class AhoRequestsService {
      * @param userId - Идентификатор пользователя
      * @param itemsOnPage - Количество заявок на странице
      */
-    async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoServerResponse>> {
+    async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoRequestsInitialData>> {
         const result = await this.postgresService.query(
             'aho-requests-get-initial-data',
             `SELECT aho_requests_get_initial_data($1, $2)`,
