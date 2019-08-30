@@ -47,16 +47,16 @@ export class AdvertsService {
     if (advert) {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4)',
-        [advert.user.id, advert.title, advert.preview, advert.content],
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5)',
+        [advert.user.id, advert.title, advert.preview, advert.content, true],
         'adverts_add',
       );
       return result;
     } else {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4)',
-        [null, null, null, null],
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5)',
+        [null, null, null, null, false],
         'adverts_add',
       );
       return result;
@@ -70,8 +70,8 @@ export class AdvertsService {
   async editAdvert(advert: IAdvert): Promise<IServerResponse<IAdvert>> {
     const result = await this.postgresService.query(
       'portal-edit-advert',
-      'SELECT portal.adverts_edit($1, $2, $3, $4)',
-      [advert.id, advert.title, advert.preview, advert.content],
+      'SELECT portal.adverts_edit($1, $2, $3, $4, $5)',
+      [advert.id, advert.title, advert.preview, advert.image, advert.content],
       'adverts_edit',
     );
     return result;
@@ -95,7 +95,7 @@ export class AdvertsService {
    * Загрузка изображения в новое объявление
    * @param image - Загружаемое изображение
    */
-  async uploadImageToNewAdvert(image): Promise<IServerResponse<{url: string, advert: IAdvert}>> {
+  async uploadImageToNewAdvert(image, header: boolean): Promise<IServerResponse<{url: string, advert: IAdvert}>> {
     const advert: IServerResponse<IAdvert> = await this.addAdvert();
     const folderPath = path.resolve('static', 'portal', 'adverts', advert.data.id.toString());
     console.log(folderPath);
@@ -103,9 +103,18 @@ export class AdvertsService {
 
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath);
-      const filePath = path.resolve('static', 'portal', 'adverts', advert.data.id.toString(), image.originalname);
-      const fileUrl = path.relative('./static', `./static/portal/adverts/${advert.data.id.toString()}/${image.originalname}`);
+      const filePath = path.resolve(
+        'static',
+        'portal',
+        'adverts',
+        advert.data.id.toString(), header ? `header_${image.originalname}` : image.originalname,
+      );
+      const fileUrl = path.relative(
+        './static',
+        `./static/portal/adverts/${advert.data.id.toString()}/${header ? 'header_' + image.originalname : image.originalname}`,
+      );
       fs.writeFileSync(filePath, image.buffer);
+      advert.data.image = header ? fileUrl : null;
       return new Promise<IServerResponse<{url: string, advert: IAdvert}>>((resolve) => {
         resolve({data: {url: fileUrl, advert: advert.data}});
       });
@@ -117,15 +126,15 @@ export class AdvertsService {
    * @param advertId - Идентификатор объявления
    * @param image - Загружаемое изображение
    */
-  async uploadImageToAdvert(advertId: number, image): Promise<IServerResponse<string>> {
+  async uploadImageToAdvert(advertId: number, image, header: boolean): Promise<IServerResponse<string>> {
     const folderPath = path.resolve('static', 'portal', 'adverts', advertId.toString());
     console.log(folderPath);
     console.log(`directory ${folderPath} ${fs.existsSync(folderPath) ? ' exists' : ' does not exists'}`);
 
     if (fs.existsSync(folderPath)) {
       // fs.mkdirSync(folderPath);
-      const filePath = path.resolve('static', 'portal', 'adverts', advertId.toString(), image.originalname);
-      const fileUrl = path.relative('./static', `./static/portal/adverts/${advertId.toString()}/${image.originalname}`);
+      const filePath = path.resolve('static', 'portal', 'adverts', advertId.toString(), header ? `header_${image.originalname}` : image.originalname);
+      const fileUrl = path.relative('./static', `./static/portal/adverts/${advertId.toString()}/${header ? 'header_' + image.originalname : image.originalname}`);
       fs.writeFileSync(filePath, image.buffer);
       return new Promise<IServerResponse<string>>((resolve) => {
         resolve({data: fileUrl});
