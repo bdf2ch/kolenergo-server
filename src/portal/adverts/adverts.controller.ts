@@ -1,4 +1,17 @@
-import { Controller, Post, Get, Body, Param, Query, Delete, Patch, UseInterceptors, FileInterceptor, UploadedFile, Put } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Query,
+  Delete,
+  Patch,
+  UseInterceptors,
+  FileInterceptor,
+  UploadedFile,
+  Put,
+} from '@nestjs/common';
 
 import { IServerResponse } from '@kolenergo/core';
 import { IAdvert, Advert } from '@kolenergo/portal';
@@ -15,57 +28,53 @@ export class AdvertsController {
     @Query('search') search: string,
   ): Promise<IServerResponse<IAdvert[]>> {
     if (search) {
-      const result = await this.advertsService.searchAdvert(search);
-      return result;
+      return await this.advertsService.searchAdvert(search);
     } else if (page && advertsOnPage) {
-      const result = await this.advertsService.getAdvertsPage(page, advertsOnPage);
-      return result;
+      return await this.advertsService.getAdvertsPage(page, advertsOnPage);
     }
   }
 
   @Get('/:id')
   async getAdvert(@Param('id') advertId: number): Promise<IServerResponse<IAdvert>> {
-    const result = await this.advertsService.getAdvertById(advertId);
-    return  result;
+    return await this.advertsService.getAdvertById(advertId);
   }
 
   @Patch('/:id')
   async editAdvert(@Body() advert: Advert): Promise<IServerResponse<IAdvert>> {
-    const result = await this.advertsService.editAdvert(advert);
-    return  result;
+    return await this.advertsService.editAdvert(advert);
+  }
+
+  @Delete('/:id')
+  async deleteAdvert(@Param('id') advertId: number): Promise<IServerResponse<boolean>> {
+    return await this.advertsService.deleteAdvert(advertId);
   }
 
   @Post('/')
   async addAdvert(@Body() advert: Advert): Promise<IServerResponse<IAdvert>> {
-    const result = await this.advertsService.addAdvert(advert);
-    return  result;
+    return await this.advertsService.addAdvert(advert);
   }
 
   @Put('/image')
   @UseInterceptors(FileInterceptor('image'))
   async uploadImageToNewAdvert(@UploadedFile() file, @Query('header') header: boolean) {
-    const result = await this.advertsService.uploadImageToNewAdvert(file, header ? true : false);
-    return result;
+    return await this.advertsService.uploadImageToNewAdvert(file, header);
   }
 
   @Put('/:id/image')
   @UseInterceptors(FileInterceptor('image'))
   async uploadImageToAdvert(@Param('id') advertId: number, @UploadedFile() file, @Query('header') header: boolean) {
-    const result = await this.advertsService.uploadImageToAdvert(advertId, file, header);
-    return result;
+    return await this.advertsService.uploadImageToAdvert(advertId, file, header);
   }
 
   @Put('/attachment')
   @UseInterceptors(FileInterceptor('file'))
   async uploadAttachmentToNewAdvert(@UploadedFile() file, @Query('userId') userId: number) {
-    const result = await this.advertsService.uploadAttachmentToNewAdvert(file, userId);
-    return result;
+    return await this.advertsService.uploadAttachmentToNewAdvert(file, userId);
   }
 
   @Put('/:id/attachment')
   @UseInterceptors(FileInterceptor('file'))
   async uploadAttachmentToAdvert(@UploadedFile() file, @Param('id') advertId: number, @Query('userId') userId: number) {
-    const result = await this.advertsService.uploadAttachmentToAdvert(file, advertId, userId);
-    return result;
+    return await this.advertsService.uploadAttachmentToAdvert(file, advertId, userId);
   }
 }

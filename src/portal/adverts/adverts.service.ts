@@ -133,8 +133,17 @@ export class AdvertsService {
 
     if (fs.existsSync(folderPath)) {
       // fs.mkdirSync(folderPath);
-      const filePath = path.resolve('static', 'portal', 'adverts', advertId.toString(), header ? `header_${image.originalname}` : image.originalname);
-      const fileUrl = path.relative('./static', `./static/portal/adverts/${advertId.toString()}/${header ? 'header_' + image.originalname : image.originalname}`);
+      const filePath = path.resolve(
+        'static',
+        'portal',
+        'adverts',
+        advertId.toString(),
+        header ? `header_${image.originalname}` : image.originalname,
+      );
+      const fileUrl = path.relative(
+        './static',
+        `./static/portal/adverts/${advertId.toString()}/${header ? 'header_' + image.originalname : image.originalname}`,
+      );
       fs.writeFileSync(filePath, image.buffer);
       return new Promise<IServerResponse<string>>((resolve) => {
         resolve({data: fileUrl});
@@ -199,5 +208,19 @@ export class AdvertsService {
     );
     return result;
 
+  }
+
+  /**
+   * Удаление объявления
+   * @param advertId - Идентификатор удаляемого объявления
+   */
+  async deleteAdvert(advertId: number): Promise<IServerResponse<boolean>> {
+    const result = await this.postgresService.query(
+      'portal-delete-advert',
+      'SELECT portal.adverts_delete($1)',
+    [advertId],
+      'adverts_delete',
+    );
+    return result;
   }
 }
