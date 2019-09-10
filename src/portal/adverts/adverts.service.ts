@@ -4,7 +4,7 @@ import { IServerResponse } from '@kolenergo/core';
 import { IAdvert, IAttachment, Advert, Attachment } from '@kolenergo/portal';
 import * as path from 'path';
 import * as fs from 'fs';
-import moment = require('moment');
+import * as rimraf from 'rimraf';
 
 @Component()
 export class AdvertsService {
@@ -221,6 +221,13 @@ export class AdvertsService {
     [advertId],
       'adverts_delete',
     );
+
+    const folderPath = path.resolve('static', 'portal', 'adverts', advertId.toString());
+    console.log(folderPath);
+    console.log(`directory ${folderPath} ${fs.existsSync(folderPath) ? ' exists' : ' does not exists'}`);
+    if (fs.existsSync(folderPath)) {
+      rimraf.sync(folderPath);
+    }
     return result;
   }
 }
