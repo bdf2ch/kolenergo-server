@@ -46,7 +46,7 @@ export class AdvertsController {
 
   @Delete('/:id')
   async deleteAdvert(@Param('id') advertId: number): Promise<IServerResponse<boolean>> {
-    return await this.advertsService.deleteAdvert(advertId);
+    return await this.advertsService.removeAdvert(advertId);
   }
 
   @Post('/')
@@ -66,15 +66,20 @@ export class AdvertsController {
     return await this.advertsService.uploadImageToAdvert(advertId, file, header);
   }
 
-  @Put('/attachment')
+  @Put('/attachments')
   @UseInterceptors(FileInterceptor('file'))
   async uploadAttachmentToNewAdvert(@UploadedFile() file, @Query('userId') userId: number) {
     return await this.advertsService.uploadAttachmentToNewAdvert(file, userId);
   }
 
-  @Put('/:id/attachment')
+  @Put('/:id/attachments')
   @UseInterceptors(FileInterceptor('file'))
   async uploadAttachmentToAdvert(@UploadedFile() file, @Param('id') advertId: number, @Query('userId') userId: number) {
     return await this.advertsService.uploadAttachmentToAdvert(file, advertId, userId);
+  }
+
+  @Delete('/attachments/:id')
+  async removeAttachment(@Param('id') attachmentId: number): Promise<IServerResponse<boolean>> {
+    return await this.advertsService.removeAttachment(attachmentId);
   }
 }

@@ -1,10 +1,12 @@
 import { Component } from '@nestjs/common';
-import { PostgresService } from '../../common/database/postgres.service';
-import { IServerResponse } from '@kolenergo/core';
-import { IAdvert, IAttachment, Advert, Attachment } from '@kolenergo/portal';
+
 import * as path from 'path';
 import * as fs from 'fs';
 import * as rimraf from 'rimraf';
+
+import { IServerResponse } from '@kolenergo/core';
+import { IAdvert, IAttachment, Advert, Attachment } from '@kolenergo/portal';
+import { PostgresService } from '../../common/database/postgres.service';
 
 @Component()
 export class AdvertsService {
@@ -211,15 +213,41 @@ export class AdvertsService {
   }
 
   /**
+   * Удалиение вложения в объявлении
+   * @param attachmentId - Идентификатор вложения
+   */
+  async removeAttachment(attachmentId: number): Promise<IServerResponse<boolean>> {
+    const attachment: IServerResponse<IAttachment> = await this.postgresService.query(
+      'portal-get-attachment-by-id',
+      'SELECT portal.attachments_get_by_id($1)',
+      [attachmentId],
+      'attachments_get_by_id',
+    );
+    const result =  await this.postgresService.query(
+      'portal-remove-attachment',
+      'SELECT portal.attachments_remove_by_id($1)',
+      [attachmentId],
+      'attachments_remove_by_id',
+    );
+    const attachmentPath = path.resolve('static', attachment.data.url);
+    console.log(attachmentPath);
+    console.log(`attachment ${attachmentPath} ${fs.existsSync(attachmentPath) ? ' exists' : ' does not exists'}`);
+    if (fs.existsSync(attachmentPath)) {
+      fs.unlinkSync(attachmentPath);
+    }
+    return result;
+  }
+
+  /**
    * Удаление объявления
    * @param advertId - Идентификатор удаляемого объявления
    */
-  async deleteAdvert(advertId: number): Promise<IServerResponse<boolean>> {
+  async removeAdvert(advertId: number): Promise<IServerResponse<boolean>> {
     const result = await this.postgresService.query(
       'portal-delete-advert',
-      'SELECT portal.adverts_delete($1)',
+      'SELECT portal.adverts_remove_by_id($1)',
     [advertId],
-      'adverts_delete',
+      'adverts_remove_by_id',
     );
 
     const folderPath = path.resolve('static', 'portal', 'adverts', advertId.toString());
