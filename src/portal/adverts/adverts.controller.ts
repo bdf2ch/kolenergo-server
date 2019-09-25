@@ -57,6 +57,7 @@ export class AdvertsController {
   @Put('/image')
   @UseInterceptors(FileInterceptor('image'))
   async uploadImageToNewAdvert(@UploadedFile() file, @Query('header') header: boolean) {
+    console.log('header', header);
     return await this.advertsService.uploadImageToNewAdvert(file, header);
   }
 

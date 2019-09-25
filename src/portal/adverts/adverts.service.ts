@@ -117,6 +117,8 @@ export class AdvertsService {
       );
       fs.writeFileSync(filePath, image.buffer);
       advert.data.image = header ? fileUrl : null;
+      console.log('header', header);
+      console.log('image', advert.data.image);
       return new Promise<IServerResponse<{url: string, advert: IAdvert}>>((resolve) => {
         resolve({data: {url: fileUrl, advert: advert.data}});
       });

@@ -1,21 +1,21 @@
 import { Module } from '@nestjs/common';
 
 import { CommonModule } from '../../common/common.module';
-import { AdvertsService } from './adverts.service';
-import { AdvertsController } from './adverts.controller';
+import { ArticlesService } from './articles.service';
+import { ArticlesController } from './articles.controller';
 
 @Module({
   imports: [
     CommonModule,
   ],
   components: [
-    AdvertsService,
+    ArticlesService,
   ],
   controllers: [
-    AdvertsController,
+    ArticlesController,
   ],
   exports: [
-    AdvertsService,
+    ArticlesService,
   ],
 })
-export class AdvertsModule {}
+export class ArticlesModule {}

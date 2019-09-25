@@ -10,12 +10,13 @@ export class PortalService {
   /**
    * Получение данных для инициализации приложения
    * @param advertsOnPage - Количество объявлений на главной странице
+   * @param articlesOnPage - Количество статей на главной странице
    */
-  async getInitialData(advertsOnPage: number): Promise<IServerResponse<IPortalInitialData>> {
+  async getInitialData(advertsOnPage: number, articlesOnPage: number): Promise<IServerResponse<IPortalInitialData>> {
     const result = await this.postgresService.query(
       'portal-get-initial-data',
-      'SELECT portal.get_initial_data($1)',
-      [advertsOnPage],
+      'SELECT portal.get_initial_data($1, $2)',
+      [advertsOnPage, articlesOnPage],
       'get_initial_data',
     );
     return result;
