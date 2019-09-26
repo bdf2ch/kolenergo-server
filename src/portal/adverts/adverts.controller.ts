@@ -40,7 +40,10 @@ export class AdvertsController {
   }
 
   @Post('/')
-  async addAdvert(@Body() advert: Advert, @Query('page') page: number): Promise<IServerResponse<{adverts: IAdvert[], advert: IAdvert}>> {
+  async addAdvert(
+    @Body() advert: Advert,
+    @Query('page') page: number,
+  ): Promise<IServerResponse<{adverts: IAdvert[], advert: IAdvert}>> {
     return await this.advertsService.addAdvert(advert, page);
   }
 

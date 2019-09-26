@@ -51,16 +51,16 @@ export class AdvertsService {
     if (advert) {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8)',
-        [advert.user.id, advert.title, advert.preview, advert.content, advert.dateCreated, true, page, advertsOnPage],
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        [advert.user.id, advert.title, advert.preview, advert.content, advert.dateCreated, advert.isTemplate, true, page, advertsOnPage],
         'adverts_add',
       );
       return result;
     } else {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8)',
-        [null, null, null, null, 0, false, page, advertsOnPage],
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        [null, null, null, null, 0, false, false, page, advertsOnPage],
         'adverts_add',
       );
       return result;
