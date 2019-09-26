@@ -39,6 +39,11 @@ export class AdvertsController {
     return await this.advertsService.getAdvertById(advertId);
   }
 
+  @Post('/')
+  async addAdvert(@Body() advert: Advert, @Query('page') page: number): Promise<IServerResponse<{adverts: IAdvert[], advert: IAdvert}>> {
+    return await this.advertsService.addAdvert(advert, page);
+  }
+
   @Patch('/:id')
   async editAdvert(@Body() advert: Advert): Promise<IServerResponse<IAdvert>> {
     return await this.advertsService.editAdvert(advert);
@@ -47,11 +52,6 @@ export class AdvertsController {
   @Delete('/:id')
   async deleteAdvert(@Param('id') advertId: number): Promise<IServerResponse<boolean>> {
     return await this.advertsService.removeAdvert(advertId);
-  }
-
-  @Post('/')
-  async addAdvert(@Body() advert: Advert): Promise<IServerResponse<IAdvert>> {
-    return await this.advertsService.addAdvert(advert);
   }
 
   @Put('/image')

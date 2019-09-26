@@ -44,21 +44,23 @@ export class AdvertsService {
   /**
    * Добавление нового объявления
    * @param advert - Добавляемое объявление
+   * @param page - Текущая страница объявлений
+   * @param advertsOnPage - Количество объявлений на странице
    */
-  async addAdvert(advert?: Advert): Promise<IServerResponse<IAdvert>> {
+  async addAdvert(advert?: Advert, page?: number, advertsOnPage?: number): Promise<IServerResponse<{adverts: IAdvert[], advert: IAdvert}>> {
     if (advert) {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4, $5)',
-        [advert.user.id, advert.title, advert.preview, advert.content, true],
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8)',
+        [advert.user.id, advert.title, advert.preview, advert.content, advert.dateCreated, true, page, advertsOnPage],
         'adverts_add',
       );
       return result;
     } else {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4, $5)',
-        [null, null, null, null, false],
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8)',
+        [null, null, null, null, 0, false, page, advertsOnPage],
         'adverts_add',
       );
       return result;
@@ -72,8 +74,8 @@ export class AdvertsService {
   async editAdvert(advert: IAdvert): Promise<IServerResponse<IAdvert>> {
     const result = await this.postgresService.query(
       'portal-edit-advert',
-      'SELECT portal.adverts_edit($1, $2, $3, $4, $5)',
-      [advert.id, advert.title, advert.preview, advert.image, advert.content],
+      'SELECT portal.adverts_edit($1, $2, $3, $4, $5, $6, $7)',
+      [advert.id, advert.title, advert.preview, advert.image, advert.content, advert.dateCreated, advert.isTemplate],
       'adverts_edit',
     );
     return result;
