@@ -43,8 +43,9 @@ export class AdvertsController {
   async addAdvert(
     @Body() advert: Advert,
     @Query('page') page: number,
+    @Query('advertsOnPage') advertsOnPage: number,
   ): Promise<IServerResponse<{adverts: IAdvert[], advert: IAdvert}>> {
-    return await this.advertsService.addAdvert(advert, page);
+    return await this.advertsService.addAdvert(advert, page, advertsOnPage);
   }
 
   @Patch('/:id')
@@ -60,7 +61,6 @@ export class AdvertsController {
   @Put('/image')
   @UseInterceptors(FileInterceptor('image'))
   async uploadImageToNewAdvert(@UploadedFile() file, @Query('header') header: boolean) {
-    console.log('header', header);
     return await this.advertsService.uploadImageToNewAdvert(file, header);
   }
 

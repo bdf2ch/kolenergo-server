@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as rimraf from 'rimraf';
 
 import { IServerResponse } from '@kolenergo/core';
-import { IAdvert, IAttachment, Advert, Attachment } from '@kolenergo/portal';
+import { IAdvert, IAttachment, Advert } from '@kolenergo/portal';
 import { PostgresService } from '../../common/database/postgres.service';
 
 @Component()
@@ -34,8 +34,8 @@ export class AdvertsService {
   async getAdvertsPage(page: number, advertsOnPage: number): Promise<IServerResponse<IAdvert[]>> {
     const result = await this.postgresService.query(
       'portal-get-adverts-page',
-      'SELECT portal.adverts_get_page($1, $2)',
-      [page, advertsOnPage],
+      'SELECT portal.adverts_get_page($1, $2, $3)',
+      [page, advertsOnPage, false],
       'adverts_get_page',
     );
     return result;
@@ -47,7 +47,11 @@ export class AdvertsService {
    * @param page - Текущая страница объявлений
    * @param advertsOnPage - Количество объявлений на странице
    */
-  async addAdvert(advert?: Advert, page?: number, advertsOnPage?: number): Promise<IServerResponse<{adverts: IAdvert[], advert: IAdvert}>> {
+  async addAdvert(
+    advert?: Advert,
+    page?: number,
+    advertsOnPage?: number,
+  ): Promise<IServerResponse<{adverts: IAdvert[], advert: IAdvert, total: number}>> {
     if (advert) {
       const result = await this.postgresService.query(
         'portal-add-advert',
@@ -100,8 +104,8 @@ export class AdvertsService {
    * @param image - Загружаемое изображение
    */
   async uploadImageToNewAdvert(image, header: boolean): Promise<IServerResponse<{url: string, advert: IAdvert}>> {
-    const advert: IServerResponse<IAdvert> = await this.addAdvert();
-    const folderPath = path.resolve('static', 'portal', 'adverts', advert.data.id.toString());
+    const advert: IServerResponse<{adverts: IAdvert[], advert: IAdvert, total: number}> = await this.addAdvert();
+    const folderPath = path.resolve('static', 'portal', 'adverts', advert.data.advert.id.toString());
     console.log(folderPath);
     console.log(`directory ${folderPath} ${fs.existsSync(folderPath) ? ' exists' : ' does not exists'}`);
 
@@ -111,18 +115,18 @@ export class AdvertsService {
         'static',
         'portal',
         'adverts',
-        advert.data.id.toString(), header ? `header_${image.originalname}` : image.originalname,
+        advert.data.advert.id.toString(), header ? `header_${image.originalname}` : image.originalname,
       );
       const fileUrl = path.relative(
         './static',
-        `./static/portal/adverts/${advert.data.id.toString()}/${header ? 'header_' + image.originalname : image.originalname}`,
+        `./static/portal/adverts/${advert.data.advert.id.toString()}/${header ? 'header_' + image.originalname : image.originalname}`,
       );
       fs.writeFileSync(filePath, image.buffer);
-      advert.data.image = header ? fileUrl : null;
+      advert.data.advert.image = header ? fileUrl : null;
       console.log('header', header);
-      console.log('image', advert.data.image);
+      console.log('image', advert.data.advert.image);
       return new Promise<IServerResponse<{url: string, advert: IAdvert}>>((resolve) => {
-        resolve({data: {url: fileUrl, advert: advert.data}});
+        resolve({data: {url: fileUrl, advert: advert.data.advert}});
       });
     }
   }
@@ -158,10 +162,10 @@ export class AdvertsService {
   }
 
   async uploadAttachmentToNewAdvert(file, userId: number): Promise<IServerResponse<IAdvert>> {
-    const advert: IServerResponse<IAdvert> = await this.addAdvert();
-    const folderPath = path.resolve('static', 'portal', 'adverts', 'attachments', advert.data.id.toString());
-    const advertPath = path.resolve('static', 'portal', 'adverts', advert.data.id.toString());
-    const attachmentPath = path.resolve('static', 'portal', 'adverts', advert.data.id.toString(), 'attachments');
+    const advert: IServerResponse<{adverts: IAdvert[], advert: IAdvert, total: number}> = await this.addAdvert();
+    const folderPath = path.resolve('static', 'portal', 'adverts', 'attachments', advert.data.advert.id.toString());
+    const advertPath = path.resolve('static', 'portal', 'adverts', advert.data.advert.id.toString());
+    const attachmentPath = path.resolve('static', 'portal', 'adverts', advert.data.advert.id.toString(), 'attachments');
     console.log(folderPath);
     console.log(`directory ${folderPath} ${fs.existsSync(folderPath) ? ' exists' : ' does not exists'}`);
 
@@ -169,19 +173,19 @@ export class AdvertsService {
       fs.mkdirSync(advertPath);
       if (!fs.existsSync(attachmentPath)) {
         fs.mkdirSync(attachmentPath);
-        const filePath = path.resolve('static', 'portal', 'adverts', advert.data.id.toString(), 'attachments', file.originalname);
-        const fileUrl = path.relative('./static', `./static/portal/adverts/${advert.data.id.toString()}/attachments/${file.originalname}`);
+        const filePath = path.resolve('static', 'portal', 'adverts', advert.data.advert.id.toString(), 'attachments', file.originalname);
+        const fileUrl = path.relative('./static', `./static/portal/adverts/${advert.data.advert.id.toString()}/attachments/${file.originalname}`);
         fs.writeFileSync(filePath, file.buffer);
         await this.postgresService.query(
           'portal-add-attachment',
           'SELECT portal.attachments_add($1, $2, $3, $4, $5)',
-          [advert.data.id, 0, userId, fileUrl, file.size],
+          [advert.data.advert.id, 0, userId, fileUrl, file.size],
           'attachments_add',
         );
         const result = await this.postgresService.query(
           'portal-adverts-get-by-id',
           'SELECT portal.adverts_get_by_id($1)',
-          [advert.data.id],
+          [advert.data.advert.id],
           'adverts_get_by_id',
         );
         return result;
