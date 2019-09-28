@@ -56,7 +56,17 @@ export class AdvertsService {
       const result = await this.postgresService.query(
         'portal-add-advert',
         'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-        [advert.user.id, advert.title, advert.preview, advert.content, advert.dateCreated, advert.isTemplate, true, page, advertsOnPage],
+        [
+          advert.user.id,
+          advert.title,
+          advert.preview,
+          advert.markup,
+          advert.dateCreated,
+          advert.isTemplate,
+          true,
+          page,
+          advertsOnPage,
+        ],
         'adverts_add',
       );
       return result;
@@ -79,7 +89,15 @@ export class AdvertsService {
     const result = await this.postgresService.query(
       'portal-edit-advert',
       'SELECT portal.adverts_edit($1, $2, $3, $4, $5, $6, $7)',
-      [advert.id, advert.title, advert.preview, advert.image, advert.content, advert.dateCreated, advert.isTemplate],
+      [
+        advert.id,
+        advert.title,
+        advert.preview,
+        advert.image,
+        advert.markup,
+        advert.dateCreated,
+        advert.isTemplate
+      ],
       'adverts_edit',
     );
     return result;
@@ -106,9 +124,6 @@ export class AdvertsService {
   async uploadImageToNewAdvert(image, header: boolean): Promise<IServerResponse<{url: string, advert: IAdvert}>> {
     const advert: IServerResponse<{adverts: IAdvert[], advert: IAdvert, total: number}> = await this.addAdvert();
     const folderPath = path.resolve('static', 'portal', 'adverts', advert.data.advert.id.toString());
-    console.log(folderPath);
-    console.log(`directory ${folderPath} ${fs.existsSync(folderPath) ? ' exists' : ' does not exists'}`);
-
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath);
       const filePath = path.resolve(
@@ -123,8 +138,6 @@ export class AdvertsService {
       );
       fs.writeFileSync(filePath, image.buffer);
       advert.data.advert.image = header ? fileUrl : null;
-      console.log('header', header);
-      console.log('image', advert.data.advert.image);
       return new Promise<IServerResponse<{url: string, advert: IAdvert}>>((resolve) => {
         resolve({data: {url: fileUrl, advert: advert.data.advert}});
       });
@@ -138,11 +151,7 @@ export class AdvertsService {
    */
   async uploadImageToAdvert(advertId: number, image, header: boolean): Promise<IServerResponse<string>> {
     const folderPath = path.resolve('static', 'portal', 'adverts', advertId.toString());
-    console.log(folderPath);
-    console.log(`directory ${folderPath} ${fs.existsSync(folderPath) ? ' exists' : ' does not exists'}`);
-
     if (fs.existsSync(folderPath)) {
-      // fs.mkdirSync(folderPath);
       const filePath = path.resolve(
         'static',
         'portal',
@@ -257,10 +266,7 @@ export class AdvertsService {
     [advertId],
       'adverts_remove_by_id',
     );
-
     const folderPath = path.resolve('static', 'portal', 'adverts', advertId.toString());
-    console.log(folderPath);
-    console.log(`directory ${folderPath} ${fs.existsSync(folderPath) ? ' exists' : ' does not exists'}`);
     if (fs.existsSync(folderPath)) {
       rimraf.sync(folderPath);
     }
