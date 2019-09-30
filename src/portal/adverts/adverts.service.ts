@@ -55,26 +55,41 @@ export class AdvertsService {
     if (advert) {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
         [
           advert.user.id,
           advert.title,
           advert.preview,
           advert.markup,
+          advert.image,
           advert.dateCreated,
           advert.isTemplate,
+          advert.attachments,
           true,
           page,
           advertsOnPage,
         ],
         'adverts_add',
       );
+      if (advert.image) {
+        const url = advert.image.split('/').filter((segment) => {
+          return segment.length > 1 ? true : false;
+        });
+        const folderPath = path.resolve('static', 'portal', 'adverts', result.data.advert.id.toString());
+        if (!fs.existsSync(folderPath)) {
+          fs.mkdirSync(folderPath);
+        }
+        fs.copyFileSync(
+          path.resolve('static', ...url),
+          path.resolve('static', 'portal', 'adverts', result.data.advert.id.toString(), url[url.length - 1]),
+        );
+      }
       return result;
     } else {
       const result = await this.postgresService.query(
         'portal-add-advert',
-        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-        [null, null, null, null, 0, false, false, page, advertsOnPage],
+        'SELECT portal.adverts_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+        [null, null, null, null, null, 0, false, [], false, page, advertsOnPage],
         'adverts_add',
       );
       return result;
@@ -84,11 +99,13 @@ export class AdvertsService {
   /**
    * Изменение объявления
    * @param advert - Изменяемое объявление
+   * @param page - Текущая страница объявлений
+   * @param advertsOnPage - Количество объявлений на странице
    */
-  async editAdvert(advert: IAdvert): Promise<IServerResponse<IAdvert>> {
-    const result = await this.postgresService.query(
+  async editAdvert(advert: IAdvert, page: number, advertOnPage: number): Promise<IServerResponse<IAdvert>> {
+    return await this.postgresService.query(
       'portal-edit-advert',
-      'SELECT portal.adverts_edit($1, $2, $3, $4, $5, $6, $7)',
+      'SELECT portal.adverts_edit($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
       [
         advert.id,
         advert.title,
@@ -96,11 +113,13 @@ export class AdvertsService {
         advert.image,
         advert.markup,
         advert.dateCreated,
-        advert.isTemplate
+        advert.isTemplate,
+        advert.attachments,
+        page,
+        advertOnPage,
       ],
       'adverts_edit',
     );
-    return result;
   }
 
   /**
@@ -226,7 +245,6 @@ export class AdvertsService {
       'adverts_get_by_id',
     );
     return result;
-
   }
 
   /**

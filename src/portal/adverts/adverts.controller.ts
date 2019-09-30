@@ -49,8 +49,12 @@ export class AdvertsController {
   }
 
   @Patch('/:id')
-  async editAdvert(@Body() advert: Advert): Promise<IServerResponse<IAdvert>> {
-    return await this.advertsService.editAdvert(advert);
+  async editAdvert(
+    @Body() advert: Advert,
+    @Query('page') page: number,
+    @Query('advertsOnPage') advertsOnPage: number,
+  ): Promise<IServerResponse<IAdvert>> {
+    return await this.advertsService.editAdvert(advert, page, advertsOnPage);
   }
 
   @Delete('/:id')
