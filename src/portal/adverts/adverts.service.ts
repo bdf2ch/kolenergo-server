@@ -19,8 +19,8 @@ export class AdvertsService {
   async getAdvertById(advertId: number): Promise<IServerResponse<IAdvert>> {
     const result = await this.postgresService.query(
       'portal-get-advert',
-      'SELECT portal.adverts_get_by_id($1)',
-      [advertId],
+      'SELECT portal.adverts_get_by_id($1, $2)',
+      [advertId, true],
       'adverts_get_by_id',
     );
     return result;
@@ -39,6 +39,19 @@ export class AdvertsService {
       'adverts_get_page',
     );
     return result;
+  }
+
+  /**
+   * Получение похожих объявлений
+   * @param advertId - Идентификатор объявления, на основе которого ищутся похожие
+   */
+  async getSimilarAdverts(advertId: number): Promise<IServerResponse<IAdvert[]>> {
+    return await this.postgresService.query(
+      'portal-get-similar-adverts',
+      'SELECT portal.adverts_get_similar($1)',
+      [advertId],
+      'adverts_get_similar',
+    );
   }
 
   /**

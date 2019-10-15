@@ -7,18 +7,16 @@ import {
   IOperativeSituationReportsInitialData,
   OperativeSituationReport,
   OperativeSituationConsumption,
-  IOperativeSituationConsumption, IOperativeSituationRegion, IWeatherSummary, ILocation, IWeatherSummaryResponse, ILocationWeather,
+  IOperativeSituationConsumption, IOperativeSituationRegion, IWeatherSummary, ILocation, IWeatherSummaryResponse,
 } from '@kolenergo/osr';
 import moment = require('moment');
-import * as https from 'https';
 import * as path from 'path';
 import * as excel from 'excel4node';
 import rpn = require('request-promise-native');
 
 @Component()
 export class OperativeSituationService {
-  constructor(private readonly postgresService: PostgresService) {
-  }
+  constructor(private readonly postgresService: PostgresService) {}
 
   /**
    * Получение данных для инициализации приложения
@@ -26,7 +24,7 @@ export class OperativeSituationService {
    */
   async getInitialData(companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
     const date = moment();
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'operative-situation-reports-get-initial-data',
       'SELECT operative_situation_reports_get_initial_data($1, $2)',
       [
@@ -35,59 +33,54 @@ export class OperativeSituationService {
       ],
       'operative_situation_reports_get_initial_data',
     );
-    return result ? result : null;
   }
 
   /**
    * Получение всех отчетов об оперативной обстановке
    */
   async getAllReports(): Promise<IOperativeSituationReport[]> {
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'operative-situation-reports-get-all',
       `SELECT * FROM operative_situation_reports`,
       [],
       '',
     );
-    return result;
   }
 
   /**
    * Получение отчетов об оперативной обстановке по дате
    */
   async getReportsByDate(companyId: number, date: string): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'operative-situation-reports-get-by-date',
       `SELECT operative_situation_reports_get_by_date($1, $2)`,
       [companyId, date],
       'operative_situation_reports_get_by_date',
     );
-    return result;
   }
 
   /**
    * Получение отчетов об оперативной обстановке по дате и периоду
    */
   async getReportsByDateAndPeriod(date: string, period: string): Promise<IServerResponse<IOperativeSituationReport[]>> {
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'operative-situation-reports-get-by-date-and-period',
       `SELECT operative_situation_reports_get_by_date_and_period($1, $2)`,
       [date, period],
       'operative_situation_reports_get_by_date_and_period',
     );
-    return result;
   }
 
   /**
    * Получение последней погодной сводки по идентификатору организации
    */
   async getWeatherSummaryByCompanyId(companyId: number): Promise<IServerResponse<IWeatherSummary>> {
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'operative-situation-reports-get-weather-summary-by-company',
       `SELECT operative_situation_reports_weather_summary_get_by_company_id($1)`,
       [companyId],
       'operative_situation_reports_weather_summary_get_by_company_id',
     );
-    return result;
   }
 
   /**
@@ -96,7 +89,7 @@ export class OperativeSituationService {
    */
   async addReport(report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
     const date = moment();
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'add-operative-situation-report',
       `SELECT operative_situation_reports_add(
                   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
@@ -148,7 +141,6 @@ export class OperativeSituationService {
       ],
       'operative_situation_reports_add',
     );
-    return result ? result : null;
   }
 
   /**
@@ -156,7 +148,7 @@ export class OperativeSituationService {
    * @param report - Изменяемый отчет об оперативной обстановке
    */
   async editReport(report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'edit-operative-situation-report',
       `SELECT operative_situation_reports_edit(
                   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
@@ -204,7 +196,6 @@ export class OperativeSituationService {
       ],
       'operative_situation_reports_edit',
     );
-    return result ? result : null;
   }
 
   /**
@@ -212,7 +203,7 @@ export class OperativeSituationService {
    * @param reportId - Идентификатор отчета
    */
   async deleteReport(reportId: number): Promise<IServerResponse<boolean>> {
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'delete-operative-situation-report',
       `SELECT operative_situation_reports_delete($1)`,
       [
@@ -220,16 +211,15 @@ export class OperativeSituationService {
       ],
       'operative_situation_reports_delete',
     );
-    return result ? result : null;
   }
 
   /**
    * Добавление отчета о максимальном потреблении за прошедшие сутки
-   * @param report - Добавляемый отчет об максимальном потреблении за прошедшие сутки
+   * @param consumption - Добавляемый отчет об максимальном потреблении за прошедшие сутки
    */
   async addConsumption(consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
     const date = moment();
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'add-operative-situation-consumption',
       `SELECT operative_situation_reports_consumption_add($1, $2, $3, $4)`,
       [
@@ -240,7 +230,6 @@ export class OperativeSituationService {
       ],
       'operative_situation_reports_consumption_add',
     );
-    return result ? result : null;
   }
 
   /**
@@ -248,7 +237,7 @@ export class OperativeSituationService {
    * @param consumption - Изменяемый отчет о максималньо потреблении за прошедшие сутки
    */
   async editConsumption(consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
-    const result = await this.postgresService.query(
+    return await this.postgresService.query(
       'edit-operative-situation-report_consumption',
       `SELECT operative_situation_reports_consumption_edit($1, $2)`,
       [
@@ -257,7 +246,6 @@ export class OperativeSituationService {
       ],
       'operative_situation_reports_consumption_edit',
     );
-    return result ? result : null;
   }
 
   /**
@@ -282,6 +270,7 @@ export class OperativeSituationService {
       [],
       '',
     );
+    let result: IServerResponse<IOperativeSituationWeatherReport> = null;
 
     regions.forEach(async (reg: IOperativeSituationRegion) => {
       const options = {
@@ -325,7 +314,7 @@ export class OperativeSituationService {
           icons.push(city.weather[0].icon);
         }
       });
-      const result = await this.postgresService.query(
+      result = await this.postgresService.query(
         'add-weather',
         'SELECT operative_situation_reports_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
         [
@@ -346,8 +335,8 @@ export class OperativeSituationService {
         ],
         'operative_situation_reports_weather_add',
       );
-      return result;
     });
+    return result;
   }
 
   /**
@@ -620,7 +609,7 @@ export class OperativeSituationService {
       sheet.cell(row, 6).number(report.ps_35_count).style(contentStyle);
       ps_35_count_total += report.ps_35_count;
       sheet.cell(row, 7).number(report.tp_6_20_count_effect_35_150).style(contentStyle);
-      tp_6_20_count_effect_35_150_total = report.tp_6_20_count_effect_35_150;
+      tp_6_20_count_effect_35_150_total += report.tp_6_20_count_effect_35_150;
       sheet.cell(row, 8).number(report.population_count_effect_35_150).style(contentStyle);
       population_count_effect_35_150_total += report.population_count_effect_35_150;
       sheet.cell(row, 9).number(report.power_effect_35_150).style(contentStyle);
@@ -677,7 +666,7 @@ export class OperativeSituationService {
     sheet.cell(row, 4).number(lep_35_count_total).style(contentStyle).style(summaryStyle);
     sheet.cell(row, 5).number(ps_110_150_count_total).style(contentStyle).style(summaryStyle);
     sheet.cell(row, 6).number(ps_35_count_total).style(contentStyle).style(summaryStyle);
-    sheet.cell(row, 7).number(tp_6_20_count_total).style(contentStyle).style(summaryStyle);
+    sheet.cell(row, 7).number(tp_6_20_count_effect_35_150_total).style(contentStyle).style(summaryStyle);
     sheet.cell(row, 8).number(population_count_effect_35_150_total).style(contentStyle).style(summaryStyle);
     sheet.cell(row, 9).number(power_effect_35_150_total).style(contentStyle).style(summaryStyle);
     sheet.cell(row, 10).number(szo_count_effect_35_150_total).style(contentStyle).style(summaryStyle);

@@ -35,8 +35,14 @@ export class AdvertsController {
   }
 
   @Get('/:id')
-  async getAdvert(@Param('id') advertId: number): Promise<IServerResponse<IAdvert>> {
-    return await this.advertsService.getAdvertById(advertId);
+  async getAdvert(
+    @Param('id') advertId: number,
+    @Query('similar') similar: boolean,
+  ): Promise<IServerResponse<IAdvert | IAdvert[]>> {
+    console.log('similar', similar);
+    return (similar && similar === true)
+      ? await this.advertsService.getSimilarAdverts(advertId)
+      : await this.advertsService.getAdvertById(advertId);
   }
 
   @Post('/')
