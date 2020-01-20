@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { CommonModule } from './common/common.module';
 import { AhoRequestsModule } from './aho-requests/aho.module';
 import { PhoneBookModule } from './phone-book/phone-book.module';
@@ -13,7 +14,7 @@ import { PortalModule } from './portal/portal.module';
   imports: [
       CommonModule,
       AhoRequestsModule,
-      // PhoneBookModule,
+      PhoneBookModule,
       OperativeSituationModule,
       EventShedulerModule,
       ControlPanelModule,

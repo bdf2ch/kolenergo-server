@@ -3,10 +3,11 @@ import { AsyncExpressMiddleware } from '@nestjs/common/interfaces';
 import { Response } from 'express';
 import { OperativeSituationService } from '../operative-situation.service';
 import * as fs from 'fs';
+import {OperativeSituationService2} from '../operative-situation2.service';
 
 @Middleware()
 export class ExportReportMiddleware implements NestMiddleware {
-  constructor(private readonly operativeSituationService: OperativeSituationService) {}
+  constructor(private readonly operativeSituationService: OperativeSituationService2) {}
 
   async resolve(...args: any[]): AsyncExpressMiddleware {
     return async (req, res: Response, next) => {

@@ -7,22 +7,23 @@ import {
   IOperativeSituationReportsInitialData,
   OperativeSituationReport,
   OperativeSituationConsumption,
-  IOperativeSituationConsumption, IOperativeSituationRegion, IWeatherSummary, ILocation, IWeatherSummaryResponse,
+  IOperativeSituationConsumption, IOperativeSituationRegion, ILocation, IWeatherSummaryResponse,
 } from '@kolenergo/osr';
+import { IAppInitData, IReport, IConsumption, IWeatherSummary } from '@kolenergo/osr2';
 import moment = require('moment');
 import * as path from 'path';
 import * as excel from 'excel4node';
 import rpn = require('request-promise-native');
 
 @Component()
-export class OperativeSituationService {
+export class OperativeSituationService2 {
   constructor(private readonly postgresService: PostgresService) {}
 
   /**
    * Получение данных для инициализации приложения
    * @param companyId
    */
-  async getInitialData(companyId: number): Promise<IServerResponse<IOperativeSituationReportsInitialData>> {
+  async getInitialData(companyId: number): Promise<IServerResponse<IAppInitData>> {
     const date = moment();
     return await this.postgresService.query(
       'operative-situation-reports-get-initial-data',

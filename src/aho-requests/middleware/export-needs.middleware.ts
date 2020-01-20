@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Middleware, NestMiddleware } from '@nestjs/common';
 import { AsyncExpressMiddleware } from '@nestjs/common/interfaces';
-import { AhoRequestsService } from '../aho-requests.service';
+import { AhoRequestsService } from '../aho-requests__.service';
 
 @Middleware()
 export class ExportNeedsMiddleware implements NestMiddleware {

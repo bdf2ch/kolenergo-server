@@ -2,13 +2,13 @@ import * as path from 'path';
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../common/database/postgres.service';
 import {
-    IAhoRequest,
-    IAhoRequestType,
-    IAddAhoRequest,
-    IAhoRequestStatus,
-    IAhoRequestTaskContent,
-    IAhoRequestComment,
-    IAhoRequestNeed, IAhoRequestTask, IAhoRequestRejectReason, IAhoRequestsInitialData, IAhoServerResponse,
+  IAhoRequest,
+  IAhoRequestType,
+  IAddAhoRequest,
+  IAhoRequestStatus,
+  IAhoRequestTaskContent,
+  IAhoRequestComment,
+  IAhoRequestNeed, IAhoRequestTask, IAhoRequestRejectReason, IAhoRequestsInitialData, IAhoServerResponse,
 } from '@kolenergo/aho';
 import * as excel from 'excel4node';
 import { MailService } from '../common/mail/mail.service';
@@ -16,710 +16,624 @@ import { IServerResponse, IUser, User } from '@kolenergo/cpa';
 import { IAhoRequestsInitialData2 } from '@kolenergo/aho2';
 
 @Component()
-export class AhoRequestsService {
-    constructor(private readonly postgresService: PostgresService,
-                private readonly mailService: MailService) {}
+export class AhoRequestsServiceNew {
+  constructor(private readonly postgresService: PostgresService,
+              private readonly mailService: MailService) {}
 
-    /**
-     * Получение все типов заявок АХО
-     * @returns {Promise<>}
-     */
-    async getRequestTypes(): Promise<IAhoRequestType[]> {
-        const result = await this.postgresService.query(
-            'get-aho-request-types',
-            `SELECT * FROM aho_requests_types ORDER BY "order"`,
-            [],
-        );
-        return result ? result : [];
-    }
 
-    /**
-     * Получение данных для инициализации приложения
-     * @param userId - Идентификатор пользователя
-     * @param itemsOnPage - Количество заявок на странице
-     */
-    async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoRequestsInitialData>> {
-        const result = await this.postgresService.query(
-            'aho-requests-get-initial-data',
-            `SELECT aho_requests_get_initial_data($1, $2)`,
-            [userId, itemsOnPage],
-            'aho_requests_get_initial_data',
-        );
-        return result;
-    }
+  /**
+   * Получение данных для инициализации приложения
+   * @param userId - Идентификатор пользователя
+   * @param itemsOnPage - Количество заявок на странице
+   */
+  async getInitialData(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoRequestsInitialData2>> {
+    const result = await this.postgresService.query(
+      'aho-requests-get-initial-data-2',
+      `SELECT aho.get_initial_data($1, $2)`,
+      [userId, itemsOnPage],
+      'get_initial_data',
+    );
+    return result;
+  }
 
-    async getInitialData2(userId: number, itemsOnPage: number): Promise<IServerResponse<IAhoRequestsInitialData2>> {
-        const result = await this.postgresService.query(
-          'aho-requests-get-initial-data-2',
-          `SELECT aho.get_initial_data($1, $2)`,
-          [userId, itemsOnPage],
-          'get_initial_data',
-        );
-        return result;
-    }
+  /**
+   * Получение статуса заявки АХО по идентификатору
+   * @param id - Идентификатор статуса
+   * @returns {Promise<IAhoRequestStatus | null>}
+   */
+  async getRequestStatusById(id: number): Promise<IAhoRequestStatus | null> {
+    const result = this.postgresService.query(
+      'aho-requests-get-status-by-id',
+      `SELECT * FROM aho_requests_statuses WHERE id = $1`,
+      [id],
+    );
+    return result ? result : null;
+  }
 
-    /**
-     * Получение всех статусов заявок АХО
-     * @returns {Promise<IAhoRequestStatus[]>}
-     */
-    async getRequestStatuses(): Promise<IAhoRequestStatus[]> {
-        const result = this.postgresService.query(
-            'get-aho-request-statuses',
-            `SELECT * FROM aho_requests_statuses`,
-            [],
-        );
-        return result ? result : [];
-    }
+  /**
+   * Получение всех заявок
+   * @returns {Promise<IAhoRequest[]>}
+   */
+  async getRequests(
+    departmentId: number[],
+    start: number,
+    end: number,
+    userId: number,
+    employeeId: number,
+    requestTypeId: number,
+    requestStatusId: number,
+    onlyExpired: boolean = false,
+    page?: number,
+    itemsOnPage?: number,
+  ): Promise<IServerResponse<IAhoServerResponse>> {
+    const result = await this.postgresService.query(
+      'aho-requests-get',
+      `SELECT aho.get_requests($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        departmentId,
+        start,
+        end,
+        userId,
+        employeeId,
+        requestTypeId,
+        requestStatusId,
+        onlyExpired,
+        page,
+        itemsOnPage,
+      ],
+      'get_requests',
+    );
+    return result;
+  }
 
-    /**
-     * Получение статуса заявки АХО по идентификатору
-     * @param id - Идентификатор статуса
-     * @returns {Promise<IAhoRequestStatus | null>}
-     */
-    async getRequestStatusById(id: number): Promise<IAhoRequestStatus | null> {
-        const result = this.postgresService.query(
-            'aho-requests-get-status-by-id',
-            `SELECT * FROM aho_requests_statuses WHERE id = $1`,
-            [id],
-        );
-        return result ? result : null;
-    }
 
-    /**
-     * Получение всего содержимого задач заявки АХО
-     * @returns {Promise<IAhoRequestTaskContent[]>}
-     */
-    async getRequestTasksContent(): Promise<IAhoRequestTaskContent[]> {
-        const result = this.postgresService.query(
-            'get-aho-requests-tasks-content',
-            `SELECT * FROM aho_requests_tasks_content ORDER BY title ASC`,
-            [],
-        );
-        return result ? result : [];
-    }
+  /**
+   * Поиск заявок АХО
+   * @param {string} query - Условие поиска
+   * @returns {Promise<IAhoRequest[]>}
+   */
+  async searchRequests(userId: number, query: string): Promise<IServerResponse<IAhoServerResponse>> {
+    const result = this.postgresService.query(
+      'aho-requests-search',
+      `SELECT aho_requests_search($1, $2)`,
+      [userId, query],
+      'aho_requests_search',
+    );
+    return result ? result : [];
+  }
 
-    /**
-     * Получение списка причин отклонения заявок
-     * @returns {Promise<IAhoRequestRejectReason[]>}
-     */
-    async getRequestRejectReasons(): Promise<IAhoRequestRejectReason[]> {
-        const result = await this.postgresService.query(
-            'get-aho-request-reject-reasons',
-            'SELECT * FROM aho_requests_reject_reasons',
-            [],
-        );
-        return result ? result : [];
-    }
-
-    /**
-     * Добавление причины отклоенния заявки
-     * @param rejectReason
-     * @returns {Promise<IAhoRequestRejectReason | null>}
-     */
-    async addRejectReason(rejectReason: IAhoRequestRejectReason): Promise<IAhoRequestRejectReason | null> {
-        const result = await this.postgresService.query(
-            'aho-requests-reject-reason-add',
-            `SELECT aho_requests_reject_reason_add($1, $2)`,
-            [rejectReason.requestTypeId, rejectReason.content],
-            'aho_requests_reject_reason_add',
-        );
-        return result ? result : null;
-    }
-
-    /**
-     * Получение всех заявок
-     * @returns {Promise<IAhoRequest[]>}
-     */
-    async getRequests(
-      start: number,
-      end: number,
-      userId: number,
-      employeeId: number,
-      requestTypeId: number,
-      requestStatusId: number,
-      onlyExpired: boolean = false,
-      page?: number,
-      itemsOnPage?: number,
-    ): Promise<IServerResponse<IAhoServerResponse>> {
-        const result = await this.postgresService.query(
-            'aho-requests-get',
-            `SELECT aho_requests_get_all($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [
-              start,
-              end,
-              userId,
-              employeeId,
-              requestTypeId,
-                requestStatusId,
-                onlyExpired,
-                page,
-                itemsOnPage,
-            ],
-            'aho_requests_get_all',
-        );
-        return result;
-    }
-
-    /**
-     * Получение общего количества заявок
-     */
-    async getRequestsCount(): Promise<number> {
-        const result = await this.postgresService.query(
-            'aho-requests-get-count',
-            'SELECT aho_requests_get_count()',
-            [],
-            'aho_requests_get_count',
-        );
-        return result ? result : 0;
-    }
-
-    /**
-     * Поиск заявок АХО
-     * @param {string} query - Условие поиска
-     * @returns {Promise<IAhoRequest[]>}
-     */
-    async searchRequests(userId: number, query: string): Promise<IServerResponse<IAhoServerResponse>> {
-        const result = this.postgresService.query(
-            'aho-requests-search',
-            `SELECT aho_requests_search($1, $2)`,
-            [userId, query],
-            'aho_requests_search',
-        );
-        return result ? result : [];
-    }
-
-    /**
-     * Экспорт заявок АХО в Excel
-     * @param {number} start - Дата начала периода
-     * @param {number} end - Дата окончания периода
-     * @param {number} employeeId - Идентификатор исполнителя
-     * @param {number} requestTypeId - Идентификатор типа заявки
-     * @param {number} requestStatusId - Идентификатор статуса заявки
-     * @returns {Promise<string>}
-     */
-    async exportRequests(
-        start: number,
-        end: number,
-        userId: number,
-        employeeId: number,
-        requestTypeId: number,
-        requestStatusId: number,
-        ): Promise<string> {
-        const wb = new excel.Workbook();
-        const sheet = wb.addWorksheet('Заявки АХО');
-        const border = {
-            style: 'thin',
-            color: 'black',
-        };
-        const borderedStyle = wb.createStyle({
-            border: {
-                left: border,
-                top: border,
-                right: border,
-                bottom: border,
-            },
-        });
-        const contentStyle = wb.createStyle({
-            alignment: {
-                horizontal: 'left',
-                vertical: 'top',
-            },
-        });
-        sheet.row(1).setHeight(20);
-        sheet.cell(1, 1).string('#').style(borderedStyle);
-        sheet.column(1).setWidth(5);
-        sheet.cell(1, 2).string('Дата подачи').style(borderedStyle);
-        sheet.column(2).setWidth(15);
-        sheet.cell(1, 3).string('Инициатор / Заявитель').style(borderedStyle);
-        sheet.column(3).setWidth(40);
-        sheet.cell(1, 4).string('Срок исполн.').style(borderedStyle);
-        sheet.column(4).setWidth(15);
-        sheet.cell(1, 5).string('Кабинет').style(borderedStyle);
-        sheet.column(5).setWidth(10);
-        sheet.cell(1, 6).string('Содержание').style(borderedStyle);
-        sheet.column(6).setWidth(35);
-        sheet.cell(1, 7).string('Исполнители').style(borderedStyle);
-        sheet.column(7).setWidth(40);
-        sheet.cell(1, 8).string('Статус').style(borderedStyle);
-        sheet.column(8).setWidth(15);
-        sheet.cell(1, 9).string('Телефон').style(borderedStyle);
-        sheet.column(9).setWidth(15);
-        const result = await this.getRequests(start, end, userId, employeeId, requestTypeId, requestStatusId, false, 0, 0);
-        if (result) {
-            let row = 2;
-            result.data.requests.forEach((req: IAhoRequest) => {
-                const max = req.numberOfLoaders
-                    ? Math.max(req.tasks.length, req.employees.length)
-                    : Math.max(req.tasks.length, req.employees.length) - 1;
-                sheet
-                    .cell(row, 1, row + max, 1, true)
-                    .number(req.id)
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                sheet
-                    .cell(row, 2, row + max, 2, true)
-                    .date(new Date(req.dateCreated))
-                    .style(borderedStyle)
-                    .style(contentStyle)
-                    .style({ numberFormat: 'dd.mm.yyyy' });
-                if (req.initiator) {
-                    sheet
-                        .cell(row, 3)
-                        .string(req.initiator)
-                        .style(contentStyle)
-                        .style({
-                            border:
-                                {
-                                    bottom: {style: 'none'},
-                                    right: {style: 'thin', color: 'black'},
-                                    left: {style: 'thin', color: 'black'},
-                                    top: {style: 'thin', color: 'black'},
-                                },
-                        });
-                    sheet
-                        .cell(req.initiator ? row + 1 : row, 3)
-                        .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
-                        .style({border: {right: {style: 'thin', color: 'black'}}});
-                } else {
-                    sheet
-                        .cell(row, 3, row + max, 3, true)
-                        .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
-                        .style(contentStyle)
-                        .style(borderedStyle);
-                }
-                if (req.dateExpires) {
-                    sheet
-                        .cell(row, 4, row + max, 4, true)
-                        .date(new Date(req.dateExpires))
-                        .style(borderedStyle)
-                        .style(contentStyle)
-                        .style({ numberFormat: 'dd.mm.yyyy' });
-                } else {
-                    sheet
-                        .cell(row, 4, row + max, 4, true)
-                        .string('Не задан')
-                        .style(borderedStyle)
-                        .style(contentStyle)
-                        .style({
-                            font: {
-                                color: '757575',
-                            },
-                        });
-                }
-                sheet
-                    .cell(row + max, 4)
-                    .style({
-                        border: {
-                            bottom: {
-                                style: 'thin',
-                                color: 'black',
-                            },
-                        },
-                    });
-                sheet
-                    .cell(row, 5,  row + max, 5, true)
-                    .string(req.room)
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                req.tasks.forEach((task: IAhoRequestTask, index: number) => {
-                    sheet
-                        .cell(row + index, 6)
-                        .string(`${task.content.title} ${req.type.isCountable && task.count ? ' - ' + task.count.toString() + (task.content.boxing ? ' ' + task.content.boxing : ' штук') : ''}`)
-                        .style({border: {bottom: {style: index === max ? 'thin' : 'none', color: 'black'}, right: {style: 'thin', color: 'black'}}});
-                });
-                if (req.numberOfLoaders) {
-                    sheet
-                        .cell(row + max, 6)
-                        .string(`Требуется грузчиков - ${req.numberOfLoaders} человек`)
-                        .style({
-                            font: {
-                                color: '424242',
-                            },
-                            border: {
-                                bottom: {
-                                    style: 'thin',
-                                    color: 'black',
-                                },
-                                right: {
-                                    style: 'thin',
-                                    color: 'black',
-                                },
-                            },
-                        });
-                }
-                if (req.employees.length > 0) {
-                    req.employees.forEach((employee: IUser, index: number) => {
-                        sheet
-                            .cell(row + index, 7)
-                            .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`.replace('  ', ''))
-                            .style(contentStyle)
-                            .style({
-                                border: {
-                                    top: {
-                                        style: index === 0 ? 'thin' : 'none',
-                                        color: 'black',
-                                    },
-                                    left: {
-                                        style: 'thin',
-                                        color: 'black',
-                                    },
-                                },
-                            });
-                    });
-                } else {
-                    sheet
-                        .cell(row, 7)
-                        .string('Не назначены')
-                        .style(contentStyle)
-                        .style({
-                            font: {
-                                color: '757575',
-                            },
-                        });
-                }
-                sheet
-                    .cell(row + max, 7)
-                    .style({
-                        border: {
-                            bottom: {
-                                style: 'thin',
-                                color: 'black',
-                            },
-                        },
-                    });
-                sheet
-                    .cell(row, 8, row + max, 8, true)
-                    .string(req.status.title)
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                if (req.phone) {
-                    sheet
-                        .cell(row, 9, row + max, 9, true)
-                        .string(req.phone)
-                        .style(contentStyle)
-                        .style(borderedStyle);
-                } else {
-                    sheet
-                        .cell(row, 9, row + max, 9, true)
-                        .string('Не указан')
-                        .style(borderedStyle)
-                        .style(contentStyle)
-                        .style({
-                            font: {
-                                color: '757575',
-                            },
-                        });
-                }
-                row += max + 1;
+  /**
+   * Экспорт заявок АХО в Excel
+   * @param {number} start - Дата начала периода
+   * @param {number} end - Дата окончания периода
+   * @param {number} employeeId - Идентификатор исполнителя
+   * @param {number} requestTypeId - Идентификатор типа заявки
+   * @param {number} requestStatusId - Идентификатор статуса заявки
+   * @returns {Promise<string>}
+   */
+  async exportRequests(
+    start: number,
+    end: number,
+    userId: number,
+    employeeId: number,
+    requestTypeId: number,
+    requestStatusId: number,
+  ): Promise<string> {
+    const wb = new excel.Workbook();
+    const sheet = wb.addWorksheet('Заявки АХО');
+    const border = {
+      style: 'thin',
+      color: 'black',
+    };
+    const borderedStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+    });
+    const contentStyle = wb.createStyle({
+      alignment: {
+        horizontal: 'left',
+        vertical: 'top',
+      },
+    });
+    sheet.row(1).setHeight(20);
+    sheet.cell(1, 1).string('#').style(borderedStyle);
+    sheet.column(1).setWidth(5);
+    sheet.cell(1, 2).string('Дата подачи').style(borderedStyle);
+    sheet.column(2).setWidth(15);
+    sheet.cell(1, 3).string('Инициатор / Заявитель').style(borderedStyle);
+    sheet.column(3).setWidth(40);
+    sheet.cell(1, 4).string('Срок исполн.').style(borderedStyle);
+    sheet.column(4).setWidth(15);
+    sheet.cell(1, 5).string('Кабинет').style(borderedStyle);
+    sheet.column(5).setWidth(10);
+    sheet.cell(1, 6).string('Содержание').style(borderedStyle);
+    sheet.column(6).setWidth(35);
+    sheet.cell(1, 7).string('Исполнители').style(borderedStyle);
+    sheet.column(7).setWidth(40);
+    sheet.cell(1, 8).string('Статус').style(borderedStyle);
+    sheet.column(8).setWidth(15);
+    sheet.cell(1, 9).string('Телефон').style(borderedStyle);
+    sheet.column(9).setWidth(15);
+    const result = await this.getRequests(start, end, userId, employeeId, requestTypeId, requestStatusId, false, 0, 0);
+    if (result) {
+      let row = 2;
+      result.data.requests.forEach((req: IAhoRequest) => {
+        const max = req.numberOfLoaders
+          ? Math.max(req.tasks.length, req.employees.length)
+          : Math.max(req.tasks.length, req.employees.length) - 1;
+        sheet
+          .cell(row, 1, row + max, 1, true)
+          .number(req.id)
+          .style(contentStyle)
+          .style(borderedStyle);
+        sheet
+          .cell(row, 2, row + max, 2, true)
+          .date(new Date(req.dateCreated))
+          .style(borderedStyle)
+          .style(contentStyle)
+          .style({ numberFormat: 'dd.mm.yyyy' });
+        if (req.initiator) {
+          sheet
+            .cell(row, 3)
+            .string(req.initiator)
+            .style(contentStyle)
+            .style({
+              border:
+                {
+                  bottom: {style: 'none'},
+                  right: {style: 'thin', color: 'black'},
+                  left: {style: 'thin', color: 'black'},
+                  top: {style: 'thin', color: 'black'},
+                },
+            });
+          sheet
+            .cell(req.initiator ? row + 1 : row, 3)
+            .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
+            .style({border: {right: {style: 'thin', color: 'black'}}});
+        } else {
+          sheet
+            .cell(row, 3, row + max, 3, true)
+            .string(`${req.user.firstName} ${req.user.secondName} ${req.user.lastName}`.replace('  ', ''))
+            .style(contentStyle)
+            .style(borderedStyle);
+        }
+        if (req.dateExpires) {
+          sheet
+            .cell(row, 4, row + max, 4, true)
+            .date(new Date(req.dateExpires))
+            .style(borderedStyle)
+            .style(contentStyle)
+            .style({ numberFormat: 'dd.mm.yyyy' });
+        } else {
+          sheet
+            .cell(row, 4, row + max, 4, true)
+            .string('Не задан')
+            .style(borderedStyle)
+            .style(contentStyle)
+            .style({
+              font: {
+                color: '757575',
+              },
             });
         }
-        await wb.write('aho.xlsx');
-        const url = path.resolve('./aho.xlsx');
-        return url;
-    }
-
-    /**
-     * Экспорт заявки АХО в Excel
-     * @param requestId - Идентификатор заявки
-     */
-    async exportRequest(requestId: number): Promise<string> {
-        const wb = new excel.Workbook();
-        const sheet = wb.addWorksheet('Заявка #' + requestId);
-        const border = {
-            style: 'thin',
-            color: 'black',
-        };
-        const borderedStyle = wb.createStyle({
+        sheet
+          .cell(row + max, 4)
+          .style({
             border: {
-                left: border,
-                top: border,
-                right: border,
-                bottom: border,
+              bottom: {
+                style: 'thin',
+                color: 'black',
+              },
             },
+          });
+        sheet
+          .cell(row, 5,  row + max, 5, true)
+          .string(req.room)
+          .style(contentStyle)
+          .style(borderedStyle);
+        req.tasks.forEach((task: IAhoRequestTask, index: number) => {
+          sheet
+            .cell(row + index, 6)
+            .string(`${task.content.title} ${req.type.isCountable && task.count ? ' - ' + task.count.toString() + (task.content.boxing ? ' ' + task.content.boxing : ' штук') : ''}`)
+            .style({border: {bottom: {style: index === max ? 'thin' : 'none', color: 'black'}, right: {style: 'thin', color: 'black'}}});
         });
-        const contentStyle = wb.createStyle({
-            alignment: {
-                horizontal: 'center',
-                vertical: 'center',
-            },
-        });
-        const headerStyle = wb.createStyle({
-            alignment: {
-                horizontal: 'left',
-                vertical: 'center',
-            },
-            font: {
-                size: 25,
-            },
-        });
-        const request = await  this.getRequestById(requestId);
-        if (request) {
-            sheet.column(1).setWidth(30);
-            sheet.column(2).setWidth(60);
-            let row = 1;
-
-            /**
-             * Заголовок
-             */
-            sheet
-                .row(row)
-                .setHeight(40);
-            sheet
-              .cell(row, 1, row, 2, true)
-              .string(`Заявка #${request.id}`)
-              .style(headerStyle);
-            row++;
-
-            /**
-             * Дата подачи заявки
-             */
-            sheet
-                .cell(row, 1, row + 1, 1, true)
-                .string('Дата подачи заявки')
-                .style(borderedStyle)
-                .style(contentStyle);
-            sheet
-                .cell(row, 2, row + 1, 2, true)
-                .date(new Date(request.dateCreated))
-                .style(borderedStyle)
-                .style(contentStyle)
-                .style({ numberFormat: 'dd.mm.yyyy, HH:mm' });
-            row += 2;
-
-            /**
-             * Инициатор
-             */
-            if (request.initiator) {
-                sheet
-                    .cell(row, 1, row + 1, 1, true)
-                    .string('Инициатор')
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                sheet
-                    .cell(row, 2, row + 1, 2, true)
-                    .string(request.initiator)
-                    .style(borderedStyle)
-                    .style(contentStyle);
-                row += 2;
-            }
-
-            /**
-             * Заявитель
-             */
-            sheet
-                .cell(row, 1, row + 1, 1, true)
-                .string('Заявитель')
-                .style(contentStyle)
-                .style(borderedStyle);
-            sheet
-                .cell(row, 2, row + 1, 2, true)
-                .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`.replace('  ', ''))
-                .style(borderedStyle)
-                .style(contentStyle);
-            row += 2;
-
-            /**
-             * Заявитель
-             */
-            sheet
-                .cell(row, 1, row + 1, 1, true)
-                .string('Контактный телефон')
-                .style(contentStyle)
-                .style(borderedStyle);
-            sheet
-                .cell(row, 2, row + 1, 2, true)
-                .string(request.phone)
-                .style(borderedStyle)
-                .style(contentStyle);
-            row += 2;
-
-            /**
-             * Категория заявки
-             */
-            sheet
-                .cell(row, 1, row + 1, 1, true)
-                .string('Категория заявки')
-                .style(contentStyle)
-                .style(borderedStyle);
-            sheet
-                .cell(row, 2, row + 1, 2, true)
-                .string(`${request.type.title}`)
-                .style(borderedStyle)
-                .style(contentStyle);
-            row += 2;
-
-            /**
-             * Содержание заявки
-             */
-            sheet
-                .cell(row, 1, request.tasks.length === 1 ? row + 1 : row + request.tasks.length - 1, 1, true)
-                .string('Содержание заявки')
-                .style(borderedStyle)
-                .style(contentStyle);
-            request.tasks.forEach((task: IAhoRequestTask, index: number) => {
-                sheet
-                    .cell(row + index, 2, request.tasks.length === 1 ? row + 1 : row + index, 2, true)
-                    .string(
-                        `${task.content.title}${request.type.isCountable && task.count
-                        ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук')
-                        : ''}`)
-                    .style({border: {right: {style: 'thin', color: 'black'}}})
-                    .style(contentStyle);
+        if (req.numberOfLoaders) {
+          sheet
+            .cell(row + max, 6)
+            .string(`Требуется грузчиков - ${req.numberOfLoaders} человек`)
+            .style({
+              font: {
+                color: '424242',
+              },
+              border: {
+                bottom: {
+                  style: 'thin',
+                  color: 'black',
+                },
+                right: {
+                  style: 'thin',
+                  color: 'black',
+                },
+              },
             });
-            row += request.tasks.length > 2 ? request.tasks.length : 2;
-
-            /**
-             * Срок исполнения заявки
-             */
-            if (request.dateExpires) {
-                sheet
-                    .cell(row, 1, row + 1, 1, true)
-                    .string('Срок исполнения')
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                sheet
-                    .cell(row, 2, row + 1, 2, true)
-                    .date(new Date(request.dateExpires))
-                    .style(borderedStyle)
-                    .style(contentStyle)
-                    .style({ numberFormat: 'dd.mm.yyyy' });
-                row += 2;
-            }
-
-            /**
-             * Кабинет
-             */
-            if (request.room) {
-                sheet
-                    .cell(row, 1, row + 1, 1, true)
-                    .string('Кабинет')
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                sheet
-                    .cell(row, 2, row + 1, 2, true)
-                    .string(request.room)
-                    .style(borderedStyle)
-                    .style(contentStyle);
-                row += 2;
-            }
-
-            /**
-             * Количество грузчиков
-             */
-            if (request.numberOfLoaders) {
-                sheet
-                    .cell(row, 1, row + 1, 1, true)
-                    .string('Количество грузчиков')
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                sheet
-                    .cell(row, 2, row + 1, 2, true)
-                    .number(request.numberOfLoaders)
-                    .style(borderedStyle)
-                    .style(contentStyle);
-                row += 2;
-            }
-
-            /**
-             * Исполнители заявки
-             */
-            sheet
-                .cell(row, 1, request.employees.length === 1 || request.employees.length === 0
-                    ? row + 1
-                    : row + request.employees.length - 1, 1, true)
-                .string('Исполнители')
-                .style(borderedStyle)
-                .style(contentStyle);
-            if (request.employees.length > 1) {
-                request.employees.forEach((employee: IUser, index: number, array: IUser[]) => {
-                    sheet
-                        .cell(row + index, 2)
-                        .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`.replace('  ', ''))
-                        .style({
-                            border: {
-                                right: {
-                                    style: 'thin',
-                                    color: 'black',
-                                },
-                                bottom: {
-                                    style: index === array.length - 1 ? 'thin' : 'none',
-                                    color: 'black',
-                                },
-                            },
-                        })
-                        .style(contentStyle);
-                });
-            } else if (request.employees.length === 1) {
-                sheet
-                    .cell(row, 2, row + 1, 2, true)
-                    .string(`${request.employees[0].firstName} ${request.employees[0].secondName} ${request.employees[0].lastName}`.replace('  ', ''))
-                    .style(borderedStyle)
-                    .style(contentStyle);
-            } else {
-                sheet
-                    .cell(row, 2, row + 1, 2, true)
-                    .string('Не назначены')
-                    .style(borderedStyle)
-                    .style(contentStyle);
-            }
-            row += request.employees.length > 2 ? request.employees.length : 2;
-
-            /**
-             * Статус заявки
-             */
-            sheet
-                .cell(row, 1, row + 1, 1, true)
-                .string('Статус заявки')
-                .style(contentStyle)
-                .style(borderedStyle);
-            sheet
-                .cell(row, 2, row + 1, 2, true)
-                .string(request.status.title)
-                .style(borderedStyle)
-                .style(contentStyle);
-            row += 2;
-
-            /**
-             * Причина отклонения заячки
-             */
-            if (request.rejectReason) {
-                sheet
-                    .cell(row, 1, row + 1, 1, true)
-                    .string('Причина отклонения заявки')
-                    .style(contentStyle)
-                    .style(borderedStyle);
-                sheet
-                    .cell(row, 2, row + 1, 2, true)
-                    .string(request.rejectReason.content)
-                    .style(borderedStyle)
-                    .style(contentStyle);
-            }
         }
-        return new Promise<string>((resolve, reject) => {
-            wb.write(`${requestId}.xlsx`, (err, stats) => {
-                if (err) {
-                    reject(null);
-                }
-                const url = path.resolve(`./${requestId}.xlsx`);
-                resolve(url);
+        if (req.employees.length > 0) {
+          req.employees.forEach((employee: IUser, index: number) => {
+            sheet
+              .cell(row + index, 7)
+              .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`.replace('  ', ''))
+              .style(contentStyle)
+              .style({
+                border: {
+                  top: {
+                    style: index === 0 ? 'thin' : 'none',
+                    color: 'black',
+                  },
+                  left: {
+                    style: 'thin',
+                    color: 'black',
+                  },
+                },
+              });
+          });
+        } else {
+          sheet
+            .cell(row, 7)
+            .string('Не назначены')
+            .style(contentStyle)
+            .style({
+              font: {
+                color: '757575',
+              },
             });
-        });
+        }
+        sheet
+          .cell(row + max, 7)
+          .style({
+            border: {
+              bottom: {
+                style: 'thin',
+                color: 'black',
+              },
+            },
+          });
+        sheet
+          .cell(row, 8, row + max, 8, true)
+          .string(req.status.title)
+          .style(contentStyle)
+          .style(borderedStyle);
+        if (req.phone) {
+          sheet
+            .cell(row, 9, row + max, 9, true)
+            .string(req.phone)
+            .style(contentStyle)
+            .style(borderedStyle);
+        } else {
+          sheet
+            .cell(row, 9, row + max, 9, true)
+            .string('Не указан')
+            .style(borderedStyle)
+            .style(contentStyle)
+            .style({
+              font: {
+                color: '757575',
+              },
+            });
+        }
+        row += max + 1;
+      });
     }
+    await wb.write('aho.xlsx');
+    const url = path.resolve('./aho.xlsx');
+    return url;
+  }
 
-    /**
-     * Получение заявки по идентификатору
-     * @param {number} id - Идентификатор заявки
-     * @returns {Promise<IAhoRequest | null>}
-     */
-    async getRequestById(id: number): Promise<IAhoRequest | null> {
-        const result = this.postgresService.query(
-            'aho-requests-get-by-id',
-            `SELECT aho_requests_get_by_id($1)`,
-            [id],
-            'aho_requests_get_by_id',
-        );
-        return result ? result : null;
+  /**
+   * Экспорт заявки АХО в Excel
+   * @param requestId - Идентификатор заявки
+   */
+  async exportRequest(requestId: number): Promise<string> {
+    const wb = new excel.Workbook();
+    const sheet = wb.addWorksheet('Заявка #' + requestId);
+    const border = {
+      style: 'thin',
+      color: 'black',
+    };
+    const borderedStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+    });
+    const contentStyle = wb.createStyle({
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+      },
+    });
+    const headerStyle = wb.createStyle({
+      alignment: {
+        horizontal: 'left',
+        vertical: 'center',
+      },
+      font: {
+        size: 25,
+      },
+    });
+    const request = await  this.getRequestById(requestId);
+    if (request) {
+      sheet.column(1).setWidth(30);
+      sheet.column(2).setWidth(60);
+      let row = 1;
+
+      /**
+       * Заголовок
+       */
+      sheet
+        .row(row)
+        .setHeight(40);
+      sheet
+        .cell(row, 1, row, 2, true)
+        .string(`Заявка #${request.id}`)
+        .style(headerStyle);
+      row++;
+
+      /**
+       * Дата подачи заявки
+       */
+      sheet
+        .cell(row, 1, row + 1, 1, true)
+        .string('Дата подачи заявки')
+        .style(borderedStyle)
+        .style(contentStyle);
+      sheet
+        .cell(row, 2, row + 1, 2, true)
+        .date(new Date(request.dateCreated))
+        .style(borderedStyle)
+        .style(contentStyle)
+        .style({ numberFormat: 'dd.mm.yyyy, HH:mm' });
+      row += 2;
+
+      /**
+       * Инициатор
+       */
+      if (request.initiator) {
+        sheet
+          .cell(row, 1, row + 1, 1, true)
+          .string('Инициатор')
+          .style(contentStyle)
+          .style(borderedStyle);
+        sheet
+          .cell(row, 2, row + 1, 2, true)
+          .string(request.initiator)
+          .style(borderedStyle)
+          .style(contentStyle);
+        row += 2;
+      }
+
+      /**
+       * Заявитель
+       */
+      sheet
+        .cell(row, 1, row + 1, 1, true)
+        .string('Заявитель')
+        .style(contentStyle)
+        .style(borderedStyle);
+      sheet
+        .cell(row, 2, row + 1, 2, true)
+        .string(`${request.user.firstName} ${request.user.secondName} ${request.user.lastName}`.replace('  ', ''))
+        .style(borderedStyle)
+        .style(contentStyle);
+      row += 2;
+
+      /**
+       * Заявитель
+       */
+      sheet
+        .cell(row, 1, row + 1, 1, true)
+        .string('Контактный телефон')
+        .style(contentStyle)
+        .style(borderedStyle);
+      sheet
+        .cell(row, 2, row + 1, 2, true)
+        .string(request.phone)
+        .style(borderedStyle)
+        .style(contentStyle);
+      row += 2;
+
+      /**
+       * Категория заявки
+       */
+      sheet
+        .cell(row, 1, row + 1, 1, true)
+        .string('Категория заявки')
+        .style(contentStyle)
+        .style(borderedStyle);
+      sheet
+        .cell(row, 2, row + 1, 2, true)
+        .string(`${request.type.title}`)
+        .style(borderedStyle)
+        .style(contentStyle);
+      row += 2;
+
+      /**
+       * Содержание заявки
+       */
+      sheet
+        .cell(row, 1, request.tasks.length === 1 ? row + 1 : row + request.tasks.length - 1, 1, true)
+        .string('Содержание заявки')
+        .style(borderedStyle)
+        .style(contentStyle);
+      request.tasks.forEach((task: IAhoRequestTask, index: number) => {
+        sheet
+          .cell(row + index, 2, request.tasks.length === 1 ? row + 1 : row + index, 2, true)
+          .string(
+            `${task.content.title}${request.type.isCountable && task.count
+              ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук')
+              : ''}`)
+          .style({border: {right: {style: 'thin', color: 'black'}}})
+          .style(contentStyle);
+      });
+      row += request.tasks.length > 2 ? request.tasks.length : 2;
+
+      /**
+       * Срок исполнения заявки
+       */
+      if (request.dateExpires) {
+        sheet
+          .cell(row, 1, row + 1, 1, true)
+          .string('Срок исполнения')
+          .style(contentStyle)
+          .style(borderedStyle);
+        sheet
+          .cell(row, 2, row + 1, 2, true)
+          .date(new Date(request.dateExpires))
+          .style(borderedStyle)
+          .style(contentStyle)
+          .style({ numberFormat: 'dd.mm.yyyy' });
+        row += 2;
+      }
+
+      /**
+       * Кабинет
+       */
+      if (request.room) {
+        sheet
+          .cell(row, 1, row + 1, 1, true)
+          .string('Кабинет')
+          .style(contentStyle)
+          .style(borderedStyle);
+        sheet
+          .cell(row, 2, row + 1, 2, true)
+          .string(request.room)
+          .style(borderedStyle)
+          .style(contentStyle);
+        row += 2;
+      }
+
+      /**
+       * Количество грузчиков
+       */
+      if (request.numberOfLoaders) {
+        sheet
+          .cell(row, 1, row + 1, 1, true)
+          .string('Количество грузчиков')
+          .style(contentStyle)
+          .style(borderedStyle);
+        sheet
+          .cell(row, 2, row + 1, 2, true)
+          .number(request.numberOfLoaders)
+          .style(borderedStyle)
+          .style(contentStyle);
+        row += 2;
+      }
+
+      /**
+       * Исполнители заявки
+       */
+      sheet
+        .cell(row, 1, request.employees.length === 1 || request.employees.length === 0
+          ? row + 1
+          : row + request.employees.length - 1, 1, true)
+        .string('Исполнители')
+        .style(borderedStyle)
+        .style(contentStyle);
+      if (request.employees.length > 1) {
+        request.employees.forEach((employee: IUser, index: number, array: IUser[]) => {
+          sheet
+            .cell(row + index, 2)
+            .string(`${employee.firstName} ${employee.secondName} ${employee.lastName}`.replace('  ', ''))
+            .style({
+              border: {
+                right: {
+                  style: 'thin',
+                  color: 'black',
+                },
+                bottom: {
+                  style: index === array.length - 1 ? 'thin' : 'none',
+                  color: 'black',
+                },
+              },
+            })
+            .style(contentStyle);
+        });
+      } else if (request.employees.length === 1) {
+        sheet
+          .cell(row, 2, row + 1, 2, true)
+          .string(`${request.employees[0].firstName} ${request.employees[0].secondName} ${request.employees[0].lastName}`.replace('  ', ''))
+          .style(borderedStyle)
+          .style(contentStyle);
+      } else {
+        sheet
+          .cell(row, 2, row + 1, 2, true)
+          .string('Не назначены')
+          .style(borderedStyle)
+          .style(contentStyle);
+      }
+      row += request.employees.length > 2 ? request.employees.length : 2;
+
+      /**
+       * Статус заявки
+       */
+      sheet
+        .cell(row, 1, row + 1, 1, true)
+        .string('Статус заявки')
+        .style(contentStyle)
+        .style(borderedStyle);
+      sheet
+        .cell(row, 2, row + 1, 2, true)
+        .string(request.status.title)
+        .style(borderedStyle)
+        .style(contentStyle);
+      row += 2;
+
+      /**
+       * Причина отклонения заячки
+       */
+      if (request.rejectReason) {
+        sheet
+          .cell(row, 1, row + 1, 1, true)
+          .string('Причина отклонения заявки')
+          .style(contentStyle)
+          .style(borderedStyle);
+        sheet
+          .cell(row, 2, row + 1, 2, true)
+          .string(request.rejectReason.content)
+          .style(borderedStyle)
+          .style(contentStyle);
+      }
     }
+    return new Promise<string>((resolve, reject) => {
+      wb.write(`${requestId}.xlsx`, (err, stats) => {
+        if (err) {
+          reject(null);
+        }
+        const url = path.resolve(`./${requestId}.xlsx`);
+        resolve(url);
+      });
+    });
+  }
+
+  /**
+   * Получение заявки по идентификатору
+   * @param {number} id - Идентификатор заявки
+   * @returns {Promise<IAhoRequest | null>}
+   */
+  async getRequestById(id: number): Promise<IAhoRequest | null> {
+    const result = this.postgresService.query(
+      'aho-requests-get-by-id',
+      `SELECT aho_requests_get_by_id($1)`,
+      [id],
+      'aho_requests_get_by_id',
+    );
+    return result ? result : null;
+  }
 
   /**
    * Добавление новой заявки
@@ -740,7 +654,7 @@ export class AhoRequestsService {
         request.tasks,
         request.employees,
         request.initiator,
-          request.phone,
+        request.phone,
       ],
       'aho_requests_add',
     );
@@ -759,8 +673,8 @@ export class AhoRequestsService {
         let tasks = '<ul style="margin-top: 0px; margin-bottom: 0px;">';
         request.tasks.forEach((task: IAhoRequestTask, index: number) => {
           tasks += `<li>${task.content.title} ${request.type.isCountable
-              ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук')
-              : ''}</li>`;
+            ? ' - ' + task.count + ' ' + (task.content.boxing ? task.content.boxing : 'штук')
+            : ''}</li>`;
         });
         tasks += '</ul>';
         this.mailService.send(
@@ -806,33 +720,33 @@ export class AhoRequestsService {
       }
     });
     request_.employees.forEach((employee: IUser) => {
-        const findEmployeeById = (user: IUser) => user.id === employee.id;
-        const user = request.employees.find(findEmployeeById);
-        if (!user && employee.email) {
-            this.mailService.send(
-                'Заявки АХО <aho@kolenergo.ru>',
-                employee.email,
-                `Вы больше не являетесь исполнителем заявки №${request.id}`,
-                `Вы больше не являетесь исполнителем заявки №${request.id}.` +
-                `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
-            );
-        }
+      const findEmployeeById = (user: IUser) => user.id === employee.id;
+      const user = request.employees.find(findEmployeeById);
+      if (!user && employee.email) {
+        this.mailService.send(
+          'Заявки АХО <aho@kolenergo.ru>',
+          employee.email,
+          `Вы больше не являетесь исполнителем заявки №${request.id}`,
+          `Вы больше не являетесь исполнителем заявки №${request.id}.` +
+          `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+        );
+      }
     });
     if (request.dateExpires && new Date(request.dateExpires).getTime() !== new Date(request_.dateExpires).getTime()) {
-        request.employees.forEach((employee: IUser) => {
-            if (employee.email) {
-                this.mailService.send(
-                    'Заявки АХО <aho@kolenergo.ru>',
-                    employee.email,
-                    `У заявки №${request.id} изменен срок исполнения`,
-                    `У заявки №${request.id} изменен срок исполнения, новый срок исполнения: ` +
-                    `${new Date(request.dateExpires).getDate() +
-                    '.' + (new Date(request.dateExpires).getMonth() + 1) +
-                    '.' + new Date(request.dateExpires).getFullYear()}` +
-                    `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
-                );
-            }
-        });
+      request.employees.forEach((employee: IUser) => {
+        if (employee.email) {
+          this.mailService.send(
+            'Заявки АХО <aho@kolenergo.ru>',
+            employee.email,
+            `У заявки №${request.id} изменен срок исполнения`,
+            `У заявки №${request.id} изменен срок исполнения, новый срок исполнения: ` +
+            `${new Date(request.dateExpires).getDate() +
+            '.' + (new Date(request.dateExpires).getMonth() + 1) +
+            '.' + new Date(request.dateExpires).getFullYear()}` +
+            `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+          );
+        }
+      });
     }
 
     let requestStatusId = 3;
@@ -868,32 +782,32 @@ export class AhoRequestsService {
     return result ? result : null;
   }
 
-    /**
-     * Изменение статуса заявки
-     * @param request {IAhoRequest} - Заявка АХО
-     * @param status {IAhorequestStatus} - Статус заявки АХО
-     */
-    async setRequestStatus(request: IAhoRequest, status: IAhoRequestStatus): Promise<IAhoRequest | null> {
-        const result = await this.postgresService.query(
-            'aho-requests-set-status',
-            `SELECT aho_requests_set_status($1, $2)`,
-            [
-                request.id,
-                status.id,
-            ],
-            'aho_requests_set_status',
-        );
-        if (request.user.email) {
-            this.mailService.send(
-                'Заявки АХО <aho@kolenergo.ru>',
-                request.user.email,
-                `Статус Вашей заявки №${request.id} изменен: ${status.title}`,
-                `Статус Вашей заявки №${request.id} изменен: ${status.title}` +
-                `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
-            );
-        }
-        return result ? result : null;
+  /**
+   * Изменение статуса заявки
+   * @param request {IAhoRequest} - Заявка АХО
+   * @param status {IAhorequestStatus} - Статус заявки АХО
+   */
+  async setRequestStatus(request: IAhoRequest, status: IAhoRequestStatus): Promise<IAhoRequest | null> {
+    const result = await this.postgresService.query(
+      'aho-requests-set-status',
+      `SELECT aho_requests_set_status($1, $2)`,
+      [
+        request.id,
+        status.id,
+      ],
+      'aho_requests_set_status',
+    );
+    if (request.user.email) {
+      this.mailService.send(
+        'Заявки АХО <aho@kolenergo.ru>',
+        request.user.email,
+        `Статус Вашей заявки №${request.id} изменен: ${status.title}`,
+        `Статус Вашей заявки №${request.id} изменен: ${status.title}` +
+        `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+      );
     }
+    return result ? result : null;
+  }
 
   /**
    * Удаление заявки АХО
@@ -901,32 +815,32 @@ export class AhoRequestsService {
    * @returns {Promise<boolean>}
    */
   async deleteRequest(requestId: number): Promise<boolean> {
-      const request = await this.getRequestById(requestId);
-      const result = await this.postgresService.query(
-          'aho-requests-delete',
-          `SELECT aho_requests_delete($1)`,
-          [requestId],
-          'aho_requests_delete',
-      );
-      request.employees.forEach((employee: IUser) => {
-          if (employee.email) {
-              this.mailService.send(
-                  'Заявки АХО <aho@kolenergo.ru>',
-                  employee.email,
-                  `Заявка №${request.id} удалена админинстратором системы`,
-                  `Заявка №${request.id}, в которой Вы были назначены исполнителем была удалена администратором системы.`,
-              );
-          }
-      });
-      if (request.user.email) {
-          this.mailService.send(
-              'Заявки АХО <aho@kolenergo.ru>',
-              request.user.email,
-              `Ваша заявка №${request.id} удалена администратором системы`,
-              `Ваша заявка №${request.id} удалена администратором системы`,
-          );
+    const request = await this.getRequestById(requestId);
+    const result = await this.postgresService.query(
+      'aho-requests-delete',
+      `SELECT aho_requests_delete($1)`,
+      [requestId],
+      'aho_requests_delete',
+    );
+    request.employees.forEach((employee: IUser) => {
+      if (employee.email) {
+        this.mailService.send(
+          'Заявки АХО <aho@kolenergo.ru>',
+          employee.email,
+          `Заявка №${request.id} удалена админинстратором системы`,
+          `Заявка №${request.id}, в которой Вы были назначены исполнителем была удалена администратором системы.`,
+        );
       }
-      return result;
+    });
+    if (request.user.email) {
+      this.mailService.send(
+        'Заявки АХО <aho@kolenergo.ru>',
+        request.user.email,
+        `Ваша заявка №${request.id} удалена администратором системы`,
+        `Ваша заявка №${request.id} удалена администратором системы`,
+      );
+    }
+    return result;
   }
 
   /**
@@ -999,27 +913,27 @@ export class AhoRequestsService {
       );
     }
     request.employees.forEach((employee: IUser) => {
-        if (employee.email) {
-            this.mailService.send(
-                'Заявки АХО <aho@kolenergo.ru>',
-                employee.email,
-                `Заявка №${request.id} отменена заявителем`,
-                `Заявка №${request.id} отменена заявителем.` +
-                `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
-            );
-        }
+      if (employee.email) {
+        this.mailService.send(
+          'Заявки АХО <aho@kolenergo.ru>',
+          employee.email,
+          `Заявка №${request.id} отменена заявителем`,
+          `Заявка №${request.id} отменена заявителем.` +
+          `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+        );
+      }
     });
     const administrators = await this.getAdministrators();
     administrators.forEach((user: IUser) => {
-        if (user.email) {
-          this.mailService.send(
-            'Заявки АХО <aho@kolenergo.ru>',
-            user.email,
-            `Заявка №${request.id} отменена заявителем`,
-            `Заявка №${request.id} отменена заявителем.` +
-            `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
-          );
-        }
+      if (user.email) {
+        this.mailService.send(
+          'Заявки АХО <aho@kolenergo.ru>',
+          user.email,
+          `Заявка №${request.id} отменена заявителем`,
+          `Заявка №${request.id} отменена заявителем.` +
+          `<br><a href="http://10.50.0.153:12345/request/${request.id}">Открыть заявку в системе заявок АХО</a>`,
+        );
+      }
     });
     return result ? result : null;
   }
@@ -1126,12 +1040,12 @@ export class AhoRequestsService {
    * Получение списка администраторов приложения
    */
   async getAdministrators(): Promise<IUser[]> {
-      const result = this.postgresService.query(
-        'aho-requests-get-administrators',
-        `SELECT users_get_by_role_id(1)`,
-        [],
-          'users_get_by_role_id',
-      );
-      return result ? result : [];
-    }
+    const result = this.postgresService.query(
+      'aho-requests-get-administrators',
+      `SELECT users_get_by_role_id(1)`,
+      [],
+      'users_get_by_role_id',
+    );
+    return result ? result : [];
+  }
 }
