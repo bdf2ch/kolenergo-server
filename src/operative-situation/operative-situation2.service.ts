@@ -7,9 +7,8 @@ import {
   IOperativeSituationReportsInitialData,
   OperativeSituationReport,
   OperativeSituationConsumption,
-  IOperativeSituationConsumption, IOperativeSituationRegion, ILocation, IWeatherSummaryResponse,
-} from '@kolenergo/osr';
-import { IAppInitData, IReport, IConsumption, IWeatherSummary } from '@kolenergo/osr2';
+  IOperativeSituationConsumption, IOperativeSituationRegion, ILocation, IWeatherSummaryResponse } from '@kolenergo/osr';
+import { IAppInitData, IReport, IConsumption, IWeatherSummary, IReportSummary } from '@kolenergo/osr2';
 import moment = require('moment');
 import * as path from 'path';
 import * as excel from 'excel4node';
@@ -70,6 +69,10 @@ export class OperativeSituationService2 {
       [date, period],
       'operative_situation_reports_get_by_date_and_period',
     );
+  }
+
+  async getReportsByDivision(divisionId: number, date: string, period: string): Promise<IServerResponse<IReportSummary>> {
+
   }
 
   /**

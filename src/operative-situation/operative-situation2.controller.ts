@@ -33,10 +33,11 @@ export class OperativeSituationController2 {
 
   @Get('/')
   async getInitialData(@Query('companyId') companyId: number, @Req() request): Promise<IServerResponse<IAppInitData>> {
-    const result = await this.operativeSituationService.getInitialData(companyId);
+    const user = request.user ? request.user.data : null;
+    const result = await this.operativeSituationService.getInitialData(user ? user.company.id : 7);
     result.data.date = moment().format('DD.MM.YYYY');
     result.data.time = moment().format('HH:mm');
-    result.data.user = request.user;
+    result.data.user = user;
     return result;
   }
 
