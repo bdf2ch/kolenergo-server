@@ -71,8 +71,32 @@ export class OperativeSituationService2 {
     );
   }
 
-  async getReportsByDivision(divisionId: number, date: string, period: string): Promise<IServerResponse<IReportSummary>> {
+  /**
+   * Получение сводки отчетов за указаннйю дату по организации
+   * @param companyId - Идентификатор организации
+   */
+  async getReportsByCompany(companyId: number): Promise<IServerResponse<IReportSummary>> {
+    const date = moment();
+    return await this.postgresService.query(
+      'operative-situation-reports-get-by-company',
+      'SELECT osr.reports_get_by_company($1, $2)',
+      [companyId, date.format('DD.MM.YYYY')],
+      'reports_get_by_company',
+    );
+  }
 
+  /**
+   * Получение сводки отчетов по оперативной обстановке за указанную дату по структурному подразделению
+   * @param divisionId - Идентификатор структурного подразделения
+   */
+  async getReportsByDivision(divisionId: number): Promise<IServerResponse<IReportSummary>> {
+    const date = moment();
+    return await this.postgresService.query(
+      'operative-situation-reports-get-by-division',
+      `SELECT osr.reports_get_by_division($1, $2)`,
+      [divisionId, date.format('DD.MM.YYYY')],
+      'reports_get_by_division',
+    );
   }
 
   /**
