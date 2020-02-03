@@ -45,7 +45,7 @@ export class OperativeSituationController2 {
   async exportReport() {}
 
   @Post()
-  async addReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
+  async addReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IReportSummary>> {
     const result = await this.operativeSituationService.addReport(report);
     return result;
   }

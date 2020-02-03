@@ -8,7 +8,7 @@ import {
   OperativeSituationReport,
   OperativeSituationConsumption,
   IOperativeSituationConsumption, IOperativeSituationRegion, ILocation, IWeatherSummaryResponse } from '@kolenergo/osr';
-import { IAppInitData, IReport, IConsumption, IWeatherSummary, IReportSummary } from '@kolenergo/osr2';
+import { IAppInitData, IReport, IConsumption, IWeatherSummary, IReportSummary, Report } from '@kolenergo/osr2';
 import moment = require('moment');
 import * as path from 'path';
 import * as excel from 'excel4node';
@@ -25,7 +25,7 @@ export class OperativeSituationService2 {
   async getInitialData(companyId: number): Promise<IServerResponse<IAppInitData>> {
     const date = moment();
     return await this.postgresService.query(
-      'operative-situation-reports-get-initial-data',
+      'osr-get-initial-data',
       'SELECT osr.get_initial_data($1, $2)',
       [
         companyId,
@@ -64,7 +64,7 @@ export class OperativeSituationService2 {
    */
   async getReportsByDateAndPeriod(date: string, period: string): Promise<IServerResponse<IOperativeSituationReport[]>> {
     return await this.postgresService.query(
-      'operative-situation-reports-get-by-date-and-period',
+      'osr-get-report-by-date-and-period',
       `SELECT operative_situation_reports_get_by_date_and_period($1, $2)`,
       [date, period],
       'operative_situation_reports_get_by_date_and_period',
@@ -78,7 +78,7 @@ export class OperativeSituationService2 {
   async getReportsByCompany(companyId: number): Promise<IServerResponse<IReportSummary>> {
     const date = moment();
     return await this.postgresService.query(
-      'operative-situation-reports-get-by-company',
+      'osr-get-report-by-company',
       'SELECT osr.reports_get_by_company($1, $2)',
       [companyId, date.format('DD.MM.YYYY')],
       'reports_get_by_company',
@@ -92,7 +92,7 @@ export class OperativeSituationService2 {
   async getReportsByDivision(divisionId: number): Promise<IServerResponse<IReportSummary>> {
     const date = moment();
     return await this.postgresService.query(
-      'operative-situation-reports-get-by-division',
+      'osr-get-report-by-division',
       `SELECT osr.reports_get_by_division($1, $2)`,
       [divisionId, date.format('DD.MM.YYYY')],
       'reports_get_by_division',
@@ -115,21 +115,21 @@ export class OperativeSituationService2 {
    * Добавление отчета обоперативной обстановке
    * @param report - Добавляемый отчет об оперативной обстановке
    */
-  async addReport(report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
+  async addReport(report: Report): Promise<IServerResponse<IReportSummary>> {
     const date = moment();
     return await this.postgresService.query(
-      'add-operative-situation-report',
+      'osr-add-report',
       `SELECT osr.reports_add(
                   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
                   $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
-                  $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42
+                  $27, $28, $29, $30, $31, $32, $33, $34, $35
                 )`,
       [
-        report.company.id,
+        report.companyId,
         report.divisionId,
         report.user.id,
         date.format('DD.MM.YYYY'),
-        report.periodTime,
+        report.periodTime.time,
         report.equipment_35_150.lep_110_150,
         report.equipment_35_150.lep_35,
         report.equipment_35_150.ps_110_150,
@@ -143,12 +143,6 @@ export class OperativeSituationService2 {
         report.equipment_network.effect.population,
         report.equipment_network.effect.power,
         report.equipment_network.effect.szo,
-        report.weather.min,
-        report.weather.max,
-        report.weather.wind,
-        report.weather.precipitations,
-        report.weather.rpg,
-        report.weather.orr,
         report.resources.brigades,
         report.resources.people,
         report.resources.technics,
@@ -166,9 +160,8 @@ export class OperativeSituationService2 {
         report.resources.rise,
         report.resources.riseSumPower,
         report.resources.risePeople,
-        report.weatherSummary ? report.weatherSummary.id : 0,
       ],
-      'operative_situation_reports_add',
+      'reports_add',
     );
   }
 
