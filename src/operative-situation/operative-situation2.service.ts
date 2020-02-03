@@ -129,7 +129,7 @@ export class OperativeSituationService2 {
         report.divisionId,
         report.user.id,
         date.format('DD.MM.YYYY'),
-        report.periodTime.time,
+        report.periodTime,
         report.equipment_35_150.lep_110_150,
         report.equipment_35_150.lep_35,
         report.equipment_35_150.ps_110_150,
