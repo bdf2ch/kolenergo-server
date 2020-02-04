@@ -10,7 +10,7 @@ import {
   OperativeSituationConsumption,
   OperativeSituationReport,
 } from '@kolenergo/osr';
-import { IAppInitData, IReport, IConsumption, IReportSummary, IWeatherSummary } from '@kolenergo/osr2';
+import { IAppInitData, IReport, IConsumption, IReportSummary, IWeatherSummary, Consumption } from '@kolenergo/osr2';
 import * as moment from 'moment';
 
 @Controller('osr2')
@@ -55,15 +55,13 @@ export class OperativeSituationController2 {
     @Query('companyId') companyId: string,
     @Query('divisionId') divisionId: string,
   ): Promise<IServerResponse<IReportSummary>> {
-    console.log('companyId', companyId);
-    console.log('divisionId', divisionId);
-    return parseInt(companyId) !== 0
+    return parseInt(companyId, null) !== 0
       ? await this.operativeSituationService.getReportsByCompany(parseInt(companyId, null))
       : await this.operativeSituationService.getReportsByDivision(parseInt(divisionId, null));
   }
 
   @Post('/consumption')
-  async addConsumption(@Body() consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
+  async addConsumption(@Body() consumption: Consumption): Promise<IServerResponse<IConsumption>> {
     const result = await this.operativeSituationService.addConsumption(consumption);
     return result;
   }

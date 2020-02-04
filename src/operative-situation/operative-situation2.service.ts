@@ -8,7 +8,7 @@ import {
   OperativeSituationReport,
   OperativeSituationConsumption,
   IOperativeSituationConsumption, IOperativeSituationRegion, ILocation, IWeatherSummaryResponse } from '@kolenergo/osr';
-import { IAppInitData, IReport, IConsumption, IWeatherSummary, IReportSummary, Report } from '@kolenergo/osr2';
+import { IAppInitData, IReport, IConsumption, IWeatherSummary, IReportSummary, Report, Consumption } from '@kolenergo/osr2';
 import moment = require('moment');
 import * as path from 'path';
 import * as excel from 'excel4node';
@@ -20,7 +20,7 @@ export class OperativeSituationService2 {
 
   /**
    * Получение данных для инициализации приложения
-   * @param companyId
+   * @param companyId - Идентификатор организации
    */
   async getInitialData(companyId: number): Promise<IServerResponse<IAppInitData>> {
     const date = moment();
@@ -239,18 +239,19 @@ export class OperativeSituationService2 {
    * Добавление отчета о максимальном потреблении за прошедшие сутки
    * @param consumption - Добавляемый отчет об максимальном потреблении за прошедшие сутки
    */
-  async addConsumption(consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
+  async addConsumption(consumption: Consumption): Promise<IServerResponse<IConsumption>> {
     const date = moment();
     return await this.postgresService.query(
-      'add-operative-situation-consumption',
-      `SELECT operative_situation_reports_consumption_add($1, $2, $3, $4)`,
+      'osr-add-consumption',
+      `SELECT osr.consumption_add($1, $2, $3, $4, $5)`,
       [
-        consumption.company.id,
-        consumption.user.id,
+        consumption.companyId,
+        consumption.divisionId,
+        consumption.userId,
         date.format('DD.MM.YYYY'),
         consumption.consumption,
       ],
-      'operative_situation_reports_consumption_add',
+      'consumption_add',
     );
   }
 
