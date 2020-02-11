@@ -8,7 +8,7 @@ import {
   OperativeSituationReport,
   OperativeSituationConsumption,
   IOperativeSituationConsumption, IOperativeSituationRegion, ILocation, IWeatherSummaryResponse } from '@kolenergo/osr';
-import { IAppInitData, IReport, IConsumption, IWeatherSummary, IReportSummary, Report, Consumption } from '@kolenergo/osr2';
+import { IAppInitData, IReport, IPeriod, IConsumption, IWeatherSummary, IReportSummary, Report, Consumption } from '@kolenergo/osr2';
 import moment = require('moment');
 import * as path from 'path';
 import * as excel from 'excel4node';
@@ -112,24 +112,68 @@ export class OperativeSituationService2 {
   }
 
   /**
+   * Получение списка временных периодов
+   */
+  async getPeriods(): Promise<IPeriod[]> {
+    return await this.postgresService.query(
+      'osr-get-periods',
+      'SELECT * FROM osr.periods',
+      [],
+      '',
+    );
+  }
+
+  /**
    * Добавление отчета обоперативной обстановке
    * @param report - Добавляемый отчет об оперативной обстановке
    */
   async addReport(report: Report): Promise<IServerResponse<IReportSummary>> {
+    const periods = await this.getPeriods();
     const date = moment();
+    let periodTime = '';
+    console.log('now: ', date.format('DD.MM.YYYY HH:mm'));
+
+    periods.forEach((period: IPeriod, index: number, array: IPeriod[]) => {
+      const start = moment(`${date.format('DD.MM.YYYY')} ${period.start}`, 'DD.MM.YYYY HH:mm');
+      const end = moment(`${date.format('DD.MM.YYYY')} ${period.end}`, 'DD.MM.YYYY HH:mm');
+
+      if ((date.hours() === start.hours() - 1 && date.minutes() >= 50) || (date.hours() === start.hours() && date.minutes() <= 10)) {
+        console.log('report attached to previous period:', period.interval);
+        periodTime = period.start;
+      }
+
+      if ((date.hours() === end.hours() - 1 && date.minutes() >= 50) || (date.hours() === end.hours() && date.minutes() <= 10)) {
+        console.log('report attached to next period:', period.interval);
+        periodTime = period.start;
+      }
+
+      if (date.unix() >= start.unix() && date.unix() <= end.unix()) {
+        console.log('report goes to semiperiod of current period', period.interval);
+        if (date.minutes() >= 0 && date.minutes() <= 30) {
+          console.log(`period: ${date.format('HH')}:00`);
+          periodTime = `${date.format('HH')}:00`;
+        }
+        if (date.minutes() > 30 && date.minutes() <= 59) {
+          console.log(`period: ${date.format('HH')}:30`);
+          periodTime = `${date.format('HH')}:30`;
+        }
+      }
+    });
+
     return await this.postgresService.query(
       'osr-add-report',
       `SELECT osr.reports_add(
-                  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-                  $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
-                  $27, $28, $29, $30, $31, $32, $33, $34, $35
+                  $1,  $2,  $3,  $4,  $5,  $6,  $7,  $8,  $9,  $10, $11, $12,
+                  $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24,
+                  $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36
                 )`,
       [
         report.companyId,
         report.divisionId,
+        report.periodId,
         report.user.id,
         date.format('DD.MM.YYYY'),
-        report.periodTime,
+        periodTime,
         report.equipment_35_150.lep_110_150,
         report.equipment_35_150.lep_35,
         report.equipment_35_150.ps_110_150,

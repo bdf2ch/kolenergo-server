@@ -10,7 +10,7 @@ import {
   OperativeSituationConsumption,
   OperativeSituationReport,
 } from '@kolenergo/osr';
-import { IAppInitData, IReport, IConsumption, IReportSummary, IWeatherSummary, Consumption } from '@kolenergo/osr2';
+import { IAppInitData, IReport, IConsumption, IReportSummary, IWeatherSummary, Consumption, Report } from '@kolenergo/osr2';
 import * as moment from 'moment';
 
 @Controller('osr2')
@@ -45,7 +45,7 @@ export class OperativeSituationController2 {
   async exportReport() {}
 
   @Post()
-  async addReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IReportSummary>> {
+  async addReport(@Body() report: Report): Promise<IServerResponse<IReportSummary>> {
     const result = await this.operativeSituationService.addReport(report);
     return result;
   }
