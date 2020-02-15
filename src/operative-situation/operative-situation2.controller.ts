@@ -55,9 +55,11 @@ export class OperativeSituationController2 {
     @Query('companyId') companyId: string,
     @Query('divisionId') divisionId: string,
   ): Promise<IServerResponse<IReportSummary>> {
-    return parseInt(companyId, null) !== 0
+    const result =  parseInt(companyId, null) !== 0
       ? await this.operativeSituationService.getReportsByCompany(parseInt(companyId, null))
       : await this.operativeSituationService.getReportsByDivision(parseInt(divisionId, null));
+    result.data.date = moment().format('DD.MM.YYYY');
+    return result;
   }
 
   @Post('/consumption')

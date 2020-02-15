@@ -160,6 +160,8 @@ export class OperativeSituationService2 {
       }
     });
 
+    const period = this.getPeriodByTime(periods);
+    console.log('period:', period.interval);
     return await this.postgresService.query(
       'osr-add-report',
       `SELECT osr.reports_add(
@@ -170,7 +172,7 @@ export class OperativeSituationService2 {
       [
         report.companyId,
         report.divisionId,
-        report.periodId,
+        period.id,
         report.user.id,
         date.format('DD.MM.YYYY'),
         periodTime,
@@ -901,5 +903,18 @@ export class OperativeSituationService2 {
         resolve(url);
       });
     });
+  }
+
+  getPeriodByTime(periods: IPeriod[]): IPeriod {
+    let result = null;
+    const now = moment();
+    periods.forEach((period: IPeriod) => {
+      const start = moment(`${now.format('DD.MM.YYYY')} ${period.start}`, 'DD.MM.YYYY HH:mm').unix();
+      const end = moment(`${now.format('DD.MM.YYYY')} ${period.end}`, 'DD.MM.YYYY HH:mm').unix();
+      if (now.unix() >= start && now.unix() < end) {
+        result = period;
+      }
+    });
+    return result;
   }
 }
