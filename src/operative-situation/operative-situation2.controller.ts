@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, Delete, Patch, Req } from '@nestjs/common';
+import {Controller, Post, Get, Body, Param, Query, Delete, Patch, Req, Res} from '@nestjs/common';
 import { IServerResponse } from '@kolenergo/cpa';
 import { OperativeSituationService2 } from './operative-situation2.service';
 import {
@@ -34,6 +34,7 @@ export class OperativeSituationController2 {
   @Get('/')
   async getInitialData(@Query('companyId') companyId: number, @Req() request): Promise<IServerResponse<IAppInitData>> {
     const user = request.user ? request.user.data : null;
+    console.log('user', request.user);
     const result = await this.operativeSituationService.getInitialData(user ? user.company.id : 7);
     result.data.date = moment().format('DD.MM.YYYY');
     result.data.time = moment().format('HH:mm');

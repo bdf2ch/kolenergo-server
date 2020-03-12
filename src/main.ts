@@ -36,6 +36,7 @@ async function bootstrap() {
           resave: true,
           cookie: {
               maxAge: 3600 * 24 * 30 * 356,
+              sameSite: true,
           },
       }),
       passport.initialize(),

@@ -17,7 +17,7 @@ export class AuthenticationStrategy extends Strategy {
             usernameField: 'account',
             passwordField: 'password',
             session: true,
-              passReqToCallback: true,
+            passReqToCallback: true,
           },
           async (req, username, password, done) => await this.signInUser(req, username, password, done),
         );
