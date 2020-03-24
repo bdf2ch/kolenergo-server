@@ -131,23 +131,35 @@ export class OperativeSituationService2 {
     const periods = await this.getPeriods();
     const date = moment();
     let periodTime = '';
-    console.log('now: ', date.format('DD.MM.YYYY HH:mm'));
 
     periods.forEach((period: IPeriod, index: number, array: IPeriod[]) => {
-      const start = moment(`${date.format('DD.MM.YYYY')} ${period.start}`, 'DD.MM.YYYY HH:mm');
-      const end = moment(`${date.format('DD.MM.YYYY')} ${period.end}`, 'DD.MM.YYYY HH:mm');
+      const periodStart = moment(`${date.format('DD.MM.YYYY')} ${period.start}`, 'DD.MM.YYYY HH:mm');
+      const periodEnd = moment(`${date.format('DD.MM.YYYY')} ${period.end}`, 'DD.MM.YYYY HH:mm');
+      const periodStartMin = moment(periodStart).subtract(10, 'minutes');
+      const periodStartMax = moment(periodStart).add(10, 'minutes');
+      const periodEndMin = moment(periodEnd).subtract(10, 'minutes');
+      const periodEndMax = moment(periodEnd).add(10, 'minutes');
 
-      if ((date.hours() === start.hours() - 1 && date.minutes() >= 50) || (date.hours() === start.hours() && date.minutes() <= 10)) {
+      if (date.isBetween(periodStartMin, periodStartMax)) {
+        periodTime = period.start;
+      } else if (date.isBetween(periodEndMin, periodEndMax)) {
+        periodTime = period.end;
+      } else if (date.isBetween(periodStartMax, periodEndMin)) {
+        periodTime = date.minutes() <= 30 ? `${date.format('HH')}:00` : `${date.format('HH')}:30`;
+      }
+
+      /*
+      if ((date.hours() === periodStart.hours() - 1 && date.minutes() >= 50) || (date.hours() === periodStart.hours() && date.minutes() <= 10)) {
         console.log('report attached to previous period:', period.interval);
         periodTime = period.start;
       }
 
-      if ((date.hours() === end.hours() - 1 && date.minutes() >= 50) || (date.hours() === end.hours() && date.minutes() <= 10)) {
+      if ((date.hours() === periodEnd.hours() - 1 && date.minutes() >= 50) || (date.hours() === periodEnd.hours() && date.minutes() <= 10)) {
         console.log('report attached to next period:', period.interval);
         periodTime = period.start;
       }
 
-      if (date.unix() >= start.unix() && date.unix() <= end.unix()) {
+      if (date.unix() >= periodStart.unix() && date.unix() <= periodEnd.unix()) {
         console.log('report goes to semiperiod of current period', period.interval);
         if (date.minutes() >= 0 && date.minutes() <= 30) {
           console.log(`period: ${date.format('HH')}:00`);
@@ -158,10 +170,10 @@ export class OperativeSituationService2 {
           periodTime = `${date.format('HH')}:30`;
         }
       }
+      */
     });
 
     const period = this.getPeriodByTime(periods);
-    console.log('period:', period.interval);
     return await this.postgresService.query(
       'osr-add-report',
       `SELECT osr.reports_add(
@@ -288,17 +300,22 @@ export class OperativeSituationService2 {
    * Добавление отчета о максимальном потреблении за прошедшие сутки
    * @param consumption - Добавляемый отчет об максимальном потреблении за прошедшие сутки
    */
-  async addConsumption(consumption: Consumption): Promise<IServerResponse<IConsumption>> {
+  async addConsumption(
+    companyId: number,
+    divisionId: number,
+    userId: number,
+    consumption: number,
+  ): Promise<IServerResponse<number>> {
     const date = moment();
     return await this.postgresService.query(
       'osr-add-consumption',
       `SELECT osr.consumption_add($1, $2, $3, $4, $5)`,
       [
-        consumption.companyId,
-        consumption.divisionId,
-        consumption.userId,
+        companyId,
+        divisionId,
+        userId,
         date.format('DD.MM.YYYY'),
-        consumption.consumption,
+        consumption,
       ],
       'consumption_add',
     );

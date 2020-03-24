@@ -35,7 +35,7 @@ export class OperativeSituationController2 {
   async getInitialData(@Query('companyId') companyId: number, @Req() request): Promise<IServerResponse<IAppInitData>> {
     const user = request.user ? request.user.data : null;
     console.log('user', request.user);
-    const result = await this.operativeSituationService.getInitialData(user ? user.company.id : 7);
+    const result = await this.operativeSituationService.getInitialData(user ? user.company.id === 8 ? 2 : user.company.id : 2);
     result.data.date = moment().format('DD.MM.YYYY');
     result.data.time = moment().format('HH:mm');
     result.data.user = user;
@@ -64,8 +64,20 @@ export class OperativeSituationController2 {
   }
 
   @Post('/consumption')
-  async addConsumption(@Body() consumption: Consumption): Promise<IServerResponse<IConsumption>> {
-    const result = await this.operativeSituationService.addConsumption(consumption);
+  async addConsumption(
+    @Body() consumption: {
+      companyId: number,
+      divisionId: number,
+      consumption: number,
+    },
+    @Req() request,
+  ): Promise<IServerResponse<number>> {
+    const result = await this.operativeSituationService.addConsumption(
+      consumption.companyId,
+      consumption.divisionId,
+      request.user ? request.user.data.id : 0,
+      consumption.consumption,
+    );
     return result;
   }
 
