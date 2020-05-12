@@ -7,7 +7,7 @@ import {OperativeSituationService2} from '../operative-situation2.service';
 
 @Middleware()
 export class ExportReportMiddleware implements NestMiddleware {
-  constructor(private readonly operativeSituationService: OperativeSituationService2) {}
+  constructor(private readonly operativeSituationService: OperativeSituationService) {}
 
   async resolve(...args: any[]): AsyncExpressMiddleware {
     return async (req, res: Response, next) => {

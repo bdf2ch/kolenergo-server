@@ -1,5 +1,6 @@
 import { Component } from '@nestjs/common';
-import { PostgresService } from '../common/database/postgres.service';
+
+import { PostgresService } from '../../common/database/postgres.service';
 import { ICompany, IServerResponse } from '@kolenergo/cpa';
 import {
   IOperativeSituationReport,
@@ -15,25 +16,8 @@ import * as excel from 'excel4node';
 import rpn = require('request-promise-native');
 
 @Component()
-export class OperativeSituationService2 {
+export class ReportsService {
   constructor(private readonly postgresService: PostgresService) {}
-
-  /**
-   * Получение данных для инициализации приложения
-   * @param companyId - Идентификатор организации
-   */
-  async getInitialData(companyId: number): Promise<IServerResponse<IAppInitData>> {
-    const date = moment();
-    return await this.postgresService.query(
-      'osr-get-initial-data',
-      'SELECT osr.get_initial_data($1, $2)',
-      [
-        companyId,
-        date.format('DD.MM.YYYY'),
-      ],
-      'get_initial_data',
-    );
-  }
 
   /**
    * Получение всех отчетов об оперативной обстановке
@@ -75,12 +59,15 @@ export class OperativeSituationService2 {
    * Получение сводки отчетов за указаннйю дату по организации
    * @param companyId - Идентификатор организации
    */
-  async getReportsByCompany(companyId: number): Promise<IServerResponse<IReportSummary>> {
+  async getByCompany(
+    companyId: number,
+    time?: string,
+  ): Promise<IServerResponse<IReportSummary>> {
     const date = moment();
     return await this.postgresService.query(
       'osr-get-report-by-company',
-      'SELECT osr.reports_get_by_company($1, $2)',
-      [companyId, date.format('DD.MM.YYYY')],
+      'SELECT osr.reports_get_by_company($1, $2, $3)',
+      [companyId, date.format('DD.MM.YYYY'), time],
       'reports_get_by_company',
     );
   }
@@ -89,7 +76,7 @@ export class OperativeSituationService2 {
    * Получение сводки отчетов по оперативной обстановке за указанную дату по структурному подразделению
    * @param divisionId - Идентификатор структурного подразделения
    */
-  async getReportsByDivision(divisionId: number): Promise<IServerResponse<IReportSummary>> {
+  async getByDivision(divisionId: number): Promise<IServerResponse<IReportSummary>> {
     const date = moment();
     return await this.postgresService.query(
       'osr-get-report-by-division',
@@ -112,25 +99,18 @@ export class OperativeSituationService2 {
   }
 
   /**
-   * Получение списка временных периодов
+   * Добавление отчета обоперативной обстановке
+   * @param report - Добавляемый отчет об оперативной обстановке
    */
-  async getPeriods(): Promise<IPeriod[]> {
-    return await this.postgresService.query(
+  async add(report: Report): Promise<IServerResponse<IReportSummary>> {
+    const date = moment();
+    let periodTime = '';
+    const periods = await this.postgresService.query(
       'osr-get-periods',
       'SELECT * FROM osr.periods',
       [],
       '',
     );
-  }
-
-  /**
-   * Добавление отчета обоперативной обстановке
-   * @param report - Добавляемый отчет об оперативной обстановке
-   */
-  async addReport(report: Report): Promise<IServerResponse<IReportSummary>> {
-    const periods = await this.getPeriods();
-    const date = moment();
-    let periodTime = '';
 
     periods.forEach((period: IPeriod, index: number, array: IPeriod[]) => {
       const periodStart = moment(`${date.format('DD.MM.YYYY')} ${period.start}`, 'DD.MM.YYYY HH:mm');
@@ -206,13 +186,13 @@ export class OperativeSituationService2 {
    * Изменение отчета об оперативной обстановке
    * @param report - Изменяемый отчет об оперативной обстановке
    */
-  async editReport(report: Report): Promise<IServerResponse<IReportSummary>> {
+  async edit(report: Report): Promise<IServerResponse<IReportSummary>> {
     return await this.postgresService.query(
       'osr-edit-report',
       `SELECT osr.reports_edit(
-                  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-                  $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
-                  $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37
+                  $1,  $2,  $3,  $4,  $5,  $6,  $7,  $8,  $9,  $10, $11,
+                  $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22,
+                  $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33
                 )`,
       [
         report.id,
@@ -229,10 +209,6 @@ export class OperativeSituationService2 {
         report.equipment_network.effect.population,
         report.equipment_network.effect.power,
         report.equipment_network.effect.szo,
-        report.weather.min,
-        report.weather.max,
-        report.weather.wind,
-        report.weather.precipitations,
         report.weather.rpg,
         report.weather.orr,
         report.resources.brigades,
@@ -246,7 +222,7 @@ export class OperativeSituationService2 {
         report.violations.tn_cancel,
         report.violations.from_6_04,
         report.violations.power_off_04,
-        report.violations.population_greater_3_04,
+        report.violations.greater_3_04,
         report.violations.population_srez_04,
         report.violations.population_greater_3_04,
         report.resources.rise,
@@ -270,223 +246,6 @@ export class OperativeSituationService2 {
       ],
       'operative_situation_reports_delete',
     );
-  }
-
-  /**
-   * Добавление отчета о максимальном потреблении за прошедшие сутки
-   * @param consumption - Добавляемый отчет об максимальном потреблении за прошедшие сутки
-   */
-  async addConsumption(
-    companyId: number,
-    divisionId: number,
-    userId: number,
-    consumption: number,
-  ): Promise<IServerResponse<number>> {
-    const date = moment();
-    return await this.postgresService.query(
-      'osr-add-consumption',
-      `SELECT osr.consumption_add($1, $2, $3, $4, $5)`,
-      [
-        companyId,
-        divisionId,
-        userId,
-        date.format('DD.MM.YYYY'),
-        consumption,
-      ],
-      'consumption_add',
-    );
-  }
-
-  /**
-   * Изменение отчета о максимальном потреблении за прошедшие сутки
-   * @param consumption - Изменяемый отчет о максималньо потреблении за прошедшие сутки
-   */
-  async editConsumption(consumption: OperativeSituationConsumption): Promise<IServerResponse<IOperativeSituationConsumption>> {
-    return await this.postgresService.query(
-      'edit-operative-situation-report_consumption',
-      `SELECT operative_situation_reports_consumption_edit($1, $2)`,
-      [
-        consumption.id,
-        consumption.consumption,
-      ],
-      'operative_situation_reports_consumption_edit',
-    );
-  }
-
-  /**
-   * Добавление погодной сводки
-   */
-  async addWeather(): Promise<IServerResponse<IOperativeSituationWeatherReport>> {
-    const apiKey = '7d76240ac937e51c8544c06d87e8be27';
-    let minTemperature = 0;
-    let maxTemperature = 0;
-    let minHumidity = 0;
-    let maxHumidity = 0;
-    let minPressure = 0;
-    let maxPressure = 0;
-    let minWind = 0;
-    let maxWind = 0;
-    const precipitations = [];
-    const weatherGroups = [];
-    const icons = [];
-    const regions = await this.postgresService.query(
-      'get-weather-regions',
-      'SELECT * FROM operative_situation_reports_weather_regions',
-      [],
-      '',
-    );
-    let result: IServerResponse<IOperativeSituationWeatherReport> = null;
-
-    regions.forEach(async (reg: IOperativeSituationRegion) => {
-      const options = {
-        uri: `https://api.openweathermap.org/data/2.5/box/city`,
-        qs: {
-          bbox: `${reg.leftBottomPosition.y},${reg.leftBottomPosition.x},${reg.rightTopPosition.y},${reg.rightTopPosition.x},${reg.zoom}`,
-          units: 'metric',
-          lang: 'ru',
-          appid: apiKey,
-        },
-        json: true,
-        proxy: 'http://kolu-proxy2.nw.mrsksevzap.ru:8080',
-      };
-      const weather = await rpn(options);
-      minTemperature = weather.list[0].main.temp_min;
-      maxTemperature = weather.list[0].main.temp_max;
-      minWind = weather.list[0].wind.speed;
-      maxWind = weather.list[0].wind.speed;
-      minHumidity = weather.list[0].main.humidity;
-      maxHumidity = weather.list[0].main.humidity;
-      minPressure = weather.list[0].main.pressure;
-      maxPressure = weather.list[0].main.pressure;
-      let date = null;
-      weather.list.forEach((city: any) => {
-        date = moment.unix(city.dt);
-        minTemperature = city.main.temp_min < minTemperature ? city.main.temp_min : minTemperature;
-        maxTemperature = city.main.temp_max > maxTemperature ? city.main.temp_max : maxTemperature;
-        minWind = city.wind.speed < minWind ? city.wind.speed : minWind;
-        maxWind = city.wind.speed > maxWind ? city.wind.speed : maxWind;
-        minHumidity = city.main.humidity < minHumidity ? city.main.humidity : minHumidity;
-        maxHumidity = city.main.humidity > maxHumidity ? city.main.humidity : maxHumidity;
-        minPressure = city.main.pressure < minPressure ? city.main.pressure : minPressure;
-        maxPressure = city.main.pressure > maxPressure ? city.main.pressure : maxPressure;
-        if (precipitations.indexOf(city.weather[0].description) === -1) {
-          precipitations.push(city.weather[0].description);
-        }
-        if (weatherGroups.indexOf(city.weather[0].main) === -1) {
-          weatherGroups.push(city.weather[0].main);
-        }
-        if (icons.indexOf(city.weather[0].icon) === -1) {
-          icons.push(city.weather[0].icon);
-        }
-      });
-      result = await this.postgresService.query(
-        'add-weather',
-        'SELECT operative_situation_reports_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
-        [
-          reg.companyId,
-          reg.id,
-          date.format('DD.MM.YYYY'),
-          date.format('HH:mm'),
-          Math.ceil(minTemperature),
-          Math.ceil(maxTemperature),
-          Math.ceil(minHumidity),
-          Math.ceil(maxHumidity),
-          `${Math.round(minWind)}-${Math.round(maxWind)}`,
-          precipitations,
-          minPressure,
-          maxPressure,
-          weatherGroups,
-          icons,
-        ],
-        'operative_situation_reports_weather_add',
-      );
-    });
-    return result;
-  }
-
-  /**
-   * Добавление погодной сводки для каждой организации
-   */
-  async addWeatherSummary(): Promise<IServerResponse<IWeatherSummary[]>> {
-    const result: IServerResponse<IWeatherSummary[]> = {
-      data: [],
-    };
-    const apiKey = '7d76240ac937e51c8544c06d87e8be27';
-    const companies: ICompany[] = await this.postgresService.query(
-      'get-companies',
-      'SELECT * FROM companies ORDER BY "id"',
-      [],
-      '',
-    );
-
-    companies.forEach(async (company: ICompany) => {
-      const summary: IServerResponse<IWeatherSummary> = await this.postgresService.query(
-        'add-weather-summary',
-        'SELECT operative_situation_reports_weather_summary_add($1)',
-        [company.id],
-        'operative_situation_reports_weather_summary_add',
-      );
-      const locations = await this.postgresService.query(
-        'get-weather-locations',
-        'SELECT * FROM operative_situation_reports_locations WHERE "companyId" = $1',
-        [company.id],
-        '',
-      );
-      locations.forEach(async (loc: ILocation, index: number) => {
-        const weather = await this.getLocationWeather(apiKey, loc);
-        const locationWeather = await this.postgresService.query(
-          'add-location-weather',
-          'SELECT operative_situation_reports_locations_weather_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
-          [
-            summary.data.id,
-            loc.companyId,
-            loc.id,
-            moment.unix(weather.dt).format('DD.MM.YYYY'),
-            moment.unix(weather.dt).format('HH:mm'),
-            Math.ceil(weather.main.temp),
-            Math.ceil(weather.main.humidity),
-            weather.main.pressure,
-            Math.ceil(weather.wind.speed),
-            weather.wind.deg,
-            weather.weather[0].description !== 'light rain and snow' ? weather.weather[0].description : 'Легкий дождь со снегом',
-            weather.weather[0].main,
-            weather.weather[0].icon,
-          ],
-          'operative_situation_reports_locations_weather_add',
-        );
-        loc.weather = locationWeather;
-      });
-      await this.postgresService.query(
-        'complete-weather-summary',
-        'UPDATE operative_situation_reports_weather_summary SET "isCompleted" = true WHERE "id" = $1',
-        [summary.data.id],
-        '',
-      );
-      summary.data.locations = locations;
-      result.data.push(summary.data);
-    });
-    return result;
-  }
-
-  /**
-   * Выполнение запроса погодной сводки по местоположению
-   * @param apiKey - Ключ API openweather.org
-   * @param loc - Местоположение
-   */
-  private getLocationWeather(apiKey: string, loc: ILocation): Promise<IWeatherSummaryResponse> {
-    const options = {
-      uri: `https://api.openweathermap.org/data/2.5/weather`,
-      qs: {
-        lat: loc.coordinates.x,
-        lon: loc.coordinates.y,
-        units: 'metric',
-        lang: 'ru',
-        appid: apiKey,
-      },
-      json: true,
-      proxy: 'http://kolu-proxy2.nw.mrsksevzap.ru:8080',
-    };
-    return rpn(options);
   }
 
   async exportReport(date: string, period: string): Promise<string> {

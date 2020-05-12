@@ -102,10 +102,9 @@ export class OperativeSituationController2 {
     return result;
   }
 
-  @Patch('')
-  async editReport(@Body() report: OperativeSituationReport): Promise<IServerResponse<IOperativeSituationReport>> {
-    const result = await this.operativeSituationService.editReport(report);
-    return result;
+  @Patch('/:id')
+  async editReport(@Body() report: Report): Promise<IServerResponse<IReportSummary>> {
+    return await this.operativeSituationService.editReport(report);
   }
 
   @Patch('/consumption')

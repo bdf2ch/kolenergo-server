@@ -11,16 +11,16 @@ import { OperativeSituationService2 } from './operative-situation2.service';
     CommonModule,
   ],
   components: [
-    // OperativeSituationService,
-    OperativeSituationService2,
+    OperativeSituationService,
+    // OperativeSituationService2,
   ],
   controllers: [
-    // OperativeSituationController,
-    OperativeSituationController2,
+    OperativeSituationController,
+    // OperativeSituationController2,
   ],
   exports: [
-    // OperativeSituationService,
-    OperativeSituationService2,
+    OperativeSituationService,
+    // OperativeSituationService2,
   ],
 })
 export class OperativeSituationModule {

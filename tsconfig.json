@@ -24,7 +24,8 @@
       "@kolenergo/esa": ["../../kolenergo/projects/event-sheduler/src/exports.ts"],
       "@kolenergo/portal": ["../../kolenergo/projects/portal/src/exports.ts"],
       "@kolenergo/press": ["../../kolenergo/projects/press-reports/src/exports.ts"],
-      "@kolenergo/phones": ["../../kolenergo/projects/phone-book/src/exports.ts"]
+      "@kolenergo/phones": ["../../kolenergo/projects/phone-book/src/exports.ts"],
+      "@kolenergo/messenger": ["../../kolenergo/projects/messenger/src/exports.ts"]
     }
   },
   "include": [
