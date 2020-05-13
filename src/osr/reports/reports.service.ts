@@ -44,14 +44,16 @@ export class ReportsService {
   }
 
   /**
-   * Получение отчетов об оперативной обстановке по дате и периоду
+   * Получение аккумулятивного отчета об оперативной обстановке по дате и времени в разрезе организаций
+   * @param date - Дата
+   * @param time - Время
    */
-  async getReportsByDateAndPeriod(date: string, period: string): Promise<IServerResponse<IOperativeSituationReport[]>> {
+  async getAccumulativeByDateAndTime(date: string, time: string): Promise<IServerResponse<IReport[]>> {
     return await this.postgresService.query(
-      'osr-get-report-by-date-and-period',
-      `SELECT operative_situation_reports_get_by_date_and_period($1, $2)`,
-      [date, period],
-      'operative_situation_reports_get_by_date_and_period',
+      'osr-get-accumulative-report-by-date-and-time',
+      `SELECT osr.reports_get_accumulative_by_date_and_time($1, $2)`,
+      [date, time],
+      'reports_get_accumulative_by_date_and_time',
     );
   }
 
@@ -59,15 +61,12 @@ export class ReportsService {
    * Получение сводки отчетов за указаннйю дату по организации
    * @param companyId - Идентификатор организации
    */
-  async getByCompany(
-    companyId: number,
-    time?: string,
-  ): Promise<IServerResponse<IReportSummary>> {
+  async getByCompany(companyId: number): Promise<IServerResponse<IReportSummary>> {
     const date = moment();
     return await this.postgresService.query(
       'osr-get-report-by-company',
-      'SELECT osr.reports_get_by_company($1, $2, $3)',
-      [companyId, date.format('DD.MM.YYYY'), time],
+      'SELECT osr.reports_get_by_company($1, $2)',
+      [companyId, date.format('DD.MM.YYYY')],
       'reports_get_by_company',
     );
   }
@@ -237,7 +236,7 @@ export class ReportsService {
    * Удаление отчета об оперативной обстановке
    * @param reportId - Идентификатор отчета
    */
-  async deleteReport(reportId: number): Promise<IServerResponse<boolean>> {
+  async delete(reportId: number): Promise<IServerResponse<boolean>> {
     return await this.postgresService.query(
       'delete-operative-situation-report',
       `SELECT operative_situation_reports_delete($1)`,
@@ -248,7 +247,7 @@ export class ReportsService {
     );
   }
 
-  async exportReport(date: string, period: string): Promise<string> {
+  async export(date: string, time: string): Promise<string> {
     const wb = new excel.Workbook();
     const sheet = wb.addWorksheet('Оперативная обстановка', {
       pageSetup: {
@@ -356,7 +355,7 @@ export class ReportsService {
 
     row++;
     sheet.row(row).setHeight(30);
-    sheet.cell(row, 2).string(`Оперативная обстановка по состоянию на ${period} ${date}`).style(titleStyle);
+    sheet.cell(row, 2).string(`Оперативная обстановка по состоянию на ${time} ${date}`).style(titleStyle);
 
     row++;
     sheet.row(row).setHeight(45);
@@ -395,7 +394,7 @@ export class ReportsService {
     sheet.cell(row, 24).string('Человек').style(headerStyle);
     sheet.cell(row, 25).string('Ед. техн., шт.').style(headerStyle);
 
-    const reports = await this.getReportsByDateAndPeriod(date, period);
+    const reports = await this.getAccumulativeByDateAndTime(date, time);
     let lep_110_150_count_total = 0;
     let lep_35_count_total = 0;
     let ps_110_150_count_total = 0;
@@ -420,7 +419,7 @@ export class ReportsService {
     let resources_people_total = 0;
     let resources_technics_total = 0;
 
-    reports.data.forEach((report: IOperativeSituationReport) => {
+    reports.data.forEach((report: IReport) => {
       row++;
       sheet.row(row).setHeight(25);
       sheet.cell(row, 2).string(report.company.shortTitle).style(contentStyle);
@@ -543,7 +542,7 @@ export class ReportsService {
     sheet.cell(row, 12).string('Более 3 часов').style(headerStyle);
     sheet.cell(row, 13).string('По сети 0,4 кВ на срез').style(headerStyle);
     sheet.cell(row, 14).string('По сети 0,4 кВ (более 3 часов)').style(headerStyle);
-    reports.data.forEach((report: IOperativeSituationReport) => {
+    reports.data.forEach((report: IReport) => {
       row++;
       sheet.row(row).setHeight(25);
       sheet.cell(row, 2).string(report.company.shortTitle).style(contentStyle);
@@ -594,12 +593,12 @@ export class ReportsService {
     sheet.cell(row, 16, row, 17, true).string('Филиал').style(headerStyle);
     sheet.cell(row, 18, row, 19, true).string('Максимум потребления за прошедшие сутки').style(headerStyle);
     let consumption_total = 0;
-    reports.data.forEach((report: IOperativeSituationReport) => {
+    reports.data.forEach((report: IReport) => {
       row++;
       sheet.row(row).setHeight(25);
       sheet.cell(row, 16, row, 17, true).string(report.company.shortTitle).style(contentStyle);
       sheet.cell(row, 18, row, 19, true).number(report.consumption ? report.consumption.consumption : 0).style(contentStyle);
-      consumption_total += report.consumption ? report.consumption.consumption : 0;
+      consumption_total += report.consumption ? report.consumption .consumption: 0;
     });
     row++;
     sheet.row(row).setHeight(25);
@@ -616,7 +615,7 @@ export class ReportsService {
     sheet.cell(row, 25).string('Ветер, м/с').style(headerStyle);
     sheet.cell(row, 26, row, 27, true).string('Осадки').style(headerStyle);
     sheet.cell(row, 28).string('РПГ / ОРР').style(headerStyle);
-    reports.data.forEach((report: IOperativeSituationReport) => {
+    reports.data.forEach((report: IReport) => {
       row++;
       sheet.row(row).setHeight(25);
       sheet.cell(row, 21, row, 22, true).string(report.company.shortTitle).style(contentStyle);
@@ -650,11 +649,11 @@ export class ReportsService {
     });
 
     return new Promise<string>((resolve, reject) => {
-      wb.write(`${date} ${period.replace(':', '-')}.xlsx`, (err, stats) => {
+      wb.write(`${date} ${time.replace(':', '-')}.xlsx`, (err, stats) => {
         if (err) {
           reject(null);
         }
-        const url = path.resolve(`./${date} ${period.replace(':', '-')}.xlsx`);
+        const url = path.resolve(`./${date} ${time.replace(':', '-')}.xlsx`);
         resolve(url);
       });
     });
