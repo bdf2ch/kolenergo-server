@@ -48,12 +48,12 @@ export class ReportsService {
    * @param date - Дата
    * @param time - Время
    */
-  async getAccumulativeByDateAndTime(date: string, time: string): Promise<IServerResponse<IReport[]>> {
+  async getAccumulative(date: string, time: string): Promise<IServerResponse<IReport[]>> {
     return await this.postgresService.query(
-      'osr-get-accumulative-report-by-date-and-time',
-      `SELECT osr.reports_get_accumulative_by_date_and_time($1, $2)`,
+      'osr-get-accumulative-report',
+      `SELECT osr.reports_get_accumulative($1, $2)`,
       [date, time],
-      'reports_get_accumulative_by_date_and_time',
+      'reports_get_accumulative',
     );
   }
 
@@ -394,7 +394,7 @@ export class ReportsService {
     sheet.cell(row, 24).string('Человек').style(headerStyle);
     sheet.cell(row, 25).string('Ед. техн., шт.').style(headerStyle);
 
-    const reports = await this.getAccumulativeByDateAndTime(date, time);
+    const reports = await this.getAccumulative(date, time);
     let lep_110_150_count_total = 0;
     let lep_35_count_total = 0;
     let ps_110_150_count_total = 0;
