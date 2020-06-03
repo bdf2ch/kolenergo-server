@@ -620,17 +620,17 @@ export class ReportsService {
       sheet.row(row).setHeight(25);
       sheet.cell(row, 21, row, 22, true).string(report.company.shortTitle).style(contentStyle);
       if (report.weatherSummary) {
-        let minTemperature = report.weatherSummary.locations[0].weather.temperature;
-        let maxTemperature = report.weatherSummary.locations[0].weather.temperature;
-        let minWindSpeed = report.weatherSummary.locations[0].weather.wind;
-        let maxWindSpeed = report.weatherSummary.locations[0].weather.wind;
+        let minTemperature = report.weatherSummary.locations[0].weather ? report.weatherSummary.locations[0].weather.temperature : 0;
+        let maxTemperature = report.weatherSummary.locations[0].weather ? report.weatherSummary.locations[0].weather.temperature : 0;
+        let minWindSpeed = report.weatherSummary.locations[0].weather ? report.weatherSummary.locations[0].weather.wind : 0;
+        let maxWindSpeed = report.weatherSummary.locations[0].weather ? report.weatherSummary.locations[0].weather.wind : 0;
         const precipitations = [];
         report.weatherSummary.locations.forEach((location: ILocation) => {
-          minTemperature = location.weather.temperature < minTemperature ? location.weather.temperature : minTemperature;
-          maxTemperature = location.weather.temperature > maxTemperature ? location.weather.temperature : maxTemperature;
-          minWindSpeed = location.weather.wind < minWindSpeed ? location.weather.wind : minWindSpeed;
-          maxWindSpeed = location.weather.wind > maxWindSpeed ? location.weather.wind : maxWindSpeed;
-          if (location.weather.precipitations !== 'ясно' &&  precipitations.indexOf(location.weather.precipitations) === -1) {
+          minTemperature = location.weather && location.weather.temperature < minTemperature ? location.weather.temperature : minTemperature;
+          maxTemperature = location.weather && location.weather.temperature > maxTemperature ? location.weather.temperature : maxTemperature;
+          minWindSpeed = location.weather && location.weather.wind < minWindSpeed ? location.weather.wind : minWindSpeed;
+          maxWindSpeed = location.weather && location.weather.wind > maxWindSpeed ? location.weather.wind : maxWindSpeed;
+          if (location.weather && location.weather.precipitations !== 'ясно' &&  precipitations.indexOf(location.weather.precipitations) === -1) {
             precipitations.push(location.weather.precipitations);
           }
           sheet.cell(row, 23).number(minTemperature).style(contentStyle);
