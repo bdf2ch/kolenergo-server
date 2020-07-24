@@ -598,7 +598,7 @@ export class ReportsService {
       sheet.row(row).setHeight(25);
       sheet.cell(row, 16, row, 17, true).string(report.company.shortTitle).style(contentStyle);
       sheet.cell(row, 18, row, 19, true).number(report.consumption ? report.consumption.consumption : 0).style(contentStyle);
-      consumption_total += report.consumption ? report.consumption .consumption: 0;
+      consumption_total += report.consumption ? report.consumption.consumption : 0;
     });
     row++;
     sheet.row(row).setHeight(25);
