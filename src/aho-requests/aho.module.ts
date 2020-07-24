@@ -16,11 +16,11 @@ import { AhoRequestsControllerNew } from './aho-requests.controller';
     ],
     components: [
       AhoRequestsService,
-        AhoRequestsServiceNew,
+        // AhoRequestsServiceNew,
     ],
     controllers: [
-      // AhoRequestsController,
-      AhoRequestsControllerNew,
+      AhoRequestsController,
+      // AhoRequestsControllerNew,
     ],
     exports: [
       AhoRequestsService,
