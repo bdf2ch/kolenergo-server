@@ -4,8 +4,7 @@ import { IServerResponse, IApplication, IPermission, IRole } from '@kolenergo/cp
 
 @Controller('cp/applications')
 export class ApplicationsController {
-  constructor(private readonly applicationsService: ApplicationsService) {
-  }
+  constructor(private readonly applications: ApplicationsService) {}
 
   /*
   @Get('/')

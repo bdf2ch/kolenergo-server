@@ -6,9 +6,8 @@ import { IServerResponse, IControlPanelInitData } from '@kolenergo/cpa';
 export class ControlPanelController {
     constructor(private readonly controlPanelService: ControlPanelService) {}
 
-    @Get('init')
-    async getInitialData(): Promise<IServerResponse<IControlPanelInitData>> {
-        const result = await this.controlPanelService.getInitialData();
-        return result;
+    @Get('/')
+    async init(): Promise<IServerResponse<IControlPanelInitData>> {
+        return await this.controlPanelService.getInitialData();
     }
 }
