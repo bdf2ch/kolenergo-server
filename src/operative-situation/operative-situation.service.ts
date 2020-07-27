@@ -26,12 +26,12 @@ export class OperativeSituationService {
     const date = moment();
     return await this.postgresService.query(
       'operative-situation-reports-get-initial-data',
-      'SELECT osr.get_initial_data($1, $2)',
+      'SELECT operative_situation_reports_get_initial_data($1, $2)',
       [
         companyId,
         date.format('DD.MM.YYYY'),
       ],
-      'get_initial_data',
+      'SELECT operative_situation_reports_get_initial_data',
     );
   }
 
@@ -91,14 +91,14 @@ export class OperativeSituationService {
     const date = moment();
     return await this.postgresService.query(
       'add-operative-situation-report',
-      `SELECT osr.reports_add(
+      `SELECT operative_situation_reports_add(
                   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
                   $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
-                  $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42
+                  $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41
                 )`,
       [
         report.company.id,
-        report.divisionId,
+        // report.divisionId,
         report.user.id,
         date.format('DD.MM.YYYY'),
         report.periodTime,
