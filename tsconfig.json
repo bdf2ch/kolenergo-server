@@ -18,7 +18,7 @@
       "@kolenergo/aho": ["../../kolenergo-workspace/src/aho-requests-app/exports.ts"],
       "@kolenergo/osr": ["../../kolenergo-workspace/src/operative-situation-app/exports.ts"],
       "@kolenergo/osr2": ["../../kolenergo/projects/operative-situation/src/exports.ts"],
-      "@kolenergo/cpa": ["../../kolenergo-workspace/src/control-panel-app/exports.ts"],
+      "@kolenergo/cpa": ["../../kolenergo/projects/control/src/exports.ts"],
       "@kolenergo/core": ["../../kolenergo/projects/kolenergo-core/src/public-api.ts"],
       "@kolenergo/aho2": ["../../kolenergo/projects/aho-requests/src/exports.ts"],
       "@kolenergo/esa": ["../../kolenergo/projects/event-sheduler/src/exports.ts"],
