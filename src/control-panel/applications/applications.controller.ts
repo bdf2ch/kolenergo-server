@@ -1,10 +1,16 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
-import { IServerResponse, IApplication, IPermission, IRole } from '@kolenergo/cpa';
+import { IServerResponse, IApplication, IPermission, IRole } from '@kolenergo/core';
+import {Application} from 'express';
 
 @Controller('cp/applications')
 export class ApplicationsController {
   constructor(private readonly applications: ApplicationsService) {}
+
+  @Post('/')
+  async addApplication(@Body() application: Application): Promixe<IServerResponse<IApplication>> {
+    return await this.applications.addApplication(application);
+  }
 
   /*
   @Get('/')

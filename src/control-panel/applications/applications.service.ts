@@ -1,7 +1,9 @@
 import { Component } from '@nestjs/common';
 import { PostgresService } from '../../common/database/postgres.service';
-import { IServerResponse, IPermission, IRole, IApplication, IUser } from '@kolenergo/cpa';
-import { IAhoServerResponse } from '@kolenergo/aho';
+import { IServerResponse, IPermission, IRole, IUser } from '@kolenergo/core';
+import { Application, IApplication } from '@kolenergo/cpa';
+
+
 
 @Component()
 export class ApplicationsService {
@@ -18,6 +20,25 @@ export class ApplicationsService {
       `SELECT applications_get_all()`,
       [],
       'applications_get_all',
+    );
+    return result ? result : null;
+  }
+
+  /**
+   * Добавление нового приложения
+   */
+  async addApplication(application: Application): Promise<IServerResponse<IApplication>> {
+    const result = await this.postgresService.query(
+      'control-applications-add',
+      `SELECT control.applications_add($1, $2, $3, $4, $5)`,
+      [
+        application.title,
+        application.description,
+        application.code,
+        application.icon,
+        application.color,
+      ],
+      'applications_add',
     );
     return result ? result : null;
   }
