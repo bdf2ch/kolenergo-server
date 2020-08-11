@@ -32,8 +32,8 @@ export class RequestsService {
     search: string,
   ): Promise<IServerResponse<IRequest[]>> {
     return await this.postgresService.query(
-      'auto-get-requests',
-      'SELECT auto.requests_get($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      'auto-mrsk-get-requests',
+      'SELECT auto-mrsk.requests_get($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       [
         periodStart,
         periodEnd,
@@ -55,8 +55,8 @@ export class RequestsService {
    */
   async addRequest(request: Request): Promise<IServerResponse<IRequest>> {
     return await this.postgresService.query(
-      'auto-add-request',
-      'SELECT auto.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      'auto-mrsk-add-request',
+      'SELECT auto-mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       [
         request.department.id,
         request.type.id,
@@ -78,8 +78,8 @@ export class RequestsService {
    */
   async editRequest(request: Request): Promise<IServerResponse<IRequest>> {
     return await this.postgresService.query(
-      'auto-edit-request',
-      'SELECT auto.requests_edit($1, $2, $3, $4, $5, $6,$7, $8, $9)',
+      'auto-mrsk-edit-request',
+      'SELECT auto-mrsk.requests_edit($1, $2, $3, $4, $5, $6,$7, $8, $9)',
       [
         request.id,
         request.transport ? request.transport.id : null,
@@ -101,8 +101,8 @@ export class RequestsService {
    */
   async removeRequest(request: Request): Promise<IServerResponse<boolean>> {
     return await this.postgresService.query(
-      'auto-remove-request',
-      'SELECT auto.requests_remove($1)',
+      'auto-mrsk-remove-request',
+      'SELECT auto-mrsk.requests_remove($1)',
       [request.id],
       'requests_remove',
     );
@@ -114,8 +114,8 @@ export class RequestsService {
    */
   async addComment(comment: RequestComment): Promise<IServerResponse<IRequestComment>> {
     return await this.postgresService.query(
-      'auto-add-comment',
-      'SELECT auto.comments_add($1, $2, $3)',
+      'auto-mrsk-add-comment',
+      'SELECT auto-mrsk.comments_add($1, $2, $3)',
       [comment.requestId, comment.user.id, comment.message],
       'comments_add',
     );

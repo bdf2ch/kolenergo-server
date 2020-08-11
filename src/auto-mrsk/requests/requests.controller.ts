@@ -4,7 +4,7 @@ import { IServerResponse } from '@kolenergo/core';
 import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
 import { RequestsService } from './requests.service';
 
-@Controller('auto/requests')
+@Controller('auto-mrsk/requests')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 

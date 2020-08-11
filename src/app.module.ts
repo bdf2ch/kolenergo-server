@@ -11,6 +11,7 @@ import { AppController } from './app.controller';
 import { PressReportsModule } from './press-reports/press-reports.module';
 import { PortalModule } from './portal/portal.module';
 import { MessengerModule } from './messenger/messenger.module';
+import { AutoModule } from './auto-mrsk/auto.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MessengerModule } from './messenger/messenger.module';
       PressReportsModule,
       PortalModule,
       MessengerModule,
+      AutoModule,
   ],
   controllers: [
     AppController,

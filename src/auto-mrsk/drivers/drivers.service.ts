@@ -14,8 +14,8 @@ export class DriversService {
    */
   async addDriver(driver: Driver): Promise<IServerResponse<IDriver>> {
     return await this.postgresService.query(
-      'auto-add-driver',
-      'SELECT auto.drivers_add($1, $2, $3, $4)',
+      'auto-mrsk-add-driver',
+      'SELECT auto-mrsk.drivers_add($1, $2, $3, $4)',
       [driver.firstName, driver.secondName, driver.lastName, driver.phone],
       'drivers_add',
     );
@@ -27,8 +27,8 @@ export class DriversService {
    */
   async editDriver(driver: Driver): Promise<IServerResponse<IDriver>> {
     return await this.postgresService.query(
-      'auto-edit-driver',
-      'SELECT auto.drivers_edit($1, $2, $3, $4, $5)',
+      'auto-mrsk-edit-driver',
+      'SELECT auto-mrsk.drivers_edit($1, $2, $3, $4, $5)',
       [driver.id, driver.firstName, driver.secondName, driver.lastName, driver.phone],
       'drivers_edit',
     );
@@ -40,8 +40,8 @@ export class DriversService {
    */
   async removeDriver(driver: Driver): Promise<IServerResponse<boolean>> {
     return await this.postgresService.query(
-      'auto-remove-driver',
-      'SELECT auto.drivers_remove($1)',
+      'auto-mrsk-remove-driver',
+      'SELECT auto-mrsk.drivers_remove($1)',
       [driver.id],
       'drivers_remove',
     );
@@ -53,8 +53,8 @@ export class DriversService {
    */
   async searchDriver(query: string): Promise<IServerResponse<IDriver[]>> {
     return await this.postgresService.query(
-      'auto-search-driver',
-      'SELECT auto.drivers_search($1)',
+      'auto-mrsk-search-driver',
+      'SELECT auto-mrsk.drivers_search($1)',
       [query],
       'drivers_search',
     );

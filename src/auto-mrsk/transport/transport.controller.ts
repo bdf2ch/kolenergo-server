@@ -4,7 +4,7 @@ import { IServerResponse } from '@kolenergo/core';
 import { ITransport, Transport } from '@kolenergo/auto';
 import { TransportService } from './transport.service';
 
-@Controller('auto/transport')
+@Controller('auto-mrsk/transport')
 export class TransportController {
   constructor(private readonly transportService: TransportService) {}
 

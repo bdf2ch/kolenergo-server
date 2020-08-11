@@ -14,8 +14,8 @@ export class TransportService {
    */
   async addTransport(transport: Transport): Promise<IServerResponse<ITransport>> {
     return await this.postgresService.query(
-      'auto-add-transport',
-      'SELECT auto.transport_add($1, $2, $3, $4, $5)',
+      'auto-mrsk-add-transport',
+      'SELECT auto-mrsk.transport_add($1, $2, $3, $4, $5)',
       [
         transport.department.id,
         transport.type.id,
@@ -33,8 +33,8 @@ export class TransportService {
    */
   async editTransport(transport: Transport): Promise<IServerResponse<ITransport>> {
     return await this.postgresService.query(
-      'auto-edit-transport',
-      'SELECT auto.transport_edit($1, $2, $3, $4, $5, $6)',
+      'auto-mrsk-edit-transport',
+      'SELECT auto-mrsk.transport_edit($1, $2, $3, $4, $5, $6)',
       [
         transport.id,
         transport.department.id,
@@ -53,8 +53,8 @@ export class TransportService {
    */
   async removeTransport(transport: Transport): Promise<IServerResponse<boolean>> {
     return await this.postgresService.query(
-      'auto-remove-transport',
-      'SELECT auto.transport_remove($1)',
+      'auto-mrsk-remove-transport',
+      'SELECT auto-mrsk.transport_remove($1)',
       [transport.id],
       'transport_remove',
     );
@@ -66,8 +66,8 @@ export class TransportService {
    */
   async searchTransport(query: string): Promise<IServerResponse<ITransport[]>> {
     return await this.postgresService.query(
-      'auto-search-transport',
-      'SELECT auto.transport_search($1)',
+      'auto-mrsk-search-transport',
+      'SELECT auto-mrsk.transport_search($1)',
       [query],
       'transport_search',
     );

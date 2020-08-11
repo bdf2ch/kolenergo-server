@@ -4,7 +4,7 @@ import { IServerResponse } from '@kolenergo/core';
 import { IDriver, Driver } from '@kolenergo/auto';
 import { DriversService } from './drivers.service';
 
-@Controller('auto/drivers')
+@Controller('auto-mrsk/drivers')
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
 

@@ -44,6 +44,20 @@ export class ApplicationsService {
   }
 
   /**
+   * Получение информации о приложении по идентификатору
+   * @param applicationId - Идентификатор приложения
+   */
+  async getById(applicationId: number): Promise<IServerResponse<IApplication>> {
+    const result = await this.postgresService.query(
+      'control-applications-get-by-id',
+      `SELECT control.applications_get_by_id($1)`,
+      [applicationId],
+      'applications_get_by_id',
+    );
+    return result ? result : null;
+  }
+
+  /**
    * Получение списка пользователей, имеющих доступ к приложению
    * @param appCode - Код приложения
    */
