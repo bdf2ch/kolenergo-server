@@ -17,7 +17,11 @@ export class AutoController {
   ): Promise<IServerResponse<IInitialData>> {
     const date = moment();
     const user = request.user ? request.user.data : null;
-    const result = await this.autoService.getInitialData(date.startOf('day').unix(), date.endOf('day').unix());
+    const result = await this.autoService.getInitialData(
+      date.startOf('day').unix(),
+      date.endOf('day').unix(),
+      user ? user.id : 0,
+    );
     result.data.date = date.toDate();
     result.data.user = user;
     return result;

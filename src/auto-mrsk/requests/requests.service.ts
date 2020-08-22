@@ -1,5 +1,7 @@
 import { Component } from '@nestjs/common';
 
+import * as moment from 'moment';
+
 import { IServerResponse, IUser } from '@kolenergo/core';
 import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
 import { PostgresService } from '../../common/database/postgres.service';
@@ -56,15 +58,18 @@ export class RequestsService {
   async addRequest(request: Request): Promise<IServerResponse<IRequest>> {
     return await this.postgresService.query(
       'auto-mrsk-add-request',
-      'SELECT auto-mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      'SELECT auto_mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
       [
-        request.department.id,
-        request.type.id,
+        // request.department.id,
+        1, // request.type.id,
         null,
         null,
         request.user.id,
         request.initiator ? request.initiator.hasOwnProperty('id') ? (request.initiator as IUser).id : null : null,
         request.initiator ? !request.initiator.hasOwnProperty('id') ? request.initiator as string : null : null,
+        moment(request.startTime).format('DD.MM.YYYY'),
+        request.startTime,
+        request.endTime,
         request.route,
         request.description,
       ],

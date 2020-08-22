@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
+import {Body, Controller, Delete, Get, Patch, Post, Query, Req} from '@nestjs/common';
 
 import { IServerResponse } from '@kolenergo/core';
 import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
@@ -34,7 +34,8 @@ export class RequestsController {
   }
 
   @Post('/')
-  async addRequest(@Body() request: Request): Promise<IServerResponse<IRequest>> {
+  async addRequest(@Body() request: Request, @Req() req): Promise<IServerResponse<IRequest>> {
+    request.user = req.user ? req.user.data : null;
     return await this.requestsService.addRequest(request);
   }
 
