@@ -10,19 +10,13 @@ export class AutoController {
   constructor(private readonly autoService: AutoService) {}
 
   @Get('/')
-  async getInitialData(
-    @Query('startTime') startTime: number,
-    @Query('endTime') endTime: number,
-    @Req() request,
-  ): Promise<IServerResponse<IInitialData>> {
-    const date = moment();
+  async getInitialData(@Req() request): Promise<IServerResponse<IInitialData>> {
     const user = request.user ? request.user.data : null;
     const result = await this.autoService.getInitialData(
-      date.startOf('day').unix(),
-      date.endOf('day').unix(),
+      moment().format('DD.MM.YYYY'),
       user ? user.id : 0,
     );
-    result.data.date = date.toDate();
+    result.data.date = moment().toDate();
     result.data.user = user;
     return result;
   }

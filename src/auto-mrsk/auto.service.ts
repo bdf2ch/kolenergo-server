@@ -10,15 +10,14 @@ export class AutoService {
 
   /**
    * Получение данных для инициализации приложения
-   * @param startTime - Время начала периода
-   * @param endTime - Время окончания периода
+   * @param date - Дата
    * @param userId - Идентификатор пользователя
    */
-  async getInitialData(startTime: number, endTime: number, userId: number): Promise<IServerResponse<IInitialData>> {
+  async getInitialData(date: string, userId: number): Promise<IServerResponse<IInitialData>> {
     return await this.postgresService.query(
       'auto-mrsk-get-initial-data',
-      'SELECT auto_mrsk.get_initial_data($1, $2, $3)',
-      [startTime, endTime, userId],
+      'SELECT auto_mrsk.get_initial_data($1, $2)',
+      [date, userId],
       'get_initial_data',
     );
   }
