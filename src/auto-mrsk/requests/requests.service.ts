@@ -36,7 +36,7 @@ export class RequestsService {
   ): Promise<IServerResponse<IRequest[]>> {
     return await this.postgresService.query(
       'auto-mrsk-get-requests',
-      'SELECT auto-mrsk.requests_get($1, $2, $3, $4, $5, $6, $7)',
+      'SELECT auto_mrsk.requests_get($1, $2, $3, $4, $5, $6, $7)',
       [
         // periodStart,
         // periodEnd,
