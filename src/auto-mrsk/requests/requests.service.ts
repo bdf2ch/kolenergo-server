@@ -23,9 +23,10 @@ export class RequestsService {
    * @param search - Условие поиска
    */
   async getRequests(
-    periodStart: number,
-    periodEnd: number,
-    departmentId: number,
+    // periodStart: number,
+    // periodEnd: number,
+    // departmentId: number,
+    date: string,
     transportTypeId: number,
     statusId: number,
     transportId: number,
@@ -35,11 +36,12 @@ export class RequestsService {
   ): Promise<IServerResponse<IRequest[]>> {
     return await this.postgresService.query(
       'auto-mrsk-get-requests',
-      'SELECT auto-mrsk.requests_get($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      'SELECT auto-mrsk.requests_get($1, $2, $3, $4, $5, $6, $7)',
       [
-        periodStart,
-        periodEnd,
-        departmentId,
+        // periodStart,
+        // periodEnd,
+        // departmentId,
+        date,
         transportTypeId,
         statusId,
         transportId,
@@ -55,7 +57,7 @@ export class RequestsService {
    * Добавление заявки
    * @param request - Добавляемая заявка
    */
-  async addRequest(request: Request): Promise<IServerResponse<IRequest>> {
+  async addRequest(request: Request): Promise<IServerResponse<IRequest[]>> {
     return await this.postgresService.query(
       'auto-mrsk-add-request',
       'SELECT auto_mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
@@ -72,6 +74,7 @@ export class RequestsService {
         request.endTime,
         request.route,
         request.description,
+        moment().format('DD.MM.YYYY'),
       ],
       'requests_add',
     );

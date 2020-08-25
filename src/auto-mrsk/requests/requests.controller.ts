@@ -10,9 +10,10 @@ export class RequestsController {
 
   @Get('/')
   async getRequests(
-    @Query('periodStart') periodStart: number,
-    @Query('periodEnd') periodEnd: number,
-    @Query('departmentId') departmentId: number,
+    // @Query('periodStart') periodStart: number,
+    // @Query('periodEnd') periodEnd: number,
+    // @Query('departmentId') departmentId: number,
+    @Query('date') date: string,
     @Query('transportTypeId') transportTypeId: number,
     @Query('statusId') statusId: number,
     @Query('transportId') transportId: number,
@@ -21,9 +22,10 @@ export class RequestsController {
     @Query('search') search: string,
   ): Promise<IServerResponse<IRequest[]>> {
     return await this.requestsService.getRequests(
-      periodStart,
-      periodEnd,
-      departmentId,
+      // periodStart,
+      // periodEnd,
+      // departmentId,
+      date,
       transportTypeId ? transportTypeId : 0,
       statusId ? statusId : 0,
       transportId ? transportId : 0,
@@ -34,7 +36,7 @@ export class RequestsController {
   }
 
   @Post('/')
-  async addRequest(@Body() request: Request, @Req() req): Promise<IServerResponse<IRequest>> {
+  async addRequest(@Body() request: Request, @Req() req): Promise<IServerResponse<IRequest[]>> {
     request.user = req.user ? req.user.data : null;
     return await this.requestsService.addRequest(request);
   }
