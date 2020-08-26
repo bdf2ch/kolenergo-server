@@ -36,9 +36,13 @@ export class RequestsController {
   }
 
   @Post('/')
-  async addRequest(@Body() request: Request, @Req() req): Promise<IServerResponse<IRequest[]>> {
+  async addRequest(
+    @Body() request: Request,
+    @Query('date') date: string,
+    @Req() req
+  ): Promise<IServerResponse<IRequest[]>> {
     request.user = req.user ? req.user.data : null;
-    return await this.requestsService.addRequest(request);
+    return await this.requestsService.addRequest(request, date);
   }
 
   @Patch('/:id')

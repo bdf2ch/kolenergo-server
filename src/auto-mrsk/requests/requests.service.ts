@@ -56,11 +56,12 @@ export class RequestsService {
   /**
    * Добавление заявки
    * @param request - Добавляемая заявка
+   * @param date - Текущая дата
    */
-  async addRequest(request: Request): Promise<IServerResponse<IRequest[]>> {
+  async addRequest(request: Request, date: string): Promise<IServerResponse<IRequest[]>> {
     return await this.postgresService.query(
       'auto-mrsk-add-request',
-      'SELECT auto_mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+      'SELECT auto_mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
       [
         // request.department.id,
         1, // request.type.id,
@@ -74,7 +75,7 @@ export class RequestsService {
         request.endTime,
         request.route,
         request.description,
-        moment().format('DD.MM.YYYY'),
+        date,
       ],
       'requests_add',
     );
