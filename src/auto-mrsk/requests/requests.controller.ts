@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Patch, Post, Query, Req} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Query, Req } from '@nestjs/common';
 
 import { IServerResponse } from '@kolenergo/core';
 import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
@@ -35,19 +35,44 @@ export class RequestsController {
     );
   }
 
+  @Get('/calendar')
+  async getNotifications(
+    @Query('start') start: string,
+    @Query('end') end: string,
+  ): Promise<IServerResponse<{date: string, count: number}[]>> {
+    return await this.requestsService.getNotifications(parseInt(start, null), parseInt(end, null));
+  }
+
   @Post('/')
   async addRequest(
     @Body() request: Request,
-    @Query('date') date: string,
-    @Req() req
+    @Query('date') date,
+    @Query('periodStart') periodStart,
+    @Query('periodEnd') periodEnd,
+    @Req() req,
   ): Promise<IServerResponse<IRequest[]>> {
     request.user = req.user ? req.user.data : null;
-    return await this.requestsService.addRequest(request, date);
+    return await this.requestsService.addRequest(
+      request,
+      date,
+      parseInt(periodStart, null),
+      parseInt(periodEnd, null),
+    );
   }
 
   @Patch('/:id')
-  async editRequest(@Body() request: Request): Promise<IServerResponse<IRequest>> {
-    return await this.requestsService.editRequest(request);
+  async editRequest(
+    @Body() request: Request,
+    @Query('periodStart') periodStart,
+    @Query('periodEnd') periodEnd,
+    @Query('currentDate') currentDate,
+  ): Promise<IServerResponse<IRequest>> {
+    return await this.requestsService.editRequest(
+      request,
+      parseInt(periodStart, null),
+      parseInt(periodEnd, null),
+      currentDate,
+    );
   }
 
   @Delete('/:id')

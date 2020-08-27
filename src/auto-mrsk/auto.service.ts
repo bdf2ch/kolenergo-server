@@ -12,12 +12,19 @@ export class AutoService {
    * Получение данных для инициализации приложения
    * @param date - Дата
    * @param userId - Идентификатор пользователя
+   * @param periodStart - Дата и время начала периода календаря в формате Unix
+   * @param periodEnd - Дата и время окончания периода календаря в формате Unix
    */
-  async getInitialData(date: string, userId: number): Promise<IServerResponse<IInitialData>> {
+  async getInitialData(
+    date: string,
+    userId: number,
+    periodStart: number,
+    periodEnd: number,
+  ): Promise<IServerResponse<IInitialData>> {
     return await this.postgresService.query(
       'auto-mrsk-get-initial-data',
-      'SELECT auto_mrsk.get_initial_data($1, $2)',
-      [date, userId],
+      'SELECT auto_mrsk.get_initial_data($1, $2, $3, $4)',
+      [date, userId, periodStart, periodEnd],
       'get_initial_data',
     );
   }

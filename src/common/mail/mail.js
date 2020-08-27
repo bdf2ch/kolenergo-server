@@ -1,7 +1,7 @@
 "use strict";
 const nodemailer = require('nodemailer');
 
-export function sendFeedback(from, to, subject, message) {
+export function sendFeedback(from, to, subject, message, event) {
     return new Promise(async (resolve, reject) => {
             try {
                     let transporter = nodemailer.createTransport({
@@ -17,7 +17,8 @@ export function sendFeedback(from, to, subject, message) {
                         from: from,
                         to: to,
                         subject: subject,
-                        html: message
+                        html: message,
+                        icalEvent: event ? event : null
                     };
 
                     transporter.sendMail(mailOptions, (error, info) => {
