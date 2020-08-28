@@ -3,7 +3,7 @@ import { Component } from '@nestjs/common';
 import * as moment from 'moment';
 import * as ical from 'ical-generator';
 
-import { IServerResponse, IUser } from '@kolenergo/core';
+import { IServerResponse, IUser, User } from '@kolenergo/core';
 import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
 import { PostgresService } from '../../common/database/postgres.service';
 import { MailService } from '../../common/mail/mail.service';
@@ -13,7 +13,9 @@ export class RequestsService {
   constructor(
     private readonly postgresService: PostgresService,
     private readonly mail: MailService,
-  ) {}
+  ) {
+    moment.locale('ru');
+  }
 
   /**
    * Получение заявок
@@ -67,8 +69,6 @@ export class RequestsService {
     start: number,
     end: number,
   ): Promise<IServerResponse<{date: string, count: number}[]>> {
-    console.log('start:', start);
-    console.log('end:', end);
     return await this.postgresService.query(
       'auto-mrsk-get-notifications',
       'SELECT auto_mrsk.requests_get_notifications($1, $2)',
@@ -130,7 +130,6 @@ export class RequestsService {
     periodEnd: number,
     currentDate: string,
   ): Promise<IServerResponse<IRequest>> {
-    console.log(request);
     const result =  await this.postgresService.query(
       'auto-mrsk-edit-request',
       'SELECT auto_mrsk.requests_edit($1, $2, $3, $4, $5, $6,$7, $8, $9, $10, $11, $12, $13)',
@@ -152,31 +151,107 @@ export class RequestsService {
       'requests_edit',
     );
 
-    if (request.status.id === 4) {
-      const cal = ical({domain: 'mrsksevzap.ru', name: 'Тестовый календарь', method: 'PUBLISH'});
-      const event = cal.createEvent({
-        start: moment(request.startTime),
-        end: moment(request.endTime),
-        summary: 'Служебная поездка',
-        description: request.description,
-        location: request.route[0].title,
-        organizer: `${request.user.firstName + ' ' + request.user.lastName} \<${request.user.email}\>`,
-        attendees: [{name: `${request.user.firstName} ${request.user.lastName}`, email: request.user.email}],
-        url: 'http://sebbo.net/',
+    const attendees = [{
+      name: `${request.user.firstName} ${request.user.lastName}`,
+      email: request.user.email,
+    }];
+    if (request.initiator && request.initiator.hasOwnProperty('id')) {
+      attendees.push({
+        name: `${(request.initiator as User).firstName} ${(request.initiator as User).lastName}`,
+        email: (request.initiator as User).email,
       });
+    }
+    let routes = '';
+    request.route.forEach((route) => {
+      routes += `<li>${route.title}</li>`;
+    });
 
-      console.log('cal', cal.toString());
+    const cal = ical({
+      domain: 'mrsksevzap.ru',
+      name: 'Заявки на автотранспорт',
+      method: 'REQUEST',
+    });
 
-      this.mail.send(
-        'auto@mrsksevzap.ru',
-        request.user.email,
-        'Заявка на автостранспорт',
-        '',
-        {
-          method: 'PUBLISH',
-          content: cal.toString(),
-        },
-      );
+    const event = cal.createEvent({
+      uid: `auto${request.id}`,
+      start: moment(request.startTime),
+      end: moment(request.endTime),
+      summary: request.description,
+      description: request.description,
+      location: request.route[0].title,
+      transparency: 'opaque',
+      organizer: 'Заявки на автотранспорт <auto@mrsksevzap.ru>',
+      attendees,
+      htmlDescription:
+        `<table>
+                <tcaption style="width: 100%;">
+                    <strong>Заявка #${request.id}</strong>
+                </tcaption>
+               <tr>
+                   <td style="width: 200px; padding-top: 30px; padding-bottom: 5px;">Дата и время:</td>
+                   <td style="width: 100%; padding-top: 30px; padding-bottom: 5px;">
+                         ${moment(request.startTimeD).format('DD MMMM YYYY, HH:mm')}
+                         &mdash;
+                         ${moment(request.endTimeD).format('HH:mm')}
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px; padding-bottom: 5px;">О поездке:</td>
+                   <td style="width: 100%; padding-bottom: 10px;">${request.description}</td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 10px;">Маршрут:</td>
+                   <td style="width: 100%; padding-bottom: 10px;">
+                       <ul>${routes}</ul>
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 5px;">Транспорт:</td>
+                   <td style="width: 100%; padding-bottom: 5px;">
+                    <span>${request.transport ? request.transport.model : 'Не назначен'}</span><br>
+                    <span><i>${request.transport ? request.transport.registrationNumber : ''}</i></span>
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 5px;">Водитель:</td>
+                   <td style="width: 100%; padding-bottom: 5px;">
+                    <span>${request.driver ? request.driver.firstName + ' ' + request.driver.lastName : 'Не назначен'}</span><br>
+                    <span><i>${request.driver && request.driver.phone ? request.driver.phone : ''}</i></span>
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 5px;">Статус:</td>
+                   <td style="width: 100%; padding-bottom: 5px;">
+                       ${request.status.title}
+                   </td>
+               </tr>
+            </table><br><br><br>`,
+    });
+
+    switch (request.status.id) {
+      case 4:
+        cal.method('REQUEST');
+        event.summary('Служебная поездка');
+        break;
+      case 3:
+        cal.method('CANCEL');
+        event.summary('Служебная поездка (отмена)');
+        break;
+    }
+
+    if (request.status.id === 3 || request.status.id === 4) {
+      for (const attendee of attendees) {
+        await this.mail.send(
+          `Заявки на автотранспорт \<auto@mrsksevzap.ru\>`,
+          attendee.email,
+          request.description,
+          '',
+          {
+            method: cal.method(),
+            content: cal.toString(),
+          },
+        );
+      }
     }
 
     return result;
