@@ -39,8 +39,14 @@ export class RequestsController {
   async getNotifications(
     @Query('start') start: string,
     @Query('end') end: string,
+    @Req() request,
   ): Promise<IServerResponse<{date: string, count: number}[]>> {
-    return await this.requestsService.getNotifications(parseInt(start, null), parseInt(end, null));
+    const user = request.user ? request.user.data : null;
+    return await this.requestsService.getNotifications(
+      user ? user.id : 0,
+      parseInt(start, null),
+      parseInt(end, null),
+    );
   }
 
   @Post('/')

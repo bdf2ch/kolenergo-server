@@ -62,17 +62,20 @@ export class RequestsService {
 
   /**
    * Получение оповещений для календаря о заявках со стутусом "Не подтверждена"
+   * @param userId - Идентификатор пользователя
    * @param start - Дата и время начала периода в формате Unix
    * @param end - Дата и время окончания периода в формате Unix
    */
   async getNotifications(
+    userId: number,
     start: number,
     end: number,
   ): Promise<IServerResponse<{date: string, count: number}[]>> {
     return await this.postgresService.query(
       'auto-mrsk-get-notifications',
-      'SELECT auto_mrsk.requests_get_notifications($1, $2)',
+      'SELECT auto_mrsk.requests_get_notifications($1, $2, $3)',
       [
+        userId,
         start,
         end,
       ],
@@ -241,7 +244,7 @@ export class RequestsService {
 
     if (request.status.id === 3 || request.status.id === 4) {
       for (const attendee of attendees) {
-        await this.mail.send(
+        this.mail.send(
           `Заявки на автотранспорт \<auto@mrsksevzap.ru\>`,
           attendee.email,
           request.description,
