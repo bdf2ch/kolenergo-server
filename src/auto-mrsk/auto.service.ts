@@ -16,15 +16,16 @@ export class AutoService {
    * @param periodEnd - Дата и время окончания периода календаря в формате Unix
    */
   async getInitialData(
-    date: string,
+    start: number,
+    end: number,
     userId: number,
     periodStart: number,
     periodEnd: number,
   ): Promise<IServerResponse<IInitialData>> {
     return await this.postgresService.query(
       'auto-mrsk-get-initial-data',
-      'SELECT auto_mrsk.get_initial_data($1, $2, $3, $4)',
-      [date, userId, periodStart, periodEnd],
+      'SELECT auto_mrsk.get_initial_data($1, $2, $3, $4, $5)',
+      [start, end, userId, periodStart, periodEnd],
       'get_initial_data',
     );
   }

@@ -17,8 +17,11 @@ export class AutoController {
     const endOfCalendar = moment(endOfMonth).endOf('week');
     const user = request.user ? request.user.data : null;
     console.log(user);
+    console.log('start', moment().startOf('day').unix() * 1000, moment().startOf('day').format('DD.MM.YYYY HH:mm'));
+    console.log('end', moment().endOf('day').unix() * 1000, moment().endOf('day').format('DD.MM.YYYY HH:mm'));
     const result = await this.autoService.getInitialData(
-      moment().format('DD.MM.YYYY'),
+      moment().startOf('day').unix() * 1000,
+      moment().endOf('day').unix() * 1000,
       user ? user.id : 0,
       startOfCalendar.unix() * 1000,
       endOfCalendar.unix() * 1000,

@@ -4,7 +4,7 @@ import * as moment from 'moment';
 import * as ical from 'ical-generator';
 
 import { IServerResponse, IUser, User } from '@kolenergo/core';
-import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
+import { IRequest, IRequestComment, Request, RequestComment, IRoutePoint } from '@kolenergo/auto';
 import { PostgresService } from '../../common/database/postgres.service';
 import { MailService } from '../../common/mail/mail.service';
 
@@ -30,10 +30,10 @@ export class RequestsService {
    * @param search - Условие поиска
    */
   async getRequests(
-    // periodStart: number,
-    // periodEnd: number,
+    periodStart: number,
+    periodEnd: number,
     // departmentId: number,
-    date: string,
+    // date: string,
     transportTypeId: number,
     statusId: number,
     transportId: number,
@@ -43,12 +43,12 @@ export class RequestsService {
   ): Promise<IServerResponse<IRequest[]>> {
     return await this.postgresService.query(
       'auto-mrsk-get-requests',
-      'SELECT auto_mrsk.requests_get($1, $2, $3, $4, $5, $6, $7)',
+      'SELECT auto_mrsk.requests_get($1, $2, $3, $4, $5, $6, $7, $8)',
       [
-        // periodStart,
-        // periodEnd,
+        periodStart,
+        periodEnd,
         // departmentId,
-        date,
+        // date,
         transportTypeId,
         statusId,
         transportId,
@@ -96,9 +96,15 @@ export class RequestsService {
     periodStart: number,
     periodEnd: number,
     ): Promise<IServerResponse<IRequest[]>> {
-    return await this.postgresService.query(
+    const result: IServerResponse<{
+      request: IRequest,
+      requests: IRequest[],
+      userRequests: IRequest[],
+      calendarRequests: {date: string, count: number}[],
+      routes: IRoutePoint[],
+    }> = await this.postgresService.query(
       'auto-mrsk-add-request',
-      'SELECT auto_mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
+      'SELECT auto_mrsk.requests_add($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)',
       [
         // request.department.id,
         1, // request.type.id,
@@ -112,12 +118,111 @@ export class RequestsService {
         request.endTime,
         request.route,
         request.description,
-        date,
+        moment(date).startOf('day').unix() * 1000,
+        moment(date).endOf('day').unix() * 1000,
         periodStart,
         periodEnd,
       ],
       'requests_add',
     );
+
+    const attendees = [{
+      name: `${request.user.firstName} ${request.user.lastName}`,
+      email: request.user.email,
+    }];
+    if (request.initiator && request.initiator.hasOwnProperty('id')) {
+      attendees.push({
+        name: `${(request.initiator as User).firstName} ${(request.initiator as User).lastName}`,
+        email: (request.initiator as User).email,
+      });
+    }
+    if (request.driver && request.driver.email) {
+      attendees.push({
+        name: `${request.driver.firstName} ${request.driver.lastName}`,
+        email: request.driver.email,
+      });
+    }
+    let routes = '';
+    request.route.forEach((route) => {
+      routes += `<li>${route.title}</li>`;
+    });
+
+    const cal = ical({
+      domain: 'mrsksevzap.ru',
+      name: 'Заявки на автотранспорт',
+      method: 'REQUEST',
+    });
+
+    const event = cal.createEvent({
+      uid: `auto${result.data.request.id}`,
+      start: moment(request.startTime),
+      end: moment(request.endTime),
+      summary: request.description,
+      description: request.description,
+      location: request.route[0].title,
+      transparency: 'opaque',
+      organizer: 'Заявки на автотранспорт <auto@mrsksevzap.ru>',
+      attendees,
+      htmlDescription:
+        `<table>
+                <tcaption style="width: 100%;">
+                    <strong>Заявка #${result.data.request.id}</strong>
+                </tcaption>
+               <tr>
+                   <td style="width: 200px; padding-top: 30px; padding-bottom: 5px;">Дата и время:</td>
+                   <td style="width: 100%; padding-top: 30px; padding-bottom: 5px;">
+                         ${moment(request.startTimeD).format('DD MMMM YYYY, HH:mm')}
+                         &mdash;
+                         ${moment(request.endTimeD).format('HH:mm')}
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px; padding-bottom: 5px;">О поездке:</td>
+                   <td style="width: 100%; padding-bottom: 10px;">${request.description}</td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 10px;">Маршрут:</td>
+                   <td style="width: 100%; padding-bottom: 10px;">
+                       <ul>${routes}</ul>
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 5px;">Транспорт:</td>
+                   <td style="width: 100%; padding-bottom: 5px;">
+                    <span>${request.transport ? request.transport.model : 'Не назначен'}</span><br>
+                    <span><i>${request.transport ? request.transport.registrationNumber : ''}</i></span>
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 5px;">Водитель:</td>
+                   <td style="width: 100%; padding-bottom: 5px;">
+                    <span>${request.driver ? request.driver.firstName + ' ' + request.driver.lastName : 'Не назначен'}</span><br>
+                    <span><i>${request.driver && request.driver.phone ? request.driver.phone : ''}</i></span>
+                   </td>
+               </tr>
+               <tr>
+                   <td style="width: 200px;padding-bottom: 5px;">Статус:</td>
+                   <td style="width: 100%; padding-bottom: 5px;">
+                       ${result.data.request.status.title}
+                   </td>
+               </tr>
+            </table><br><br><br>`,
+    });
+
+    for (const attendee of attendees) {
+      this.mail.send(
+        `Заявки на автотранспорт \<auto@mrsksevzap.ru\>`,
+        attendee.email,
+        request.description,
+        '',
+        {
+          method: cal.method(),
+          content: cal.toString(),
+        },
+      );
+    }
+
+    return result;
   }
 
   /**
@@ -131,11 +236,11 @@ export class RequestsService {
     request: Request,
     periodStart: number,
     periodEnd: number,
-    currentDate: string,
+    currentDate: Date,
   ): Promise<IServerResponse<IRequest>> {
     const result =  await this.postgresService.query(
       'auto-mrsk-edit-request',
-      'SELECT auto_mrsk.requests_edit($1, $2, $3, $4, $5, $6,$7, $8, $9, $10, $11, $12, $13)',
+      'SELECT auto_mrsk.requests_edit($1, $2, $3, $4, $5, $6,$7, $8, $9, $10, $11, $12, $13, $14)',
       [
         request.id,
         request.transport ? request.transport.id : null,
@@ -149,7 +254,8 @@ export class RequestsService {
         request.description,
         periodStart,
         periodEnd,
-        currentDate,
+        moment(currentDate).startOf('day').unix() * 1000,
+        moment(currentDate).endOf('day').unix() * 1000,
       ],
       'requests_edit',
     );
@@ -162,6 +268,12 @@ export class RequestsService {
       attendees.push({
         name: `${(request.initiator as User).firstName} ${(request.initiator as User).lastName}`,
         email: (request.initiator as User).email,
+      });
+    }
+    if (request.driver && request.driver.email) {
+      attendees.push({
+        name: `${request.driver.firstName} ${request.driver.lastName}`,
+        email: request.driver.email,
       });
     }
     let routes = '';
@@ -234,11 +346,9 @@ export class RequestsService {
     switch (request.status.id) {
       case 4:
         cal.method('REQUEST');
-        event.summary('Служебная поездка');
         break;
       case 3:
         cal.method('CANCEL');
-        event.summary('Служебная поездка (отмена)');
         break;
     }
 
