@@ -83,15 +83,17 @@ export class UsersService {
    * @param query - Условие поиска
    * @param withCompany - Включать ли в ответ данные об организации пользователя
    * @param withDepartment - Включать ли в ответ данные о подразделении организации пользователя
+   * @param companyId - Идентификатор организации
    */
-  async search(query: string, withCompany: boolean, withDepartment: boolean): Promise<IServerResponse<IUser[]>> {
+  async search(query: string, withCompany: boolean, withDepartment: boolean, companyId: number): Promise<IServerResponse<IUser[]>> {
     const result = this.postgresService.query(
       'search-users',
-      'SELECT users_search($1, $2, $3)',
+      'SELECT users_search($1, $2, $3, $4)',
       [
         query,
         withCompany ? withCompany : false,
         withDepartment ? withDepartment : false,
+        companyId ? companyId : 0,
       ],
       'users_search',
     );

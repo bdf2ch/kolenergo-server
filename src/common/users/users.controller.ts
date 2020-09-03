@@ -41,8 +41,9 @@ export class UsersController {
       @Query('query') query: string,
       @Query('withCompany') withCompany: boolean,
       @Query('withDepartment') withDepartment: boolean,
+      @Query('companyId') companyId: number,
     ): Promise<IServerResponse<IUser[]>> {
-        const result = await this.usersService.search(query, withCompany, withDepartment);
+        const result = await this.usersService.search(query, withCompany, withDepartment, companyId);
         return  result;
     }
 

@@ -49,6 +49,9 @@ export class RequestsController {
     );
   }
 
+  @Get('/export')
+  async export() {}
+
   @Post('/')
   async addRequest(
     @Body() request: Request,
