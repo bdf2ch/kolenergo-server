@@ -31,7 +31,7 @@ export class OperativeSituationService {
         companyId,
         date.format('DD.MM.YYYY'),
       ],
-      'SELECT operative_situation_reports_get_initial_data',
+      'operative_situation_reports_get_initial_data',
     );
   }
 
