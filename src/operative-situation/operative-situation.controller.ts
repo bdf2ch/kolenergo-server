@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Param, Query, Delete, Patch } from '@nestjs/common';
 import { OperativeSituationService } from './operative-situation.service';
-import { IServerResponse } from '@kolenergo/cpa';
+import { IServerResponse } from '@kolenergo/core';
 import {
     IOperativeSituationConsumption,
     IOperativeSituationRegion,
