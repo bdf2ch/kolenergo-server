@@ -27,7 +27,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(
       compression({level: 9, filter: shouldCompress}),
-      cors({ origin: true, credentials: true }),
+      cors({ origin: ['http://10.50.0.1053:3000', 'http://10.50.0.20', 'http://mrsksevzap.ru', /\.mrsksevzap\.ru$/], credentials: true }),
       cookieParser(),
       bodyParser.json(),
       session({
