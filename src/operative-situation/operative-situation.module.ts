@@ -27,6 +27,6 @@ export class OperativeSituationModule {
   configure(consumer: MiddlewaresConsumer): MiddlewaresConsumer | void {
     consumer
       .apply(ExportReportMiddleware)
-      .forRoutes({ path: 'osr2/export', method: RequestMethod.GET });
+      .forRoutes({ path: 'osr/export', method: RequestMethod.GET });
   }
 }
