@@ -10,7 +10,8 @@ export class AutoService {
 
   /**
    * Получение данных для инициализации приложения
-   * @param date - Дата
+   * @param start - Начало периода
+   * @param end - Окончание периода
    * @param userId - Идентификатор пользователя
    * @param periodStart - Дата и время начала периода календаря в формате Unix
    * @param periodEnd - Дата и время окончания периода календаря в формате Unix

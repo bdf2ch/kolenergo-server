@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import * as moment from 'moment';
 
 import { IServerResponse } from '@kolenergo/core';
@@ -16,9 +16,6 @@ export class AutoController {
     const startOfCalendar = moment(startOfMonth).startOf('week');
     const endOfCalendar = moment(endOfMonth).endOf('week');
     const user = request.user ? request.user.data : null;
-    console.log(user);
-    console.log('start', moment().startOf('day').unix() * 1000, moment().startOf('day').format('DD.MM.YYYY HH:mm'));
-    console.log('end', moment().endOf('day').unix() * 1000, moment().endOf('day').format('DD.MM.YYYY HH:mm'));
     const result = await this.autoService.getInitialData(
       moment().startOf('day').unix() * 1000,
       moment().endOf('day').unix() * 1000,

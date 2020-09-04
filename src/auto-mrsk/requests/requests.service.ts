@@ -421,39 +421,6 @@ export class RequestsService {
         size: 12,
       },
     });
-    const noBottomBorder = wb.createStyle({
-      alignment: {
-        horizontal: 'center',
-        vertical: 'center',
-        wrapText: true,
-      },
-      font: {
-        size: 12,
-      },
-      border: {
-        left: border,
-        top: border,
-        right: border,
-        bottom: {style: 'none', width: 0},
-      },
-    });
-    const summaryStyle = wb.createStyle({
-      fill: {
-        type: 'pattern',
-        patternType: 'solid',
-        fgColor: 'e0f2f1',
-      },
-      font: {
-        bold: true,
-        size: 9,
-      },
-    });
-    const regularStyle = wb.createStyle({
-      font: {
-        bold: false,
-        size: 10,
-      },
-    });
     const headerStyle = wb.createStyle({
       fill: {
         type: 'pattern',
@@ -558,7 +525,7 @@ export class RequestsService {
 
       sheet
         .cell(row + 1, 4, row + height - 1, 4, true)
-        .string([{bold: false, underline: false, italics: false, color: '757575', size: 12, value: request.description}])
+        .string([request.description, {bold: false, underline: false, italics: false, color: '757575', size: 12, value: ''}])
         .style({
           border: {top: {style: 'none'}, bottom: {style: 'thin'}},
           font: {size: 12, color: '757575'},
