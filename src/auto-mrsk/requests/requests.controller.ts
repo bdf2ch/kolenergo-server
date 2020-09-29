@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, Query, Req } from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, Patch, Post, Query, Req} from '@nestjs/common';
 
 import { IServerResponse } from '@kolenergo/core';
 import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
@@ -87,6 +87,13 @@ export class RequestsController {
   @Delete('/:id')
   async removeRequest(request: Request): Promise<IServerResponse<boolean>> {
     return await this.requestsService.removeRequest(request);
+  }
+
+  @Patch('/:id/cancel')
+  async cancelRequest(
+    @Param('id') requestId: string,
+  ): Promise<IServerResponse<IRequest>> {
+    return await this.requestsService.cancelRequest(parseInt(requestId, null));
   }
 
   @Post('/:id/comment')

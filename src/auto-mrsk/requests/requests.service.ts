@@ -166,45 +166,49 @@ export class RequestsService {
       organizer: 'Заявки на автотранспорт <auto@mrsksevzap.ru>',
       attendees,
       htmlDescription:
-        `<table>
-                <tcaption style="width: 100%;">
+        `<table style="border-collapse: collapse; border: 2px solid white;">
+                <tcaption style="width: 100%; padding: 15px;">
                     <strong>Заявка #${result.data.request.id}</strong>
                 </tcaption>
-               <tr>
-                   <td style="width: 200px; padding-top: 30px; padding-bottom: 5px;">Дата и время:</td>
-                   <td style="width: 100%; padding-top: 30px; padding-bottom: 5px;">
+               <tr style="border-bottom: 2px solid white;">
+                   <td style="width: 200px; padding: 15px; background: rgb(245,245,245); text-align: right; border: 1px solid white;">
+                    Дата и время:
+                   </td>
+                   <td style="width: 100%; padding: 15px; background: rgb(250,250,250); text-align: center; border: 1px solid white;">
                          ${moment(request.startTimeD).format('DD MMMM YYYY, HH:mm')}
                          &mdash;
                          ${moment(request.endTimeD).format('HH:mm')}
                    </td>
                </tr>
                <tr>
-                   <td style="width: 200px; padding-bottom: 5px;">О поездке:</td>
-                   <td style="width: 100%; padding-bottom: 10px;">${request.description}</td>
+                   <td style="width: 200px; padding: 15px; background: rgb(245,245,245); border: 1px solid white;">О поездке:</td>
+                   <td style="width: 100%; padding: 15px; background: rgb(250,250,250); text-align: center; border: 1px solid white;">
+                        ${request.description}
+                    </td>
                </tr>
                <tr>
-                   <td style="width: 200px;padding-bottom: 10px;">Маршрут:</td>
-                   <td style="width: 100%; padding-bottom: 10px;">
+                   <td style="width: 200px;padding: 15px; background: rgb(245,245,245); border: 1px solid white;">Маршрут:</td>
+                   <td style="width: 100%; padding: 15px; background: rgb(250,250,250); text-align: center; border: 1px solid white;">
                        <ul>${routes}</ul>
                    </td>
                </tr>
                <tr>
-                   <td style="width: 200px;padding-bottom: 5px;">Транспорт:</td>
-                   <td style="width: 100%; padding-bottom: 5px;">
+                   <td style="width: 200px;padding: 15px; background: rgb(245,245,245); border: 1px solid white;">Транспорт:</td>
+                   <td style="width: 100%; padding: 15px; background: rgb(250,250,250); text-align: center; border: 1px solid white;">
                     <span>${request.transport ? request.transport.model : 'Не назначен'}</span><br>
                     <span><i>${request.transport ? request.transport.registrationNumber : ''}</i></span>
                    </td>
                </tr>
                <tr>
-                   <td style="width: 200px;padding-bottom: 5px;">Водитель:</td>
-                   <td style="width: 100%; padding-bottom: 5px;">
-                    <span>${request.driver ? request.driver.firstName + ' ' + request.driver.lastName : 'Не назначен'}</span><br>
-                    <span><i>${request.driver && request.driver.phone ? request.driver.phone : ''}</i></span>
+                   <td style="width: 200px; padding: 15px; background: rgb(245,245,245); border: 1px solid white;">Водитель:</td>
+                   <td style="width: 100%; padding: 15px; background: rgb(250,250,250); text-align: center; border: 1px solid white;">
+                        <span>${request.driver ? request.driver.firstName + ' ' + request.driver.lastName : 'Не назначен'}</span><br>
+                        <span><i>${request.driver && request.driver.phone ? request.driver.phone : ''}</i></span>
                    </td>
                </tr>
                <tr>
-                   <td style="width: 200px;padding-bottom: 5px;">Статус:</td>
-                   <td style="width: 100%; padding-bottom: 5px;">
+                   <td style="width: 200px; padding: 15px; background: rgb(245,245,245); border: 1px solid white;">Статус:</td>
+                   <td style="width: 100%; padding: 15px; background: rgb(250,250,250); text-align: center; border: 1px solid white;">
                        ${result.data.request.status.title}
                    </td>
                </tr>
@@ -385,6 +389,29 @@ export class RequestsService {
     );
   }
 
+  /**
+   * Отмена заявки
+   * @param requestId - Идентификатор заявки
+   */
+  async cancelRequest(requestId: number): Promise<IServerResponse<IRequest>> {
+    return await this.postgresService.query(
+      'auto-mrsk-cancel-request',
+      'SELECT auto_mrsk.requests_cancel($1)',
+      [requestId],
+      'requests_cancel',
+    );
+  }
+
+  /**
+   * Экспор тв Excel
+   * @param periodStart - Начало периода
+   * @param periodEnd - Окончание периода
+   * @param statusId - Идентификатор статуса заявки
+   * @param transportId - Идентияикатор транспорта
+   * @param driverId - Идентификатор водителя
+   * @param userId - Идентификатор пользователя
+   * @param search - Условие поиска
+   */
   async export(
     periodStart: number,
     periodEnd: number,
