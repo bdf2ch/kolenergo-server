@@ -4,10 +4,12 @@ import { CommonModule } from '../../common/common.module';
 import { RequestsService } from './requests.service';
 import { RequestsController } from './requests.controller';
 import { ExportRequestsMiddleware } from '../middleware/export.middleware';
+import { BotModule } from '../bot/bot.module';
 
 @Module({
   imports: [
     CommonModule,
+    BotModule,
   ],
   components: [
     RequestsService,

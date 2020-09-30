@@ -6,6 +6,7 @@ import { DriversModule } from './drivers/drivers.module';
 import { TransportModule } from './transport/transport.module';
 import { AutoService } from './auto.service';
 import { AutoController } from './auto.controller';
+import { BotModule } from './bot/bot.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AutoController } from './auto.controller';
     RequestsModule,
     TransportModule,
     DriversModule,
+    BotModule,
   ],
   components: [
     AutoService,

@@ -23,7 +23,6 @@ export class RequestsService {
    * Получение заявок
    * @param periodStart - Начало периода
    * @param periodEnd - Окончание периода
-   * @param departmentId - Идентфиикатор подразделения организации
    * @param transportTypeId - Идентификатор типа транспорта
    * @param statusId - Идентификатор статуса заявки
    * @param transportId - Идентификатор транспортного средства
@@ -97,7 +96,13 @@ export class RequestsService {
     date: string,
     periodStart: number,
     periodEnd: number,
-    ): Promise<IServerResponse<IRequest[]>> {
+    ): Promise<IServerResponse<{
+      request: IRequest,
+      requests: IRequest[],
+      userRequests: IRequest[],
+      calendarRequests: {date: string, count: number}[],
+      routes: IRoutePoint[],
+    }>> {
     const result: IServerResponse<{
       request: IRequest,
       requests: IRequest[],

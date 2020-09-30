@@ -24,6 +24,7 @@ import { ApplicationsModule } from '../../control-panel/applications/application
     ],
     exports: [
       AuthenticationService,
+      LDAPService,
     ],
 })
 export class AuthenticationModule implements NestModule {
