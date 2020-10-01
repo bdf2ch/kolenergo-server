@@ -46,4 +46,4 @@ authScene.on('text', async (ctx) => {
   console.log(ctx.account, ctx.password);
 });
 
-authScene.leave(async (ctx: TelegrafContext) => {});
+authScene.leave(async () => {});
