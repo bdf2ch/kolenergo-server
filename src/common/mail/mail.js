@@ -28,7 +28,7 @@ export function sendFeedback(from, to, subject, message, event) {
                             return console.log(error);
                         }
                         console.log('Message sent: %s', info.messageId);
-                    resolve(true);
+                    return resolve(true);
                 });
             } catch (err) {
                 reject(err);

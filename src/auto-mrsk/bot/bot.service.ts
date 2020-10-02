@@ -155,18 +155,19 @@ export class BotService {
       this.bot.context.currentRequestIndex = this.bot.context.currentRequestIndex + 1 <= this.bot.context.requests.data.length - 1
         ? this.bot.context.currentRequestIndex + 1
         : 0;
-      const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
+      // const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
+      const request = await this.requests.getRequestById(this.bot.context.requests.data[this.bot.context.currentRequestIndex].id);
       let routes = '';
-      (request as IRequest).route.forEach((route: IRoutePoint) => {
+      (request.data as IRequest).route.forEach((route: IRoutePoint) => {
         routes += `▫ ${route.title}\n`;
       });
       await ctx.replyWithHTML(
-        `<b>Заявка #${request.id}</b>\n
-🕒 <strong>${moment(request.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.endTime).format('HH:mm')}</strong>
-ℹ <i>${request.description}</i>\n
+        `<b>Заявка #${request.data.id}</b>\n
+🕒 <strong>${moment(request.data.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.data.endTime).format('HH:mm')}</strong>
+ℹ <i>${request.data.description}</i>\n
 ${routes}
-🚘 ${request.transport ? request.transport.model + ' - ' + request.transport.registrationNumber : 'Не назначен'}
-👨 ${request.driver ? request.driver.firstName + ' ' + request.driver.lastName + (request.driver.phone ? ' - ' + request.driver.phone : '') : 'Не назначен'}
+🚘 ${request.data.transport ? request.data.transport.model + ' - ' + request.data.transport.registrationNumber : 'Не назначен'}
+👨 ${request.data.driver ? request.data.driver.firstName + ' ' + request.data.driver.lastName + (request.data.driver.mobile ? ' - ' + request.data.driver.mobile : '') : 'Не назначен'}
 `,
         Extra.markup(
           Markup.inlineKeyboard(
@@ -185,7 +186,10 @@ ${routes}
       const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
       await this.requests.cancelRequest(request.id);
       this.bot.context.requests.data.splice(this.bot.context.currentRequestIndex, 1);
-      return await ctx.reply(`Заявка #${request.id} отменена`);
+      return await ctx.reply(
+        `Заявка #${request.id} отменена`,
+        Markup.keyboard([[`🚗 Мои заявки (${this.bot.context.requests.data.length})`]]).oneTime().resize().extra(),
+      );
     });
 
     this.userScene.hears(/🚗 Мои заявки*/, async (ctx) => {
@@ -199,30 +203,34 @@ ${routes}
         this.bot.context.user.id,
         null,
       );
-      const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
-      let routes = '';
-      (request as IRequest).route.forEach((route: IRoutePoint) => {
-        routes += `▫ ${route.title}\n`;
-      });
-      await ctx.replyWithHTML(
-        `<b>Заявка #${request.id}</b>\n
+      if (this.bot.context.requests.data.length > 0) {
+        const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
+        let routes = '';
+        (request as IRequest).route.forEach((route: IRoutePoint) => {
+          routes += `▫ ${route.title}\n`;
+        });
+        await ctx.replyWithHTML(
+          `<b>Заявка #${request.id}</b>\n
 🕒 <strong>${moment(request.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.endTime).format('HH:mm')}</strong>
 ℹ <i>${request.description}</i>\n
 ${routes}
-🚘 ${request.transport ? request.transport.model + ' - ' + request.transport.registrationNumber : 'Не назначен'}
-👨 ${request.driver ? request.driver.firstName + ' ' + request.driver.lastName + ' - ' + request.driver.phone : 'Не назначен'}
+🚘 ${request.transport ? request.transport.model + ' - ' + request.transport.registrationNumber : 'Транспорт не назначен'}
+👨 ${request.driver ? request.driver.firstName + ' ' + request.driver.lastName + (request.driver.mobile ? ' - ' + request.driver.mobile : '') : 'Не назначен'}
 `,
-        Extra.markup(
-          Markup.inlineKeyboard(
-            this.bot.context.requests.data.length > 1
-              ? [
-                Markup.callbackButton('Отменить заявку', 'cancel'),
-                Markup.callbackButton('Следующая заявка', 'next'),
-              ]
-              : [
-                Markup.callbackButton('Отменить заявку', 'cancel'),
-              ]),
-        ));
+          Extra.markup(
+            Markup.inlineKeyboard(
+              this.bot.context.requests.data.length > 1
+                ? [
+                  Markup.callbackButton('Отменить заявку', 'cancel'),
+                  Markup.callbackButton('Следующая заявка', 'next'),
+                ]
+                : [
+                  Markup.callbackButton('Отменить заявку', 'cancel'),
+                ]),
+          ));
+      } else {
+        return await ctx.reply('Заявки не найдены');
+      }
     });
   }
 
@@ -234,13 +242,101 @@ ${routes}
      * Обработчик входа в сцену
      */
     this.driverScene.enter(async (ctx) => {
-      this.bot.context.account = null;
-      this.bot.context.password = null;
-      this.bot.context.user = null;
+      this.bot.context.currentRequestIndex = 0;
+      this.bot.context.requests = await this.requests.getRequests(
+        moment().startOf('day').unix() * 1000,
+        moment().endOf('day').unix() * 1000,
+        0,
+        4,
+        0,
+        this.bot.context.user.id,
+        0,
+        null,
+      );
       await ctx.reply(
         `Здравствуйте, ${this.bot.context.user.firstName}!`,
-        Markup.keyboard([[`🚗 Мои поездки (${this.bot.context.requests.length})`]]).oneTime().resize().extra(),
+        Markup.keyboard([[`🚗 Мои поездки сегодня (${this.bot.context.requests.data.length})`]]).oneTime().resize().extra(),
       );
+    });
+
+    this.driverScene.action('done', async (ctx) => {
+      const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
+      await this.requests.doneRequest(request.id);
+      this.bot.context.requests.data.splice(this.bot.context.currentRequestIndex, 1);
+      return await ctx.reply(
+        `Заявка #${request.id} завершена`,
+        Markup.keyboard([[`🚗 Мои поездки сегодня (${this.bot.context.requests.data.length})`]]).oneTime().resize().extra(),
+      );
+    });
+
+    this.driverScene.hears(/🚗 Мои поездки*/, async (ctx) => {
+      this.bot.context.requests = await this.requests.getRequests(
+        moment().startOf('day').unix() * 1000,
+        moment().endOf('day').unix() * 1000,
+        0,
+        4,
+        0,
+        this.bot.context.user.id,
+        0,
+        null,
+      );
+      if (this.bot.context.requests.data.length > 0) {
+        const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
+        let routes = '';
+        (request as IRequest).route.forEach((route: IRoutePoint) => {
+          routes += `▫ ${route.title}\n`;
+        });
+        await ctx.replyWithHTML(
+          `<b>Заявка #${request.id}</b>\n\n` +
+          `👨 ${request.user.firstName} ${request.user.lastName} ${request.user.mobile ? ' - ' + request.user.mobile + '\n' : '\n'}` +
+          `🕒 <strong>${moment(request.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.endTime).format('HH:mm')}</strong>\n` +
+          `ℹ <i>${request.description}</i>\n\n` +
+          `${routes}\n` +
+          `🚘 ${request.transport ? request.transport.model + ' - ' + request.transport.registrationNumber : 'Транспорт не назначен'}`,
+          Extra.markup(
+            Markup.inlineKeyboard(
+              this.bot.context.requests.data.length > 1
+                ? [
+                  Markup.callbackButton('Завершить заявку', 'done'),
+                  Markup.callbackButton('Следующая заявка', 'next'),
+                ]
+                : [
+                  Markup.callbackButton('Завершить заявку', 'done'),
+                ]),
+          ));
+      } else {
+        return await ctx.reply('На сегодня заявок нет');
+      }
+    });
+
+    this.driverScene.action('next', async (ctx) => {
+      this.bot.context.currentRequestIndex = this.bot.context.currentRequestIndex + 1 <= this.bot.context.requests.data.length - 1
+        ? this.bot.context.currentRequestIndex + 1
+        : 0;
+      // const request = this.bot.context.requests.data[this.bot.context.currentRequestIndex];
+      const request = await this.requests.getRequestById(this.bot.context.requests.data[this.bot.context.currentRequestIndex].id);
+      let routes = '';
+      (request.data as IRequest).route.forEach((route: IRoutePoint) => {
+        routes += `▫ ${route.title}\n`;
+      });
+      await ctx.replyWithHTML(
+        `<b>Заявка #${request.data.id}</b>\n\n` +
+        `👨 ${request.data.user.firstName} ${request.data.user.lastName} ${request.data.user.mobile ? ' - ' + request.data.user.mobile + '\n' : '\n'}` +
+        `🕒 <strong>${moment(request.data.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.data.endTime).format('HH:mm')}</strong>\n` +
+        `ℹ <i>${request.data.description}</i>\n\n` +
+        `${routes}\n` +
+        `🚘 ${request.data.transport ? request.data.transport.model + ' - ' + request.data.transport.registrationNumber : 'Транспорт не назначен'}`,
+        Extra.markup(
+          Markup.inlineKeyboard(
+            this.bot.context.requests.data.length > 1
+              ? [
+                Markup.callbackButton('Завершить заявку', 'done'),
+                Markup.callbackButton('Следующая заявка', 'next'),
+              ]
+              : [
+                Markup.callbackButton('Завершить заявку', 'done'),
+              ]),
+        ));
     });
   }
 

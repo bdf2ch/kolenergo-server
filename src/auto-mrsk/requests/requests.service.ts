@@ -62,6 +62,19 @@ export class RequestsService {
   }
 
   /**
+   * Получение информации о заявке по идентификатору
+   * @param requestId - Идентификатор заявки
+   */
+  async getRequestById(requestId: number): Promise<IServerResponse<IRequest>> {
+    return await this.postgresService.query(
+      'auto-mrsk-requests-get-by-id',
+      'SELECT auto_mrsk.requests_get_by_id($1)',
+      [requestId],
+      'requests_get_by_id',
+    );
+  }
+
+  /**
    * Получение оповещений для календаря о заявках со стутусом "Не подтверждена"
    * @param userId - Идентификатор пользователя
    * @param start - Дата и время начала периода в формате Unix
@@ -248,10 +261,11 @@ export class RequestsService {
     periodStart: number,
     periodEnd: number,
     currentDate: Date,
+    userId: number,
   ): Promise<IServerResponse<IRequest>> {
     const result =  await this.postgresService.query(
       'auto-mrsk-edit-request',
-      'SELECT auto_mrsk.requests_edit($1, $2, $3, $4, $5, $6,$7, $8, $9, $10, $11, $12, $13, $14)',
+      'SELECT auto_mrsk.requests_edit($1, $2, $3, $4, $5, $6,$7, $8, $9, $10, $11, $12, $13, $14, $15)',
       [
         request.id,
         request.transport ? request.transport.id : null,
@@ -267,6 +281,7 @@ export class RequestsService {
         periodEnd,
         moment(currentDate).startOf('day').unix() * 1000,
         moment(currentDate).endOf('day').unix() * 1000,
+        userId,
       ],
       'requests_edit',
     );
@@ -404,6 +419,19 @@ export class RequestsService {
       'SELECT auto_mrsk.requests_cancel($1)',
       [requestId],
       'requests_cancel',
+    );
+  }
+
+  /**
+   * Завершение заявки
+   * @param requestId - Идентификатор заявки
+   */
+  async doneRequest(requestId: number): Promise<IServerResponse<IRequest>> {
+    return await this.postgresService.query(
+      'auto-mrsk-requests-done',
+      'SELECT auto_mrsk.requests_done($1)',
+      [requestId],
+      'requests_done',
     );
   }
 

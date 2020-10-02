@@ -1,7 +1,7 @@
-import {Body, Controller, Delete, Get, Param, Patch, Post, Query, Req} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 
 import { IServerResponse } from '@kolenergo/core';
-import { IRequest, IRequestComment, Request, RequestComment } from '@kolenergo/auto';
+import { IRequest, IRequestComment, Request, RequestComment, IRoutePoint } from '@kolenergo/auto';
 import { RequestsService } from './requests.service';
 
 @Controller('auto-mrsk/requests')
@@ -59,7 +59,13 @@ export class RequestsController {
     @Query('periodStart') periodStart,
     @Query('periodEnd') periodEnd,
     @Req() req,
-  ): Promise<IServerResponse<IRequest[]>> {
+  ): Promise<IServerResponse<{
+    request: IRequest,
+    requests: IRequest[],
+    userRequests: IRequest[],
+    calendarRequests: {date: string, count: number}[],
+    routes: IRoutePoint[],
+  }>> {
     request.user = req.user ? req.user.data : null;
     return await this.requestsService.addRequest(
       request,
@@ -81,6 +87,7 @@ export class RequestsController {
       parseInt(periodStart, null),
       parseInt(periodEnd, null),
       currentDate,
+      request.user ? request.user.id : 0,
     );
   }
 
@@ -94,6 +101,13 @@ export class RequestsController {
     @Param('id') requestId: string,
   ): Promise<IServerResponse<IRequest>> {
     return await this.requestsService.cancelRequest(parseInt(requestId, null));
+  }
+
+  @Patch('/:id/done')
+  async doneRequest(
+    @Param('id') requestId: string,
+  ): Promise<IServerResponse<IRequest>> {
+    return await this.requestsService.doneRequest(parseInt(requestId, null));
   }
 
   @Post('/:id/comment')
