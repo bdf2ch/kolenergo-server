@@ -6,7 +6,7 @@ import * as ical from 'ical-generator';
 import * as excel from 'excel4node';
 
 import { IServerResponse, IUser, User } from '@kolenergo/core';
-import { IRequest, IRequestComment, Request, RequestComment, IRoutePoint } from '@kolenergo/auto';
+import { IRequest, IRequestComment, Request, RequestComment, IRoutePoint, Transport, IDriver } from '@kolenergo/auto';
 import { PostgresService } from '../../common/database/postgres.service';
 import { MailService } from '../../common/mail/mail.service';
 
@@ -272,7 +272,7 @@ export class RequestsService {
         request.driver ? request.driver.id : null,
         request.status.id,
         request.rejectReason ? request.rejectReason.id : null,
-        moment(request.startTimeD).format('DD.MM.YYYY'),
+        moment(request.startTime).format('DD.MM.YYYY'),
         request.startTime,
         request.endTime,
         request.route,
@@ -436,11 +436,11 @@ export class RequestsService {
   }
 
   /**
-   * Экспор тв Excel
+   * Экспорт в Excel
    * @param periodStart - Начало периода
    * @param periodEnd - Окончание периода
    * @param statusId - Идентификатор статуса заявки
-   * @param transportId - Идентияикатор транспорта
+   * @param transportId - Идентификатор транспорта
    * @param driverId - Идентификатор водителя
    * @param userId - Идентификатор пользователя
    * @param search - Условие поиска
@@ -672,6 +672,507 @@ export class RequestsService {
   }
 
   /**
+   * Загрузка отчета об использовании транспорта
+   * @param periodStart - Начало периода
+   * @param periodEnd - Окончание периода
+   * @param transportId - Идентификатор транспорта
+   */
+  async loadTransportReport(
+    periodStart: number,
+    periodEnd: number,
+    transportId: number,
+  ): Promise<string> {
+    const transport: IServerResponse<Transport> = await this.getTransportById(transportId);
+    const wb = new excel.Workbook();
+    const sheet = wb.addWorksheet(`${transport.data.model} (${transport.data.registrationNumber})`, {
+      pageSetup: {
+        orientation: 'landscape',
+        scale: 55,
+      },
+    });
+    const border = {
+      style: 'thin',
+      color: 'black',
+    };
+    const contentStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 12,
+      },
+    });
+    const summaryStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 12,
+        bold: true
+      },
+    });
+    const headerStyle = wb.createStyle({
+      fill: {
+        type: 'pattern',
+        patternType: 'solid',
+        fgColor: 'f5f5f5',
+      },
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 12,
+      },
+    });
+    const titleStyle = wb.createStyle({
+      alignment: {
+        horizontal: 'left',
+        vertical: 'center',
+      },
+      font: {
+        size: 18,
+      },
+    });
+
+    let row = 1;
+    sheet.column(1).setWidth(7);
+    sheet.column(2).setWidth(7);     // # заявки
+    sheet.column(3).setWidth(30);    // Инициатор / заказчик
+    sheet.column(4).setWidth(30);    // Дата / подробности
+    sheet.column(5).setWidth(30);    // Маршрут
+    // sheet.column(6).setWidth(25);    // Транспорт
+    sheet.column(6).setWidth(25);    // Водитель
+    sheet.column(7).setWidth(20);    // Продолжительность
+
+    row++;
+    const requests = await this.getRequests(periodStart, periodEnd, 0, 5, transportId, 0, 0, '');
+    const start = periodStart !== 0 ? moment(periodStart) : moment(requests.data[0].startTime);
+    const end = periodEnd !== 0 ? moment(periodEnd) : moment(requests.data[requests.data.length - 1].startTime);
+    let totalDuration = 0;
+    sheet.row(row).setHeight(30);
+    sheet
+      .cell(row, 2)
+      .string('Поездки ' + transport.data.model + ' (' + transport.data.registrationNumber + ') ' + `${moment(start).isSame(end, 'day')
+        ? 'на ' + moment(start).format('DD MMMM YYYY')
+        : 'c ' + start.format('DD') + ' по ' + end.format('DD MMMM YYYY')}`)
+      .style(titleStyle);
+
+    row++;
+    sheet.row(row).setHeight(45);
+    sheet.cell(row, 2, row, 2, true).string('#').style(headerStyle);
+    sheet.cell(row, 3, row, 3, true).string('Инициатор / заказчик').style(headerStyle);
+    sheet.cell(row, 4, row, 4, true).string('Дата поездки / подробности').style(headerStyle);
+    sheet.cell(row, 5, row, 5, true).string('Маршрут').style(headerStyle);
+    // sheet.cell(row, 6, row, 6, true).string('Транспорт').style(headerStyle);
+    sheet.cell(row, 6, row, 6, true).string('Водитель').style(headerStyle);
+    sheet.cell(row, 7, row, 7, true).string('Продолжительность').style(headerStyle);
+
+    row++;
+
+    requests.data.forEach((request: IRequest, index: number, reqs: IRequest[]) => {
+      const height = request.route.length > 2 ? request.route.length : 2;
+
+      /**
+       * # Заявки
+       */
+      sheet.row(row).setHeight(25);
+      sheet.row(row + 1).setHeight(25);
+      sheet.cell(row, 2, row + height - 1, 2, true).number(request.id).style(contentStyle);
+
+      /**
+       * Инициатор / заказчик
+       */
+      if (request.initiator) {
+        sheet
+          .cell(row, 3, row + height - 1, 3, true)
+          .string(request.initiator.hasOwnProperty('id')
+            ? `${(request.initiator as IUser).firstName} ${(request.initiator as IUser).lastName}\n${request.user.firstName} ${request.user.lastName}`
+            : request.initiator as string)
+          .style(contentStyle);
+      } else {
+        sheet.cell(row, 3, row + height - 1, 3, true).string(`${request.user.firstName} ${request.user.lastName}`).style(contentStyle);
+      }
+
+      /**
+       * Дата и время поездки / подробности о поездке
+       */
+      sheet.row(row).setHeight(25);
+      sheet
+        .cell(row, 4, row, 4)
+        .string(`${moment(request.startTime).format('DD MMM YYYY, HH:mm')} - ${moment(request.endTime).format('HH:mm')}`)
+        .style({
+          border: {top: {style: 'thin'}, bottom: {style: 'none'}},
+          font: {size: 12},
+          alignment: {horizontal: 'center', vertical: 'center', wrapText: true},
+        });
+
+      sheet
+        .cell(row + 1, 4, row + height - 1, 4, true)
+        .string([request.description, {bold: false, underline: false, italics: false, color: '757575', size: 12, value: ''}])
+        .style({
+          border: {top: {style: 'none'}, bottom: {style: 'thin'}},
+          font: {size: 12, color: '757575'},
+          alignment: {horizontal: 'center', vertical: 'center', wrapText: true},
+        });
+
+      /**
+       * Маршрут
+       */
+      request.route.forEach((route: IRoutePoint, i: number, routes: IRoutePoint[]) => {
+        sheet.row(row + i).setHeight(25);
+        sheet
+          .cell(row + i, 5, row + i, 5)
+          .string(route.title)
+          .style({
+            border: {
+              top: {style: i === 0 ? 'thin' : 'none'},
+              bottom: {style: i === routes.length - 1 ? 'thin' : 'none'},
+              left: {style: 'thin'},
+            },
+            font: {size: 12},
+            alignment: {horizontal: 'center', vertical: 'center', wrapText: true},
+          });
+      });
+
+      /**
+       * Транспорт
+       */
+      /*
+      const transport = [
+        request.transport ? `${request.transport.model}` : 'Не назначен',
+        {
+          bold: false,
+          underline: false,
+          italics: false,
+          color: '9e9e9e',
+          size: 12,
+          value: request.transport ? '\n' + request.transport.registrationNumber : '',
+        },
+      ];
+      sheet
+        .cell(row, 6, row + height - 1, 6, true)
+        .string(transport)
+        .style(contentStyle);
+       */
+
+      /**
+       * Водитель
+       */
+      const driver = [
+        request.driver ? `${request.driver.firstName} ${request.driver.lastName}` : 'Не назначен',
+        {
+          bold: false,
+          underline: false,
+          italics: false,
+          color: '9e9e9e',
+          size: 12,
+          value: request.driver && request.driver.phone ? '\n' + request.driver.phone : '',
+        },
+      ];
+      sheet
+        .cell(row, 6, row + height - 1, 6, true)
+        .string(driver)
+        .style(contentStyle);
+
+      /**
+       * Продолжительность
+       */
+      totalDuration += moment(request.endTime).diff(moment(request.startTime), 'minutes');
+      sheet
+        .cell(row, 7, row + height - 1, 7, true)
+        .string(moment(request.endTime).diff(moment(request.startTime), 'minutes').toString() + ' минут')
+        .style(contentStyle);
+
+      row += height;
+    });
+
+    sheet.row(row).setHeight(25);
+
+    sheet
+      .cell(row, 2, row, 6, true)
+      .string('Итого')
+      .style(summaryStyle);
+    sheet
+      .cell(row, 7, row, 7, true)
+      .string(totalDuration + ' минут')
+      .style(summaryStyle);
+
+    return new Promise<string>((resolve, reject) => {
+      wb.write('auto.xlsx', (err, stats) => {
+        if (err) {
+          reject(null);
+        }
+        const url = path.resolve('./auto.xlsx');
+        resolve(url);
+      });
+    });
+  }
+
+  /**
+   * Загрузка отчета о занятости водителя
+   * @param periodStart - Начало периода
+   * @param periodEnd - Окончание периода
+   * @param driverId - Идентификатор водителя
+   */
+  async loadDriverReport(
+    periodStart: number,
+    periodEnd: number,
+    driverId: number,
+  ): Promise<string> {
+    const driver: IServerResponse<IUser> = await this.getUserById(driverId);
+    const wb = new excel.Workbook();
+    const sheet = wb.addWorksheet(`${driver.data.firstName} ${driver.data.lastName}`, {
+      pageSetup: {
+        orientation: 'landscape',
+        scale: 55,
+      },
+    });
+    const border = {
+      style: 'thin',
+      color: 'black',
+    };
+    const contentStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 12,
+      },
+    });
+    const summaryStyle = wb.createStyle({
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 12,
+        bold: true,
+      },
+    });
+    const headerStyle = wb.createStyle({
+      fill: {
+        type: 'pattern',
+        patternType: 'solid',
+        fgColor: 'f5f5f5',
+      },
+      border: {
+        left: border,
+        top: border,
+        right: border,
+        bottom: border,
+      },
+      alignment: {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true,
+      },
+      font: {
+        size: 12,
+      },
+    });
+    const titleStyle = wb.createStyle({
+      alignment: {
+        horizontal: 'left',
+        vertical: 'center',
+      },
+      font: {
+        size: 18,
+      },
+    });
+
+    let row = 1;
+    sheet.column(1).setWidth(7);
+    sheet.column(2).setWidth(7);     // # заявки
+    sheet.column(3).setWidth(30);    // Инициатор / заказчик
+    sheet.column(4).setWidth(30);    // Дата / подробности
+    sheet.column(5).setWidth(30);    // Маршрут
+    sheet.column(6).setWidth(25);    // Транспорт
+    // sheet.column(6).setWidth(25);    // Водитель
+    sheet.column(7).setWidth(20);    // Продолжительность
+
+    row++;
+    const requests = await this.getRequests(periodStart, periodEnd, 0, 5, 0, driverId, 0, '');
+    const start = periodStart !== 0 ? moment(periodStart) : moment(requests.data[0].startTime);
+    const end = periodEnd !== 0 ? moment(periodEnd) : moment(requests.data[requests.data.length - 1].startTime);
+    let totalDuration = 0;
+    sheet.row(row).setHeight(30);
+    sheet
+      .cell(row, 2)
+      .string('Выполненные поездки -  ' + driver.data.firstName + ' ' + driver.data.lastName + ' ' + `${moment(start).isSame(end, 'day')
+        ? 'на ' + moment(start).format('DD MMMM YYYY')
+        : 'c ' + start.format('DD') + ' по ' + end.format('DD MMMM YYYY')}`)
+      .style(titleStyle);
+
+    row++;
+    sheet.row(row).setHeight(45);
+    sheet.cell(row, 2, row, 2, true).string('#').style(headerStyle);
+    sheet.cell(row, 3, row, 3, true).string('Инициатор / заказчик').style(headerStyle);
+    sheet.cell(row, 4, row, 4, true).string('Дата поездки / подробности').style(headerStyle);
+    sheet.cell(row, 5, row, 5, true).string('Маршрут').style(headerStyle);
+    sheet.cell(row, 6, row, 6, true).string('Транспорт').style(headerStyle);
+    // sheet.cell(row, 6, row, 6, true).string('Водитель').style(headerStyle);
+    sheet.cell(row, 7, row, 7, true).string('Продолжительность').style(headerStyle);
+
+    row++;
+
+    requests.data.forEach((request: IRequest, index: number, reqs: IRequest[]) => {
+      const height = request.route.length > 2 ? request.route.length : 2;
+
+      /**
+       * # Заявки
+       */
+      sheet.row(row).setHeight(25);
+      sheet.row(row + 1).setHeight(25);
+      sheet.cell(row, 2, row + height - 1, 2, true).number(request.id).style(contentStyle);
+
+      /**
+       * Инициатор / заказчик
+       */
+      if (request.initiator) {
+        sheet
+          .cell(row, 3, row + height - 1, 3, true)
+          .string(request.initiator.hasOwnProperty('id')
+            ? `${(request.initiator as IUser).firstName} ${(request.initiator as IUser).lastName}\n${request.user.firstName} ${request.user.lastName}`
+            : request.initiator as string)
+          .style(contentStyle);
+      } else {
+        sheet.cell(row, 3, row + height - 1, 3, true).string(`${request.user.firstName} ${request.user.lastName}`).style(contentStyle);
+      }
+
+      /**
+       * Дата и время поездки / подробности о поездке
+       */
+      sheet.row(row).setHeight(25);
+      sheet
+        .cell(row, 4, row, 4)
+        .string(`${moment(request.startTime).format('DD MMM YYYY, HH:mm')} - ${moment(request.endTime).format('HH:mm')}`)
+        .style({
+          border: {top: {style: 'thin'}, bottom: {style: 'none'}},
+          font: {size: 12},
+          alignment: {horizontal: 'center', vertical: 'center', wrapText: true},
+        });
+
+      sheet
+        .cell(row + 1, 4, row + height - 1, 4, true)
+        .string([request.description, {bold: false, underline: false, italics: false, color: '757575', size: 12, value: ''}])
+        .style({
+          border: {top: {style: 'none'}, bottom: {style: 'thin'}},
+          font: {size: 12, color: '757575'},
+          alignment: {horizontal: 'center', vertical: 'center', wrapText: true},
+        });
+
+      /**
+       * Маршрут
+       */
+      request.route.forEach((route: IRoutePoint, i: number, routes: IRoutePoint[]) => {
+        sheet.row(row + i).setHeight(25);
+        sheet
+          .cell(row + i, 5, row + i, 5)
+          .string(route.title)
+          .style({
+            border: {
+              top: {style: i === 0 ? 'thin' : 'none'},
+              bottom: {style: i === routes.length - 1 ? 'thin' : 'none'},
+              left: {style: 'thin'},
+            },
+            font: {size: 12},
+            alignment: {horizontal: 'center', vertical: 'center', wrapText: true},
+          });
+      });
+
+      /**
+       * Транспорт
+       */
+      const transport = [
+        request.transport ? `${request.transport.model}` : 'Не назначен',
+        {
+          bold: false,
+          underline: false,
+          italics: false,
+          color: '9e9e9e',
+          size: 12,
+          value: request.transport ? '\n' + request.transport.registrationNumber : '',
+        },
+      ];
+      sheet
+        .cell(row, 6, row + height - 1, 6, true)
+        .string(transport)
+        .style(contentStyle);
+
+      /**
+       * Продолжительность
+       */
+      totalDuration += moment(request.finishTime).diff(moment(request.startTime), 'minutes');
+      sheet
+        .cell(row, 7, row + height - 1, 7, true)
+        .string(moment(request.finishTime).diff(moment(request.startTime), 'minutes').toString() + ' минут')
+        .style(contentStyle);
+
+      row += height;
+    });
+
+    sheet.row(row).setHeight(25);
+
+    sheet
+      .cell(row, 2, row, 6, true)
+      .string('Итого')
+      .style(summaryStyle);
+    sheet
+      .cell(row, 7, row, 7, true)
+      .string(totalDuration + ' минут')
+      .style(summaryStyle);
+
+    return new Promise<string>((resolve, reject) => {
+      wb.write('auto.xlsx', (err, stats) => {
+        if (err) {
+          reject(null);
+        }
+        const url = path.resolve('./auto.xlsx');
+        resolve(url);
+      });
+    });
+  }
+
+  /**
    * Добавление комментария к заявке
    * @param comment - Добавляемый комментарий
    */
@@ -681,6 +1182,64 @@ export class RequestsService {
       'SELECT auto-mrsk.comments_add($1, $2, $3)',
       [comment.requestId, comment.user.id, comment.message],
       'comments_add',
+    );
+  }
+
+  /**
+   * Получение информации об используемом транспорте и водителях по времени поездки
+   * @param requestId - Идентификатор заявки
+   * @param startTime - Начало поездки
+   * @param endTime - Окончание поездки
+   */
+  async getBusy(
+    requestId: number,
+    startTime: number,
+    endTime: number,
+  ): Promise<IServerResponse<{transport: number[], drivers: number[]}>> {
+    return await this.postgresService.query(
+      'auto-mrsk-get-busy',
+      'SELECT auto_mrsk.requests_get_busy($1, $2, $3)',
+      [requestId, startTime, endTime],
+      'requests_get_busy',
+    );
+  }
+
+  /**
+   * Получение информации о транспорте
+   * @param transportId - Идентификатор транспорта
+   */
+  async getTransportById(transportId: number): Promise<IServerResponse<Transport>> {
+    return await this.postgresService.query(
+      'auto-mrsk-transport-get-by-id',
+      'SELECT auto_mrsk.transport_get_by_id($1)',
+      [transportId],
+      'transport_get_by_id',
+    );
+  }
+
+  /**
+   * Получение информации о водителе
+   * @param driverId - Идентификатор водителя
+   */
+  async getDriverById(driverId: number): Promise<IServerResponse<IDriver>> {
+    return await this.postgresService.query(
+      'auto-mrsk-driver-get-by-id',
+      'SELECT auto_mrsk.drivers_get_by_id($1)',
+      [driverId],
+      'drivers_get_by_id',
+    );
+  }
+
+  /**
+   * Получение информации о пользователе
+   * @param userId - Идентификатор пользователя
+   */
+  async getUserById(userId: number): Promise<IServerResponse<IUser>> {
+    return await this.postgresService.query(
+      'users-get-by-id',
+      'SELECT users_get_by_id($1, $2, $3, $4)',
+      [userId, false, false, ''],
+      'users_get_by_id',
     );
   }
 }

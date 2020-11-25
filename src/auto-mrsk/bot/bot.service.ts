@@ -19,6 +19,7 @@ export class BotService {
   private readonly authScene: BaseScene<any>;
   private readonly userScene: BaseScene<any>;
   private readonly driverScene: BaseScene<any>;
+  private requestMsg;
 
   constructor(
     private readonly ldap: LDAPService,
@@ -26,22 +27,36 @@ export class BotService {
     private readonly users: UsersService,
     private readonly requests: RequestsService,
   ) {
+    /*
+    const boss = new Bot('1340871511:AAHPHIXrWMW3YfVOxaYnNabQj1DT4CA0uRQ');
+    boss.onCommand('/start', (msg: Message, chat: Chat) => {
+      chat.sendText(
+        'Для начала работы с ботов необходимо авторизоваться',
+        new InlineKeyboard().row(InlineKeyboard.callbackButton('🔑 Авторизация', 'sign-in')));
+    });
+     */
+
+
+
     this.bot = new Telegraf(environment.telegramBotToken);
     this.authScene = new BaseScene('auth-scene');
     this.userScene = new BaseScene('user-scene');
     this.driverScene = new BaseScene('driver-scene');
+
 
     this.bot.session = null;
     this.bot.context.account = null;
     this.bot.context.password = null;
     this.bot.context.user = null;
     this.bot.context.requests = {data: []};
+
     this.initAuthScene();
     this.initUserScene();
     this.initDriverScene();
     const stage = new Stage([this.authScene, this.userScene, this.driverScene]);
     this.bot.use(session());
     this.bot.use(stage.middleware());
+
     this.bot.start(async (ctx) => {
       const session: IServerResponse<{session: ISession, user: IUser}> = await this.getSession((ctx.from as ITelegramUser).id);
       Logger.log(JSON.stringify(session));
@@ -58,7 +73,7 @@ export class BotService {
         await ctx.scene.enter('auth-scene');
       }
     });
-    this.bot.launch();
+    this.bot.launch({polling: {allowedUpdates: ['message', 'callback_query']}});
   }
 
   /**
@@ -77,7 +92,7 @@ export class BotService {
         'Для начала работы с ботом необходимо авторизоваться',
         Extra.markup(
           Markup.inlineKeyboard([
-            Markup.callbackButton('Авторизация', 'auth'),
+            Markup.callbackButton('🔑  Авторизация', 'auth'),
           ]),
         ),
       );
@@ -89,6 +104,17 @@ export class BotService {
     this.authScene.action('auth', async (ctx) => {
       await ctx.reply('Введите Вашу учетную запись Active Directory');
     });
+
+    /**
+     * Обработчик нажатия на кнопку авторизации
+     */
+    /*
+    this.bot.action('auth', async (ctx) => {
+      console.log(ctx);
+      await ctx.reply('Введите Вашу учетную запись Active Directory');
+    });
+
+     */
 
     /**
      * Обработчик полученного текстового сообщения
@@ -103,7 +129,7 @@ export class BotService {
           const ldapUser: ILdapUser = await this.ldap.logIn(this.bot.context.account, this.bot.context.password);
           if (ldapUser) {
             this.bot.context.user = await this.users.getByAccount(ldapUser.sAMAccountName, 'AUTO_REQUESTS_MRSK');
-            await this.addSession(this.bot.context.user.id, (ctx.from as ITelegramUser).id);
+            await this.addSession(this.bot.context.user.id, (ctx.from as ITelegramUser).id, ctx.chat.id);
             const isDriver = (this.bot.context.user as IUser).rolesList.find((role: IApplicationRole) => role.id === 21);
             if (isDriver) {
               await ctx.scene.enter('driver-scene');
@@ -161,24 +187,26 @@ export class BotService {
       (request.data as IRequest).route.forEach((route: IRoutePoint) => {
         routes += `▫ ${route.title}\n`;
       });
-      await ctx.replyWithHTML(
+
+
+      await ctx.editMessageText(
         `<b>Заявка #${request.data.id}</b>\n
 🕒 <strong>${moment(request.data.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.data.endTime).format('HH:mm')}</strong>
 ℹ <i>${request.data.description}</i>\n
 ${routes}
-🚘 ${request.data.transport ? request.data.transport.model + ' - ' + request.data.transport.registrationNumber : 'Не назначен'}
-👨 ${request.data.driver ? request.data.driver.firstName + ' ' + request.data.driver.lastName + (request.data.driver.mobile ? ' - ' + request.data.driver.mobile : '') : 'Не назначен'}
+🚘 ${request.data.transport ? request.data.transport.model + ' - ' + request.data.transport.registrationNumber : 'Транспорт не назначен'}
+👨 ${request.data.driver ? request.data.driver.firstName + ' ' + request.data.driver.lastName + (request.data.driver.mobile ? ' - ' + request.data.driver.mobile : '') : 'Водитель не назначен'}
 `,
-        Extra.markup(
+        Extra.HTML().markup(
           Markup.inlineKeyboard(
             this.bot.context.requests.data.length > 1
               ? [
-                  Markup.callbackButton('Отменить заявку', 'cancel'),
-                  Markup.callbackButton('Следующая заявка', 'next'),
-                ]
+                [Markup.callbackButton('❌  Отменить заявку', 'cancel')],
+                [Markup.callbackButton('➡  Следующая заявка', 'next')],
+              ]
               : [
-                  Markup.callbackButton('Отменить заявку', 'cancel'),
-                ]),
+                Markup.callbackButton('❌  Отменить заявку', 'cancel'),
+              ]),
         ));
     });
 
@@ -209,23 +237,23 @@ ${routes}
         (request as IRequest).route.forEach((route: IRoutePoint) => {
           routes += `▫ ${route.title}\n`;
         });
-        await ctx.replyWithHTML(
+        this.requestMsg = await ctx.replyWithHTML(
           `<b>Заявка #${request.id}</b>\n
 🕒 <strong>${moment(request.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.endTime).format('HH:mm')}</strong>
 ℹ <i>${request.description}</i>\n
 ${routes}
 🚘 ${request.transport ? request.transport.model + ' - ' + request.transport.registrationNumber : 'Транспорт не назначен'}
-👨 ${request.driver ? request.driver.firstName + ' ' + request.driver.lastName + (request.driver.mobile ? ' - ' + request.driver.mobile : '') : 'Не назначен'}
+👨 ${request.driver ? request.driver.firstName + ' ' + request.driver.lastName + (request.driver.mobile ? ' - ' + request.driver.mobile : '') : 'Водитель не назначен'}
 `,
           Extra.markup(
             Markup.inlineKeyboard(
               this.bot.context.requests.data.length > 1
                 ? [
-                  Markup.callbackButton('Отменить заявку', 'cancel'),
-                  Markup.callbackButton('Следующая заявка', 'next'),
+                  [Markup.callbackButton('❌  Отменить заявку', 'cancel')],
+                  [Markup.callbackButton('➡  Следующая заявка', 'next')],
                 ]
                 : [
-                  Markup.callbackButton('Отменить заявку', 'cancel'),
+                  Markup.callbackButton('❌  Отменить заявку', 'cancel'),
                 ]),
           ));
       } else {
@@ -238,9 +266,6 @@ ${routes}
    * Инициализация сцены водителя
    */
   initDriverScene() {
-    /**
-     * Обработчик входа в сцену
-     */
     this.driverScene.enter(async (ctx) => {
       this.bot.context.currentRequestIndex = 0;
       this.bot.context.requests = await this.requests.getRequests(
@@ -291,21 +316,21 @@ ${routes}
           `👨 ${request.user.firstName} ${request.user.lastName} ${request.user.mobile ? ' - ' + request.user.mobile + '\n' : '\n'}` +
           `🕒 <strong>${moment(request.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.endTime).format('HH:mm')}</strong>\n` +
           `ℹ <i>${request.description}</i>\n\n` +
-          `${routes}\n` +
-          `🚘 ${request.transport ? request.transport.model + ' - ' + request.transport.registrationNumber : 'Транспорт не назначен'}`,
+          `${routes}\n`,
+          // `🚘 ${request.transport ? request.transport.model + ' - ' + request.transport.registrationNumber : 'Транспорт не назначен'}`,
           Extra.markup(
             Markup.inlineKeyboard(
               this.bot.context.requests.data.length > 1
                 ? [
-                  Markup.callbackButton('Завершить заявку', 'done'),
-                  Markup.callbackButton('Следующая заявка', 'next'),
+                  [Markup.callbackButton('✅  Завершить заявку', 'done')],
+                  [Markup.callbackButton('➡  Следующая заявка', 'next')],
                 ]
                 : [
-                  Markup.callbackButton('Завершить заявку', 'done'),
+                  Markup.callbackButton('✅  Завершить заявку', 'done'),
                 ]),
           ));
       } else {
-        return await ctx.reply('На сегодня заявок нет');
+        return await ctx.reply('На сегодня поездок нет');
       }
     });
 
@@ -324,17 +349,17 @@ ${routes}
         `👨 ${request.data.user.firstName} ${request.data.user.lastName} ${request.data.user.mobile ? ' - ' + request.data.user.mobile + '\n' : '\n'}` +
         `🕒 <strong>${moment(request.data.startTime).format('DD.MM.YYYY, HH:mm')} - ${moment(request.data.endTime).format('HH:mm')}</strong>\n` +
         `ℹ <i>${request.data.description}</i>\n\n` +
-        `${routes}\n` +
-        `🚘 ${request.data.transport ? request.data.transport.model + ' - ' + request.data.transport.registrationNumber : 'Транспорт не назначен'}`,
+        `${routes}\n`,
+        // `🚘 ${request.data.transport ? request.data.transport.model + ' - ' + request.data.transport.registrationNumber : 'Транспорт не назначен'}`,
         Extra.markup(
           Markup.inlineKeyboard(
             this.bot.context.requests.data.length > 1
               ? [
-                Markup.callbackButton('Завершить заявку', 'done'),
-                Markup.callbackButton('Следующая заявка', 'next'),
+                Markup.callbackButton('✅  Завершить заявку', 'done'),
+                Markup.callbackButton('➡  Следующая заявка', 'next'),
               ]
               : [
-                Markup.callbackButton('Завершить заявку', 'done'),
+                Markup.callbackButton('✅ Завершить заявку', 'done'),
               ]),
         ));
     });
@@ -356,13 +381,18 @@ ${routes}
   /**
    * Добавление сессии пользователя
    * @param userId - Идентификатор пользователя
-   * @param telegramId - Идентификатор пользователя Telegram
+   * @param telegramUserId - Идентификатор пользователя в Telegram
+   * @param telegramChatId - Идентификатор чата в Telegram
    */
-  async addSession(userId: number, telegramId: number): Promise<IServerResponse<{id: number, userId: number, telegramId: number}>> {
+  async addSession(
+    userId: number,
+    telegramUserId: number,
+    telegramChatId: number,
+  ): Promise<IServerResponse<{id: number, userId: number, telegramUserId: number, telegramChatId: number}>> {
     return await this.postgre.query(
       'auto-mrsk-add-telegram-session',
-      'SELECT auto_mrsk.sessions_add($1, $2)',
-      [userId, telegramId],
+      'SELECT auto_mrsk.sessions_add($1, $2, $3)',
+      [userId, telegramUserId, telegramChatId],
       'sessions_add',
     );
   }

@@ -114,4 +114,17 @@ export class RequestsController {
   async addComment(comment: RequestComment): Promise<IServerResponse<IRequestComment>> {
     return await this.requestsService.addComment(comment);
   }
+
+  @Get('/busy')
+  async getBusy(
+    @Query('requestId') requestId: string,
+    @Query('startTime') startTime: string,
+    @Query('endTime') endTime: string,
+  ): Promise<IServerResponse<{transport: number[], drivers: number[]}>> {
+    return await this.requestsService.getBusy(
+      parseInt(requestId, null),
+      parseInt(startTime, null),
+      parseInt(endTime, null),
+    );
+  }
 }
