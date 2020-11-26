@@ -2,6 +2,7 @@ import { Component, Logger } from '@nestjs/common';
 
 import { Extra, Markup, Telegraf, BaseScene, Stage, session } from 'telegraf';
 import * as moment from 'moment';
+const HttpsProxyAgent = require('https-proxy-agent')
 
 import { IUser, IApplicationRole, IServerResponse } from '@kolenergo/core';
 import { IRequest, IRoutePoint } from '@kolenergo/auto';
@@ -38,7 +39,12 @@ export class BotService {
 
 
 
-    this.bot = new Telegraf(environment.telegramBotToken);
+    //this.bot = new Telegraf(environment.telegramBotToken);
+    this.bot = new Telegraf(environment.telegramBotToken, {
+      telegram: {
+        agent: new HttpsProxyAgent('http://kolu-proxy.nw.mrsksevzap.ru:8080'),
+      },
+    });
     this.authScene = new BaseScene('auth-scene');
     this.userScene = new BaseScene('user-scene');
     this.driverScene = new BaseScene('driver-scene');
