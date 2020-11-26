@@ -42,7 +42,7 @@ export class BotService {
     //this.bot = new Telegraf(environment.telegramBotToken);
     this.bot = new Telegraf(environment.telegramBotToken, {
       telegram: {
-        agent: new HttpsProxyAgent('http://kolu-proxy.nw.mrsksevzap.ru:8080'),
+        agent: new HttpsProxyAgent('https://kolu-proxy.nw.mrsksevzap.ru:8080'),
       },
     });
     this.authScene = new BaseScene('auth-scene');
