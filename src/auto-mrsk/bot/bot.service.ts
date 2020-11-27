@@ -2,7 +2,7 @@ import { Component, Logger } from '@nestjs/common';
 
 import { Extra, Markup, Telegraf, BaseScene, Stage, session } from 'telegraf';
 import * as moment from 'moment';
-const HttpsProxyAgent = require('https-proxy-agent');
+//const HttpsProxyAgent = require('https-proxy-agent');
 
 import { IUser, IApplicationRole, IServerResponse } from '@kolenergo/core';
 import { IRequest, IRoutePoint } from '@kolenergo/auto';
